@@ -1,0 +1,1478 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<!--
+   ______                            __
+  / ____/___  ____ ___  ____  __  __/ /____  _____
+ / /   / __ \/ __ `__ \/ __ \/ / / / __/ _ \/ ___/
+/ /___/ /_/ / / / / / / /_/ / /_/ / /_/  __/ /
+\____/\____/_/ /_/ /_/ .___/\__,_/\__/\___/_/
+                    /_/
+        Created with Perplexity Computer
+        https://www.perplexity.ai/computer
+-->
+<meta name="generator" content="Perplexity Computer">
+<meta name="author" content="Perplexity Computer">
+<meta property="og:see_also" content="https://www.perplexity.ai/computer">
+<link rel="author" href="https://www.perplexity.ai/computer">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gravity — Spacekayak</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+/* ===== RESET & BASE ===== */
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+:root {
+  --bg: #0f0f14;
+  --card: #1a1a24;
+  --card-hover: #1f1f2e;
+  --border: #24243a;
+  --border-light: #2a2a42;
+  --text: #e4e4ed;
+  --text-muted: #8b8ba3;
+  --text-faint: #5b5b73;
+  --accent: #6366f1;
+  --accent-dim: rgba(99,102,241,0.15);
+  --green: #10b981;
+  --green-dim: rgba(16,185,129,0.15);
+  --amber: #f59e0b;
+  --amber-dim: rgba(245,158,11,0.15);
+  --red: #ef4444;
+  --red-dim: rgba(239,68,68,0.15);
+  --cyan: #06b6d4;
+  --pink: #ec4899;
+  --radius: 8px;
+  --radius-lg: 12px;
+  --font: 'Inter', -apple-system, sans-serif;
+  --mono: 'JetBrains Mono', monospace;
+  --transition: 150ms ease;
+}
+html { font-size: 14px; }
+body {
+  font-family: var(--font);
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.5;
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ===== SCROLLBAR ===== */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border-light); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--text-faint); }
+
+/* ===== HEADER ===== */
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 24px;
+  border-bottom: 1px solid var(--border);
+  background: var(--card);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+.header-left { display: flex; align-items: center; gap: 16px; }
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 700;
+  font-size: 1.15rem;
+  color: var(--text);
+  letter-spacing: -0.02em;
+}
+.logo svg { width: 28px; height: 28px; }
+.logo-accent { color: var(--accent); }
+.header-meta {
+  font-size: 0.78rem;
+  color: var(--text-faint);
+  font-family: var(--mono);
+}
+
+/* ===== TABS ===== */
+.tabs {
+  display: flex;
+  gap: 2px;
+  padding: 0 24px;
+  background: var(--card);
+  border-bottom: 1px solid var(--border);
+}
+.tab-btn {
+  padding: 10px 18px;
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-family: var(--font);
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: color var(--transition), border-color var(--transition);
+  white-space: nowrap;
+}
+.tab-btn:hover { color: var(--text); }
+.tab-btn.active {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+}
+
+/* ===== MAIN LAYOUT ===== */
+.main { padding: 20px 24px 40px; max-width: 1600px; margin: 0 auto; }
+.tab-content { display: none; }
+.tab-content.active { display: block; }
+
+/* ===== KPI ROW ===== */
+.kpi-row {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 12px;
+  margin-bottom: 20px;
+}
+.kpi-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  transition: border-color var(--transition);
+}
+.kpi-card:hover { border-color: var(--border-light); }
+.kpi-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.kpi-label {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.kpi-icon {
+  width: 32px; height: 32px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+}
+.kpi-icon.blue { background: var(--accent-dim); color: var(--accent); }
+.kpi-icon.green { background: var(--green-dim); color: var(--green); }
+.kpi-icon.amber { background: var(--amber-dim); color: var(--amber); }
+.kpi-icon.red { background: var(--red-dim); color: var(--red); }
+.kpi-value {
+  font-size: 1.7rem;
+  font-weight: 700;
+  font-family: var(--mono);
+  letter-spacing: -0.03em;
+  line-height: 1.1;
+}
+
+/* ===== GRID ROWS ===== */
+.row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px; }
+.row-full { margin-bottom: 20px; }
+
+/* ===== CARD ===== */
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+.card-head {
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.card-title {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text);
+}
+.card-body { padding: 18px; }
+.card-body canvas { width: 100% !important; }
+
+/* ===== TABLES ===== */
+.table-wrap { overflow-x: auto; }
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.82rem;
+}
+th {
+  text-align: left;
+  padding: 10px 14px;
+  font-weight: 600;
+  color: var(--text-muted);
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border-bottom: 1px solid var(--border);
+  cursor: pointer;
+  user-select: none;
+  white-space: nowrap;
+}
+th:hover { color: var(--text); }
+th .sort-arrow { margin-left: 4px; font-size: 0.7rem; opacity: 0.5; }
+th.sorted .sort-arrow { opacity: 1; color: var(--accent); }
+td {
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--border);
+  color: var(--text);
+  vertical-align: middle;
+}
+tr:hover td { background: rgba(99,102,241,0.04); }
+tr.expandable { cursor: pointer; }
+tr.expanded td { background: rgba(99,102,241,0.06); }
+.expand-row td {
+  padding: 0;
+  background: rgba(99,102,241,0.03);
+}
+.expand-content { padding: 14px 18px; }
+
+/* ===== BADGES ===== */
+.badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  font-family: var(--mono);
+}
+.badge-green { background: var(--green-dim); color: var(--green); }
+.badge-amber { background: var(--amber-dim); color: var(--amber); }
+.badge-red { background: var(--red-dim); color: var(--red); }
+
+/* ===== SEARCH ===== */
+.search-wrap { position: relative; margin-bottom: 20px; }
+.search-input {
+  width: 100%;
+  padding: 12px 16px 12px 42px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text);
+  font-family: var(--font);
+  font-size: 0.88rem;
+  outline: none;
+  transition: border-color var(--transition);
+}
+.search-input:focus { border-color: var(--accent); }
+.search-input::placeholder { color: var(--text-faint); }
+.search-icon {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-faint);
+  font-size: 1rem;
+}
+.search-results { display: none; }
+.search-results.has-results { display: block; }
+
+/* ===== FILTER BAR ===== */
+.filter-bar {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+.filter-btn {
+  padding: 6px 14px;
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  background: transparent;
+  color: var(--text-muted);
+  font-family: var(--font);
+  font-size: 0.78rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--transition);
+}
+.filter-btn:hover { border-color: var(--accent); color: var(--text); }
+.filter-btn.active {
+  background: var(--accent-dim);
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+/* ===== HEATMAP ===== */
+.heatmap-grid {
+  display: grid;
+  gap: 2px;
+  overflow-x: auto;
+  padding-bottom: 8px;
+}
+.heatmap-cell {
+  width: 100%;
+  border-radius: 2px;
+  background: var(--border);
+  position: relative;
+  min-width: 14px;
+  height: 18px;
+}
+.heatmap-cell[title]:hover {
+  outline: 1px solid var(--accent);
+  z-index: 2;
+}
+.heatmap-label {
+  font-size: 0.7rem;
+  color: var(--text-faint);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: flex;
+  align-items: center;
+  padding-right: 6px;
+  height: 18px;
+}
+.heatmap-month-label {
+  font-size: 0.65rem;
+  color: var(--text-faint);
+  text-align: center;
+  white-space: nowrap;
+}
+
+/* ===== ACTIVITY FEED ===== */
+.feed-list { display: flex; flex-direction: column; gap: 0; }
+.feed-item {
+  display: flex;
+  gap: 14px;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--border);
+  align-items: flex-start;
+}
+.feed-item:last-child { border-bottom: none; }
+.feed-avatar {
+  width: 36px; height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: 0.78rem;
+  flex-shrink: 0;
+  color: white;
+}
+.feed-body { flex: 1; min-width: 0; }
+.feed-title {
+  font-size: 0.85rem;
+  color: var(--text);
+  line-height: 1.4;
+}
+.feed-title strong { font-weight: 600; color: var(--accent); }
+.feed-meta {
+  font-size: 0.75rem;
+  color: var(--text-faint);
+  margin-top: 2px;
+  font-family: var(--mono);
+}
+.feed-label {
+  display: inline-block;
+  padding: 1px 6px;
+  border-radius: 3px;
+  font-size: 0.7rem;
+  font-weight: 500;
+  background: var(--accent-dim);
+  color: var(--accent);
+  margin-left: 6px;
+}
+
+/* ===== ASSET TAB ===== */
+.component-group {
+  margin-bottom: 20px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+.component-group-head {
+  padding: 12px 16px;
+  background: rgba(99,102,241,0.06);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+}
+.component-group-head:hover { background: rgba(99,102,241,0.1); }
+.component-group-title {
+  font-size: 0.88rem;
+  font-weight: 600;
+}
+.component-group-count {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  font-family: var(--mono);
+}
+.component-list { padding: 8px 16px; display: none; }
+.component-list.open { display: block; }
+.component-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 0;
+  border-bottom: 1px solid rgba(36,36,58,0.5);
+}
+.component-item:last-child { border-bottom: none; }
+.comp-tag {
+  font-size: 0.68rem;
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-weight: 500;
+  background: var(--border);
+  color: var(--text-muted);
+}
+.comp-tag.button { background: rgba(99,102,241,0.15); color: var(--accent); }
+.comp-tag.card { background: rgba(6,182,212,0.15); color: var(--cyan); }
+.comp-tag.input { background: rgba(16,185,129,0.15); color: var(--green); }
+.comp-tag.icon { background: rgba(236,72,153,0.15); color: var(--pink); }
+.comp-tag.state { background: rgba(245,158,11,0.15); color: var(--amber); }
+
+.style-tokens {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 10px;
+}
+.style-token {
+  padding: 10px 14px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  font-size: 0.8rem;
+}
+.style-token-type {
+  font-size: 0.68rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 4px;
+}
+.style-token-type.text { color: var(--accent); }
+.style-token-type.fill { color: var(--green); }
+.style-token-type.effect { color: var(--pink); }
+.style-token-type.grid { color: var(--cyan); }
+.style-token-name { color: var(--text); font-weight: 500; }
+.style-token-desc { color: var(--text-faint); font-size: 0.72rem; margin-top: 2px; }
+
+.ds-score-card {
+  background: linear-gradient(135deg, rgba(99,102,241,0.1), rgba(16,185,129,0.08));
+  border: 1px solid var(--accent);
+  border-radius: var(--radius-lg);
+  padding: 24px;
+  text-align: center;
+  margin-bottom: 20px;
+}
+.ds-score-value {
+  font-size: 3.5rem;
+  font-weight: 700;
+  font-family: var(--mono);
+  background: linear-gradient(135deg, var(--accent), var(--green));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  line-height: 1;
+}
+.ds-score-label {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  margin-top: 4px;
+}
+.ds-score-sub {
+  font-size: 0.78rem;
+  color: var(--text-faint);
+  margin-top: 8px;
+}
+
+/* ===== HEALTH ALERTS ===== */
+.alert-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border);
+}
+.alert-item:last-child { border-bottom: none; }
+.alert-name {
+  flex: 1;
+  font-size: 0.82rem;
+  font-weight: 500;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.alert-score {
+  font-family: var(--mono);
+  font-size: 0.8rem;
+  font-weight: 600;
+  width: 36px;
+  text-align: right;
+}
+.alert-issue {
+  font-size: 0.72rem;
+  color: var(--text-faint);
+  flex-shrink: 0;
+}
+
+/* ===== SPARKLINE ===== */
+.sparkline-cell { width: 100px; height: 28px; }
+.sparkline-cell canvas { width: 100% !important; height: 100% !important; }
+
+/* ===== EXPAND CHART ===== */
+.expand-chart-wrap { width: 100%; height: 180px; margin-top: 8px; }
+
+/* ===== FOOTER ===== */
+.footer {
+  text-align: center;
+  padding: 20px 24px;
+  border-top: 1px solid var(--border);
+  font-size: 0.75rem;
+  color: var(--text-faint);
+}
+.footer a { color: var(--text-muted); text-decoration: none; }
+.footer a:hover { color: var(--accent); }
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 1200px) {
+  .kpi-row { grid-template-columns: repeat(3, 1fr); }
+}
+@media (max-width: 900px) {
+  .kpi-row { grid-template-columns: repeat(2, 1fr); }
+  .row-2 { grid-template-columns: 1fr; }
+  .header { flex-direction: column; gap: 8px; align-items: flex-start; }
+  .tabs { overflow-x: auto; }
+  .main { padding: 16px; }
+}
+@media (max-width: 600px) {
+  .kpi-row { grid-template-columns: 1fr; }
+  html { font-size: 13px; }
+}
+
+/* ===== LOADING ===== */
+.loading-state {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  color: var(--text-faint);
+  font-size: 0.9rem;
+}
+.spinner {
+  width: 20px; height: 20px;
+  border: 2px solid var(--border);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  margin-right: 10px;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ===== MISC ===== */
+.mono { font-family: var(--mono); }
+.text-muted { color: var(--text-muted); }
+.text-faint { color: var(--text-faint); }
+.text-accent { color: var(--accent); }
+.text-green { color: var(--green); }
+.text-amber { color: var(--amber); }
+.text-red { color: var(--red); }
+.mt-12 { margin-top: 12px; }
+.mt-20 { margin-top: 20px; }
+.mb-12 { margin-bottom: 12px; }
+.mb-20 { margin-bottom: 20px; }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header class="header">
+  <div class="header-left">
+    <div class="logo">
+      <svg viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect width="28" height="28" rx="6" fill="#6366f1" fill-opacity="0.15"/>
+        <path d="M7 9h6v6H7V9Z" fill="#6366f1"/>
+        <path d="M15 9h6v6h-6V9Z" fill="#6366f1" fill-opacity="0.6"/>
+        <path d="M7 17h6v2H7v-2Z" fill="#6366f1" fill-opacity="0.4"/>
+        <path d="M15 17h6v2h-6v-2Z" fill="#6366f1" fill-opacity="0.25"/>
+      </svg>
+      <span>Spacekayak <span class="logo-accent">Gravity</span></span>
+    </div>
+  </div>
+  <div class="header-meta" id="headerMeta">Loading…</div>
+</header>
+
+<!-- TABS -->
+<nav class="tabs" id="tabNav">
+  <button class="tab-btn active" data-tab="overview">Overview</button>
+  <button class="tab-btn" data-tab="designers">Designers</button>
+  <button class="tab-btn" data-tab="projects">Projects</button>
+  <button class="tab-btn" data-tab="assets">Assets</button>
+  <button class="tab-btn" data-tab="feed">Activity Feed</button>
+</nav>
+
+<!-- MAIN -->
+<main class="main" id="app">
+  <div class="loading-state" id="loadingState">
+    <div class="spinner"></div> Loading dashboard data…
+  </div>
+</main>
+
+<!-- FOOTER -->
+<footer class="footer">
+  <a href="https://www.perplexity.ai/computer" target="_blank" rel="noopener noreferrer">Created with Perplexity Computer</a>
+</footer>
+
+<script>
+// ============================================================
+// GRAVITY — Spacekayak Figma Management
+// ============================================================
+
+let DATA = null;
+const COLORS = {
+  accent: '#6366f1',
+  accentRgb: '99,102,241',
+  green: '#10b981',
+  greenRgb: '16,185,129',
+  amber: '#f59e0b',
+  amberRgb: '245,158,11',
+  red: '#ef4444',
+  cyan: '#06b6d4',
+  pink: '#ec4899',
+  card: '#1a1a24',
+  border: '#24243a',
+  textMuted: '#8b8ba3',
+  textFaint: '#5b5b73',
+  text: '#e4e4ed',
+  bg: '#0f0f14',
+};
+
+const AVATAR_COLORS = [
+  '#6366f1','#10b981','#f59e0b','#ef4444','#06b6d4','#ec4899',
+  '#8b5cf6','#14b8a6','#f97316','#a855f7','#3b82f6','#22c55e'
+];
+
+function avatarColor(name) {
+  let h = 0;
+  for (let i = 0; i < name.length; i++) h = name.charCodeAt(i) + ((h << 5) - h);
+  return AVATAR_COLORS[Math.abs(h) % AVATAR_COLORS.length];
+}
+
+function initials(name) {
+  const parts = name.trim().split(/\s+/);
+  if (parts.length === 1) return parts[0].substring(0,2).toUpperCase();
+  return (parts[0][0] + parts[parts.length-1][0]).toUpperCase();
+}
+
+function healthBadge(score) {
+  if (score >= 80) return `<span class="badge badge-green">${score}</span>`;
+  if (score >= 50) return `<span class="badge badge-amber">${score}</span>`;
+  return `<span class="badge badge-red">${score}</span>`;
+}
+
+function healthColor(score) {
+  if (score >= 80) return COLORS.green;
+  if (score >= 50) return COLORS.amber;
+  return COLORS.red;
+}
+
+function formatDate(d) {
+  if (!d) return '—';
+  const dt = new Date(d);
+  return dt.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+}
+
+function formatMonth(m) {
+  const [y, mo] = m.split('-');
+  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  return months[parseInt(mo)-1] + ' ' + y.slice(2);
+}
+
+// ============================================================
+// CHART.JS DEFAULTS
+// ============================================================
+Chart.defaults.color = COLORS.textMuted;
+Chart.defaults.borderColor = COLORS.border;
+Chart.defaults.font.family = "'Inter', sans-serif";
+Chart.defaults.font.size = 11;
+Chart.defaults.plugins.legend.labels.boxWidth = 12;
+Chart.defaults.plugins.legend.labels.padding = 14;
+Chart.defaults.plugins.tooltip.backgroundColor = '#1a1a24';
+Chart.defaults.plugins.tooltip.borderColor = '#24243a';
+Chart.defaults.plugins.tooltip.borderWidth = 1;
+Chart.defaults.plugins.tooltip.titleColor = '#e4e4ed';
+Chart.defaults.plugins.tooltip.bodyColor = '#8b8ba3';
+Chart.defaults.plugins.tooltip.padding = 10;
+Chart.defaults.plugins.tooltip.cornerRadius = 6;
+Chart.defaults.plugins.tooltip.titleFont = { weight: '600' };
+Chart.defaults.scale.grid = { color: 'rgba(36,36,58,0.6)' };
+
+// ============================================================
+// DATA LOAD
+// ============================================================
+async function loadData() {
+  const resp = await fetch('data.json');
+  DATA = await resp.json();
+  document.getElementById('loadingState').style.display = 'none';
+  document.getElementById('headerMeta').textContent = 
+    `Generated ${formatDate(DATA.summary.generated_at)} · ${DATA.summary.total_projects} projects · ${DATA.summary.total_files} files`;
+  renderAllTabs();
+  initTabNav();
+}
+
+// ============================================================
+// TAB NAVIGATION
+// ============================================================
+function initTabNav() {
+  const btns = document.querySelectorAll('.tab-btn');
+  btns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      btns.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      const tab = btn.dataset.tab;
+      document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+      document.getElementById('tab-' + tab).classList.add('active');
+      // Resize charts on tab switch
+      window.dispatchEvent(new Event('resize'));
+    });
+  });
+}
+
+// ============================================================
+// RENDER ALL
+// ============================================================
+function renderAllTabs() {
+  const app = document.getElementById('app');
+  app.innerHTML = `
+    <div class="tab-content active" id="tab-overview">${renderOverview()}</div>
+    <div class="tab-content" id="tab-designers">${renderDesigners()}</div>
+    <div class="tab-content" id="tab-projects">${renderProjects()}</div>
+    <div class="tab-content" id="tab-assets">${renderAssets()}</div>
+    <div class="tab-content" id="tab-feed">${renderFeed()}</div>
+  `;
+  initOverviewCharts();
+  initOverviewSearch();
+  initDesignerTab();
+  initProjectsTab();
+  initAssetsTab();
+  initFeedTab();
+}
+
+// ============================================================
+// TAB 1: OVERVIEW
+// ============================================================
+function renderOverview() {
+  const s = DATA.summary;
+  // Compute avg health
+  const scores = DATA.projects.map(p => p.health_score);
+  const avgHealth = Math.round(scores.reduce((a,b) => a+b, 0) / scores.length);
+
+  // Health alerts
+  const alerts = DATA.projects.filter(p => p.health_score < 60)
+    .sort((a,b) => a.health_score - b.health_score)
+    .slice(0, 15);
+
+  return `
+    <!-- KPI ROW -->
+    <div class="kpi-row">
+      <div class="kpi-card">
+        <div class="kpi-header"><span class="kpi-label">Total Projects</span><div class="kpi-icon blue">📁</div></div>
+        <div class="kpi-value">${s.total_projects}</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-header"><span class="kpi-label">Total Files</span><div class="kpi-icon blue">📄</div></div>
+        <div class="kpi-value">${s.total_files}</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-header"><span class="kpi-label">Active Files</span><div class="kpi-icon green">✓</div></div>
+        <div class="kpi-value text-green">${s.active_files}</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-header"><span class="kpi-label">Stale Files</span><div class="kpi-icon amber">⏱</div></div>
+        <div class="kpi-value text-amber">${s.stale_files}</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-header"><span class="kpi-label">Designers</span><div class="kpi-icon blue">👥</div></div>
+        <div class="kpi-value text-accent">${s.total_designers}</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-header"><span class="kpi-label">Health Score</span><div class="kpi-icon ${avgHealth >= 80 ? 'green' : avgHealth >= 50 ? 'amber' : 'red'}">❤</div></div>
+        <div class="kpi-value" style="color:${healthColor(avgHealth)}">${avgHealth}</div>
+      </div>
+    </div>
+
+    <!-- ROW 2: CHARTS -->
+    <div class="row-2">
+      <div class="card">
+        <div class="card-head"><span class="card-title">Monthly Activity Timeline</span></div>
+        <div class="card-body"><canvas id="chartTimeline" height="240"></canvas></div>
+      </div>
+      <div class="card">
+        <div class="card-head"><span class="card-title">File Type Breakdown</span></div>
+        <div class="card-body"><canvas id="chartFileTypes" height="240"></canvas></div>
+      </div>
+    </div>
+
+    <!-- ROW 3: CATEGORY + ALERTS -->
+    <div class="row-2">
+      <div class="card">
+        <div class="card-head"><span class="card-title">Category Breakdown</span></div>
+        <div class="card-body"><canvas id="chartCategories" height="220"></canvas></div>
+      </div>
+      <div class="card">
+        <div class="card-head"><span class="card-title">Health Alerts</span><span class="text-faint" style="font-size:0.75rem">${alerts.length} projects below 60</span></div>
+        <div class="card-body" style="max-height:300px;overflow-y:auto">
+          ${alerts.length === 0 ? '<div class="text-muted" style="padding:20px;text-align:center">All projects healthy!</div>' :
+            alerts.map(a => `
+              <div class="alert-item">
+                <span class="alert-name">${a.name}</span>
+                <span class="alert-score" style="color:${healthColor(a.health_score)}">${a.health_score}</span>
+                <span class="alert-issue">${a.stale_files} stale / ${a.file_count} files</span>
+              </div>
+            `).join('')}
+        </div>
+      </div>
+    </div>
+
+    <!-- ROW 4: SEARCH -->
+    <div class="row-full">
+      <div class="card">
+        <div class="card-head"><span class="card-title">Search Projects & Files</span></div>
+        <div class="card-body">
+          <div class="search-wrap">
+            <span class="search-icon">🔍</span>
+            <input type="text" class="search-input" id="overviewSearch" placeholder="Search by project name…">
+          </div>
+          <div id="overviewSearchResults" class="search-results">
+            <div class="table-wrap"><table id="overviewSearchTable">
+              <thead><tr>
+                <th>Project</th><th>Category</th><th>Files</th><th>Stale</th><th>Health</th><th>Last Activity</th>
+              </tr></thead>
+              <tbody></tbody>
+            </table></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function initOverviewCharts() {
+  // Timeline
+  const tlLabels = DATA.monthly_timeline.map(t => formatMonth(t.month));
+  const tlData = DATA.monthly_timeline.map(t => t.files);
+  const tlCtx = document.getElementById('chartTimeline');
+  if (tlCtx) {
+    const ctx = tlCtx.getContext('2d');
+    const gradient = ctx.createLinearGradient(0, 0, 0, 240);
+    gradient.addColorStop(0, `rgba(${COLORS.accentRgb}, 0.3)`);
+    gradient.addColorStop(1, `rgba(${COLORS.accentRgb}, 0.02)`);
+    new Chart(tlCtx, {
+      type: 'line',
+      data: {
+        labels: tlLabels,
+        datasets: [{
+          label: 'Files Modified',
+          data: tlData,
+          borderColor: COLORS.accent,
+          backgroundColor: gradient,
+          fill: true,
+          tension: 0.4,
+          pointRadius: 2,
+          pointHoverRadius: 5,
+          pointBackgroundColor: COLORS.accent,
+          borderWidth: 2
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: {
+          x: { ticks: { maxTicksAutoSkip: true, maxRotation: 45, font: { size: 10 } } },
+          y: { beginAtZero: true, ticks: { font: { family: "'JetBrains Mono'" } } }
+        }
+      }
+    });
+  }
+
+  // Doughnut
+  const ftCtx = document.getElementById('chartFileTypes');
+  if (ftCtx) {
+    const doughnutColors = ['#6366f1','#10b981','#f59e0b','#06b6d4','#ec4899','#8b5cf6','#3b82f6','#14b8a6','#f97316'];
+    new Chart(ftCtx, {
+      type: 'doughnut',
+      data: {
+        labels: DATA.file_types.map(f => f.type),
+        datasets: [{
+          data: DATA.file_types.map(f => f.count),
+          backgroundColor: doughnutColors,
+          borderColor: COLORS.card,
+          borderWidth: 2
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        cutout: '55%',
+        plugins: {
+          legend: { position: 'right', labels: { padding: 10, font: { size: 11 } } }
+        }
+      }
+    });
+  }
+
+  // Category horizontal bar
+  const catCtx = document.getElementById('chartCategories');
+  if (catCtx) {
+    new Chart(catCtx, {
+      type: 'bar',
+      data: {
+        labels: DATA.categories.map(c => c.category),
+        datasets: [
+          {
+            label: 'Active',
+            data: DATA.categories.map(c => c.files - c.stale),
+            backgroundColor: `rgba(${COLORS.greenRgb}, 0.7)`,
+            borderRadius: 3
+          },
+          {
+            label: 'Stale',
+            data: DATA.categories.map(c => c.stale),
+            backgroundColor: `rgba(${COLORS.amberRgb}, 0.7)`,
+            borderRadius: 3
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        indexAxis: 'y',
+        plugins: { legend: { position: 'top' } },
+        scales: {
+          x: { stacked: true, ticks: { font: { family: "'JetBrains Mono'" } } },
+          y: { stacked: true }
+        }
+      }
+    });
+  }
+}
+
+function initOverviewSearch() {
+  const input = document.getElementById('overviewSearch');
+  const results = document.getElementById('overviewSearchResults');
+  const tbody = document.querySelector('#overviewSearchTable tbody');
+  if (!input) return;
+  input.addEventListener('input', () => {
+    const q = input.value.trim().toLowerCase();
+    if (q.length < 2) {
+      results.classList.remove('has-results');
+      return;
+    }
+    const matched = DATA.projects.filter(p => p.name.toLowerCase().includes(q)).slice(0, 30);
+    if (matched.length === 0) {
+      results.classList.remove('has-results');
+      return;
+    }
+    results.classList.add('has-results');
+    tbody.innerHTML = matched.map(p => `
+      <tr>
+        <td>${p.name}</td>
+        <td>${p.category}</td>
+        <td class="mono">${p.file_count}</td>
+        <td class="mono">${p.stale_files}</td>
+        <td>${healthBadge(p.health_score)}</td>
+        <td class="mono text-faint">${formatDate(p.last_activity)}</td>
+      </tr>
+    `).join('');
+  });
+}
+
+// ============================================================
+// TAB 2: DESIGNERS
+// ============================================================
+function renderDesigners() {
+  const sorted = [...DATA.designers].sort((a,b) => b.total_edits - a.total_edits);
+  // Find all months across all designers for heatmap
+  const allMonths = new Set();
+  DATA.designers.forEach(d => d.monthly.forEach(m => allMonths.add(m.month)));
+  const monthList = [...allMonths].sort();
+
+  return `
+    <!-- LEADERBOARD -->
+    <div class="card mb-20">
+      <div class="card-head"><span class="card-title">Designer Leaderboard</span><span class="text-faint" style="font-size:0.75rem">${sorted.length} designers</span></div>
+      <div class="card-body" style="padding:0">
+        <div class="table-wrap">
+          <table id="designerTable">
+            <thead><tr>
+              <th data-sort="rank"># <span class="sort-arrow">▼</span></th>
+              <th data-sort="name">Name <span class="sort-arrow">▼</span></th>
+              <th data-sort="edits">Total Edits <span class="sort-arrow">▼</span></th>
+              <th data-sort="files">Files Touched <span class="sort-arrow">▼</span></th>
+              <th data-sort="projects">Projects <span class="sort-arrow">▼</span></th>
+              <th>Activity</th>
+            </tr></thead>
+            <tbody id="designerTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- HEATMAP -->
+    <div class="card">
+      <div class="card-head"><span class="card-title">Designer × Month Activity Heatmap</span></div>
+      <div class="card-body">
+        <div id="heatmapContainer"></div>
+      </div>
+    </div>
+  `;
+}
+
+let designerSortCol = 'edits';
+let designerSortAsc = false;
+let sparklineCharts = {};
+
+function renderDesignerTable() {
+  const sorted = [...DATA.designers].sort((a,b) => {
+    let va, vb;
+    switch(designerSortCol) {
+      case 'name': va = a.name; vb = b.name; return designerSortAsc ? va.localeCompare(vb) : vb.localeCompare(va);
+      case 'edits': va = a.total_edits; vb = b.total_edits; break;
+      case 'files': va = a.files_touched; vb = b.files_touched; break;
+      case 'projects': va = a.projects_touched; vb = b.projects_touched; break;
+      default: va = a.total_edits; vb = b.total_edits;
+    }
+    return designerSortAsc ? va - vb : vb - va;
+  });
+
+  const tbody = document.getElementById('designerTableBody');
+  if (!tbody) return;
+  tbody.innerHTML = '';
+  
+  // Destroy old sparkline charts
+  Object.values(sparklineCharts).forEach(c => c.destroy());
+  sparklineCharts = {};
+
+  sorted.forEach((d, i) => {
+    const rank = i + 1;
+    const tr = document.createElement('tr');
+    tr.classList.add('expandable');
+    tr.innerHTML = `
+      <td class="mono text-faint">${rank}</td>
+      <td><div style="display:flex;align-items:center;gap:8px">
+        <div class="feed-avatar" style="background:${avatarColor(d.name)};width:28px;height:28px;font-size:0.68rem">${initials(d.name)}</div>
+        ${d.name}
+      </div></td>
+      <td class="mono">${d.total_edits}</td>
+      <td class="mono">${d.files_touched}</td>
+      <td class="mono">${d.projects_touched}</td>
+      <td><div class="sparkline-cell"><canvas id="spark-${i}"></canvas></div></td>
+    `;
+    
+    const expandTr = document.createElement('tr');
+    expandTr.classList.add('expand-row');
+    expandTr.style.display = 'none';
+    expandTr.innerHTML = `<td colspan="6"><div class="expand-content"><div class="expand-chart-wrap"><canvas id="expandChart-${i}"></canvas></div></div></td>`;
+    
+    tr.addEventListener('click', () => {
+      const isOpen = expandTr.style.display !== 'none';
+      // Close all
+      tbody.querySelectorAll('.expand-row').forEach(er => er.style.display = 'none');
+      tbody.querySelectorAll('.expandable').forEach(er => er.classList.remove('expanded'));
+      if (!isOpen) {
+        expandTr.style.display = '';
+        tr.classList.add('expanded');
+        renderExpandChart(i, d);
+      }
+    });
+    
+    tbody.appendChild(tr);
+    tbody.appendChild(expandTr);
+
+    // Sparkline
+    setTimeout(() => {
+      const sparkEl = document.getElementById(`spark-${i}`);
+      if (!sparkEl) return;
+      const monthlyData = d.monthly.sort((a,b) => a.month.localeCompare(b.month));
+      sparklineCharts[`spark-${i}`] = new Chart(sparkEl, {
+        type: 'line',
+        data: {
+          labels: monthlyData.map(m => m.month),
+          datasets: [{
+            data: monthlyData.map(m => m.edits),
+            borderColor: COLORS.accent,
+            borderWidth: 1.5,
+            pointRadius: 0,
+            tension: 0.4,
+            fill: false
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false }, tooltip: { enabled: false } },
+          scales: {
+            x: { display: false },
+            y: { display: false }
+          }
+        }
+      });
+    }, 50);
+  });
+}
+
+let expandCharts = {};
+function renderExpandChart(idx, designer) {
+  const canvasId = `expandChart-${idx}`;
+  if (expandCharts[canvasId]) expandCharts[canvasId].destroy();
+  const el = document.getElementById(canvasId);
+  if (!el) return;
+  const monthly = designer.monthly.sort((a,b) => a.month.localeCompare(b.month));
+  expandCharts[canvasId] = new Chart(el, {
+    type: 'bar',
+    data: {
+      labels: monthly.map(m => formatMonth(m.month)),
+      datasets: [{
+        label: 'Edits',
+        data: monthly.map(m => m.edits),
+        backgroundColor: `rgba(${COLORS.accentRgb}, 0.6)`,
+        borderRadius: 4
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        y: { beginAtZero: true, ticks: { font: { family: "'JetBrains Mono'" } } }
+      }
+    }
+  });
+}
+
+function initDesignerTab() {
+  renderDesignerTable();
+  renderHeatmap();
+
+  // Sort handlers
+  document.querySelectorAll('#designerTable th[data-sort]').forEach(th => {
+    th.addEventListener('click', () => {
+      const col = th.dataset.sort;
+      if (designerSortCol === col) designerSortAsc = !designerSortAsc;
+      else { designerSortCol = col; designerSortAsc = false; }
+      // Update header styling
+      document.querySelectorAll('#designerTable th').forEach(h => h.classList.remove('sorted'));
+      th.classList.add('sorted');
+      renderDesignerTable();
+    });
+  });
+}
+
+function renderHeatmap() {
+  const container = document.getElementById('heatmapContainer');
+  if (!container) return;
+  
+  const allMonths = new Set();
+  DATA.designers.forEach(d => d.monthly.forEach(m => allMonths.add(m.month)));
+  const monthList = [...allMonths].sort();
+  
+  // Find max edits for color scaling
+  let maxEdits = 0;
+  DATA.designers.forEach(d => d.monthly.forEach(m => { if (m.edits > maxEdits) maxEdits = m.edits; }));
+  
+  const sorted = [...DATA.designers].sort((a,b) => b.total_edits - a.total_edits);
+  const cols = monthList.length + 1; // +1 for label column
+
+  let html = `<div class="heatmap-grid" style="grid-template-columns: 120px repeat(${monthList.length}, 1fr);">`;
+  // Header row
+  html += `<div></div>`;
+  monthList.forEach(m => {
+    html += `<div class="heatmap-month-label">${formatMonth(m)}</div>`;
+  });
+  
+  sorted.forEach(d => {
+    const monthMap = {};
+    d.monthly.forEach(m => monthMap[m.month] = m.edits);
+    
+    html += `<div class="heatmap-label">${d.name}</div>`;
+    monthList.forEach(m => {
+      const val = monthMap[m] || 0;
+      const intensity = val > 0 ? Math.max(0.15, val / maxEdits) : 0;
+      const bg = val > 0 ? `rgba(${COLORS.accentRgb}, ${intensity})` : 'var(--border)';
+      html += `<div class="heatmap-cell" style="background:${bg}" title="${d.name}: ${val} edits in ${formatMonth(m)}"></div>`;
+    });
+  });
+  
+  html += '</div>';
+  container.innerHTML = html;
+}
+
+// ============================================================
+// TAB 3: PROJECTS
+// ============================================================
+let projectSortCol = 'health';
+let projectSortAsc = true;
+let projectFilterCat = 'All';
+let projectSearchQ = '';
+
+function renderProjects() {
+  const categories = ['All', ...DATA.categories.map(c => c.category)];
+  return `
+    <div class="card">
+      <div class="card-head"><span class="card-title">All Projects</span><span class="text-faint" style="font-size:0.75rem">${DATA.projects.length} projects</span></div>
+      <div class="card-body">
+        <div class="filter-bar">
+          ${categories.map(c => `<button class="filter-btn project-cat-btn ${c === 'All' ? 'active' : ''}" data-cat="${c}">${c}</button>`).join('')}
+          <div style="flex:1"></div>
+          <input type="text" class="search-input" id="projectSearch" placeholder="Filter projects…" style="width:260px;padding-left:14px">
+        </div>
+        <div class="table-wrap">
+          <table id="projectTable">
+            <thead><tr>
+              <th data-sort="name">Project <span class="sort-arrow">▼</span></th>
+              <th data-sort="category">Category <span class="sort-arrow">▼</span></th>
+              <th data-sort="files">Files <span class="sort-arrow">▼</span></th>
+              <th data-sort="stale">Stale Files <span class="sort-arrow">▼</span></th>
+              <th data-sort="activity">Last Activity <span class="sort-arrow">▼</span></th>
+              <th data-sort="health" class="sorted">Health <span class="sort-arrow">▼</span></th>
+            </tr></thead>
+            <tbody id="projectTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function renderProjectTable() {
+  let filtered = DATA.projects.filter(p => {
+    if (projectFilterCat !== 'All' && p.category !== projectFilterCat) return false;
+    if (projectSearchQ && !p.name.toLowerCase().includes(projectSearchQ)) return false;
+    return true;
+  });
+  
+  filtered.sort((a,b) => {
+    let va, vb;
+    switch(projectSortCol) {
+      case 'name': va = a.name; vb = b.name; return projectSortAsc ? va.localeCompare(vb) : vb.localeCompare(va);
+      case 'category': va = a.category; vb = b.category; return projectSortAsc ? va.localeCompare(vb) : vb.localeCompare(va);
+      case 'files': va = a.file_count; vb = b.file_count; break;
+      case 'stale': va = a.stale_files; vb = b.stale_files; break;
+      case 'activity': va = a.last_activity || ''; vb = b.last_activity || ''; return projectSortAsc ? va.localeCompare(vb) : vb.localeCompare(va);
+      case 'health': va = a.health_score; vb = b.health_score; break;
+      default: va = a.health_score; vb = b.health_score;
+    }
+    return projectSortAsc ? va - vb : vb - va;
+  });
+
+  const tbody = document.getElementById('projectTableBody');
+  if (!tbody) return;
+  tbody.innerHTML = filtered.map(p => `
+    <tr>
+      <td style="font-weight:500">${p.name}</td>
+      <td class="text-muted">${p.category}</td>
+      <td class="mono">${p.file_count}</td>
+      <td class="mono ${p.stale_files > 0 ? 'text-amber' : ''}">${p.stale_files}</td>
+      <td class="mono text-faint">${formatDate(p.last_activity)}</td>
+      <td>${healthBadge(p.health_score)}</td>
+    </tr>
+  `).join('');
+}
+
+function initProjectsTab() {
+  renderProjectTable();
+  
+  // Category filters
+  document.querySelectorAll('.project-cat-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.project-cat-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      projectFilterCat = btn.dataset.cat;
+      renderProjectTable();
+    });
+  });
+
+  // Search
+  const searchInput = document.getElementById('projectSearch');
+  if (searchInput) {
+    searchInput.addEventListener('input', () => {
+      projectSearchQ = searchInput.value.trim().toLowerCase();
+      renderProjectTable();
+    });
+  }
+
+  // Sort
+  document.querySelectorAll('#projectTable th[data-sort]').forEach(th => {
+    th.addEventListener('click', () => {
+      const col = th.dataset.sort;
+      if (projectSortCol === col) projectSortAsc = !projectSortAsc;
+      else { projectSortCol = col; projectSortAsc = col === 'name' || col === 'category'; }
+      document.querySelectorAll('#projectTable th').forEach(h => h.classList.remove('sorted'));
+      th.classList.add('sorted');
+      renderProjectTable();
+    });
+  });
+}
+
+// ============================================================
+// TAB 4: ASSETS
+// ============================================================
+function renderAssets() {
+  // Compute design system score
+  const totalComponents = DATA.components.reduce((s,f) => s + f.component_count, 0);
+  const totalStyles = DATA.components.reduce((s,f) => s + f.style_count, 0);
+  const filesWithComponents = DATA.components.filter(f => f.component_count > 0).length;
+  const dsScore = Math.min(100, Math.round(
+    (filesWithComponents / Math.max(DATA.components.length, 1)) * 40 +
+    Math.min(totalComponents, 100) / 100 * 30 +
+    Math.min(totalStyles, 80) / 80 * 30
+  ));
+
+  // Collect all styles grouped by type
+  const styleGroups = { TEXT: [], FILL: [], EFFECT: [], GRID: [] };
+  DATA.components.forEach(f => {
+    (f.styles || []).forEach(s => {
+      if (styleGroups[s.style_type]) {
+        styleGroups[s.style_type].push({ ...s, file: f.file });
+      }
+    });
+  });
+
+  return `
+    <div class="ds-score-card">
+      <div class="ds-score-value">${dsScore}/100</div>
+      <div class="ds-score-label">Design System Score</div>
+      <div class="ds-score-sub">${totalComponents} components · ${totalStyles} styles · ${filesWithComponents} files with published components</div>
+    </div>
+
+    <div class="row-2">
+      <div>
+        <h3 style="font-size:0.95rem;font-weight:600;margin-bottom:12px">Component Library</h3>
+        <div id="componentGroups">
+          ${DATA.components.map((f, fi) => `
+            <div class="component-group">
+              <div class="component-group-head" data-group="${fi}">
+                <span class="component-group-title">${f.file}</span>
+                <span class="component-group-count">${f.component_count} components · ${f.style_count} styles</span>
+              </div>
+              <div class="component-list" id="compList-${fi}">
+                ${f.components.map(c => {
+                  let tag = 'misc';
+                  const name = (c.name + ' ' + (c.containing_frame || '')).toLowerCase();
+                  if (name.includes('button') || name.includes('btn') || name.includes('cta')) tag = 'button';
+                  else if (name.includes('card')) tag = 'card';
+                  else if (name.includes('input') || name.includes('field') || name.includes('form')) tag = 'input';
+                  else if (name.includes('icon') || name.includes('service icon')) tag = 'icon';
+                  else if (name.includes('state') || name.includes('variant') || name.includes('property') || name.includes('default') || name.includes('hover') || name.includes('open')) tag = 'state';
+                  return `<div class="component-item">
+                    <span class="comp-tag ${tag}">${tag}</span>
+                    <span style="font-size:0.82rem">${c.name}</span>
+                    ${c.containing_frame ? `<span class="text-faint" style="font-size:0.72rem">in ${c.containing_frame}</span>` : ''}
+                  </div>`;
+                }).join('')}
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+
+      <div>
+        <h3 style="font-size:0.95rem;font-weight:600;margin-bottom:12px">Style Tokens</h3>
+        ${Object.entries(styleGroups).map(([type, styles]) => {
+          if (styles.length === 0) return '';
+          return `
+            <h4 style="font-size:0.82rem;font-weight:600;color:var(--text-muted);margin:16px 0 8px;text-transform:uppercase;letter-spacing:0.05em">${type} (${styles.length})</h4>
+            <div class="style-tokens">
+              ${styles.map(s => `
+                <div class="style-token">
+                  <div class="style-token-type ${type.toLowerCase()}">${type}</div>
+                  <div class="style-token-name">${s.name}</div>
+                  ${s.description ? `<div class="style-token-desc">${s.description}</div>` : ''}
+                  <div class="style-token-desc">from ${s.file}</div>
+                </div>
+              `).join('')}
+            </div>
+          `;
+        }).join('')}
+      </div>
+    </div>
+  `;
+}
+
+function initAssetsTab() {
+  document.querySelectorAll('.component-group-head').forEach(head => {
+    head.addEventListener('click', () => {
+      const idx = head.dataset.group;
+      const list = document.getElementById(`compList-${idx}`);
+      if (list) list.classList.toggle('open');
+    });
+  });
+}
+
+// ============================================================
+// TAB 5: ACTIVITY FEED
+// ============================================================
+function renderFeed() {
+  return `
+    <div class="card">
+      <div class="card-head">
+        <span class="card-title">Recent Activity</span>
+        <span class="text-faint" style="font-size:0.75rem">${DATA.recent_feed.length} recent changes</span>
+      </div>
+      <div class="card-body">
+        <div class="search-wrap" style="margin-bottom:16px">
+          <span class="search-icon">🔍</span>
+          <input type="text" class="search-input" id="feedSearch" placeholder="Filter by designer name…">
+        </div>
+        <div class="feed-list" id="feedList"></div>
+      </div>
+    </div>
+  `;
+}
+
+function renderFeedItems(filter = '') {
+  const list = document.getElementById('feedList');
+  if (!list) return;
+  const filtered = DATA.recent_feed.filter(f => {
+    if (filter && !f.user.toLowerCase().includes(filter)) return false;
+    return true;
+  });
+  list.innerHTML = filtered.map(f => `
+    <div class="feed-item">
+      <div class="feed-avatar" style="background:${avatarColor(f.user)}">${initials(f.user)}</div>
+      <div class="feed-body">
+        <div class="feed-title"><strong>${f.user}</strong> modified <strong>${f.file}</strong> in ${f.project}${f.label ? `<span class="feed-label">${f.label}</span>` : ''}</div>
+        <div class="feed-meta">${formatDate(f.date)}</div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function initFeedTab() {
+  renderFeedItems();
+  const searchInput = document.getElementById('feedSearch');
+  if (searchInput) {
+    searchInput.addEventListener('input', () => {
+      renderFeedItems(searchInput.value.trim().toLowerCase());
+    });
+  }
+}
+
+// ============================================================
+// INIT
+// ============================================================
+loadData();
+</script>
+</body>
+</html>
