@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<!--
+   ______                            __
+  / ____/___  ____ ___  ____  __  __/ /____  _____
+ / /   / __ \/ __ `__ \/ __ \/ / / / __/ _ \/ ___/
+/ /___/ /_/ / / / / / / /_/ / /_/ / /_/  __/ /
+\____/\____/_/ /_/ /_/ .___/\__,_/\__/\___/_/
+                    /_/
+        Created with Perplexity Computer
+        https://www.perplexity.ai/computer
+-->
+<meta name="generator" content="Perplexity Computer">
+<meta name="author" content="Perplexity Computer">
+<meta property="og:see_also" content="https://www.perplexity.ai/computer">
+<link rel="author" href="https://www.perplexity.ai/computer">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Bengaluru Canopy</title>
+<meta name="description" content="An interactive timeline of Bengaluru's mapped green infrastructure — 8,423 trees, 3,193 parks, and 4,288 lakes from 2008 to present.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<link rel="stylesheet" href="./style.css">
+</head>
+<body>
+
+<!-- Intro overlay -->
+<div id="intro">
+  <div class="intro-content">
+    <div class="intro-icon">
+      <svg width="56" height="56" viewBox="0 0 56 56" fill="none">
+        <circle cx="28" cy="28" r="26" stroke="currentColor" stroke-width="0.4" opacity="0.2" class="intro-ring"/>
+        <circle cx="28" cy="20" r="9" fill="none" stroke="currentColor" stroke-width="1" class="intro-crown"/>
+        <line x1="28" y1="29" x2="28" y2="46" stroke="currentColor" stroke-width="1.5" class="intro-trunk"/>
+        <line x1="21" y1="40" x2="28" y2="32" stroke="currentColor" stroke-width="0.8" class="intro-branch"/>
+        <line x1="35" y1="40" x2="28" y2="32" stroke="currentColor" stroke-width="0.8" class="intro-branch"/>
+      </svg>
+    </div>
+    <h1 class="intro-title">Bengaluru Canopy</h1>
+    <p class="intro-sub">Mapping the city's green pulse &middot; 2008 &ndash; Present</p>
+    <div class="intro-stats">
+      <span class="intro-stat"><em id="intro-trees">0</em> trees</span>
+      <span class="intro-divider">/</span>
+      <span class="intro-stat"><em id="intro-parks">0</em> parks</span>
+      <span class="intro-divider">/</span>
+      <span class="intro-stat"><em id="intro-lakes">0</em> lakes</span>
+    </div>
+    <div class="intro-loader">
+      <div class="intro-loader-bar" id="intro-bar"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Map -->
+<div id="map-container">
+  <div id="map"></div>
+
+  <!-- Top bar -->
+  <header id="header">
+    <div class="header-left">
+      <svg class="logo" width="24" height="24" viewBox="0 0 48 48" fill="none" aria-label="Bengaluru Canopy">
+        <circle cx="24" cy="18" r="8" fill="none" stroke="currentColor" stroke-width="1.5"/>
+        <line x1="24" y1="26" x2="24" y2="42" stroke="currentColor" stroke-width="2"/>
+        <line x1="18" y1="36" x2="24" y2="29" stroke="currentColor" stroke-width="1.2"/>
+        <line x1="30" y1="36" x2="24" y2="29" stroke="currentColor" stroke-width="1.2"/>
+      </svg>
+      <span class="header-title">Bengaluru Canopy</span>
+    </div>
+    <div class="header-right">
+      <div class="header-stat"><span class="hstat-val" id="h-trees">&mdash;</span><span class="hstat-lbl">trees</span></div>
+      <div class="header-stat"><span class="hstat-val" id="h-parks">&mdash;</span><span class="hstat-lbl">parks</span></div>
+      <div class="header-stat"><span class="hstat-val" id="h-lakes">&mdash;</span><span class="hstat-lbl">lakes</span></div>
+    </div>
+  </header>
+
+  <!-- Layer toggles (left) -->
+  <div id="layers">
+    <button class="layer-pill active" data-layer="trees">
+      <span class="pill-dot pill-trees"></span>Trees
+    </button>
+    <button class="layer-pill active" data-layer="parks">
+      <span class="pill-dot pill-parks"></span>Parks
+    </button>
+    <button class="layer-pill active" data-layer="water">
+      <span class="pill-dot pill-water"></span>Lakes
+    </button>
+  </div>
+
+  <!-- Historical timeline slider (bottom center) -->
+  <div id="time-panel">
+    <div class="time-label-row">
+      <span class="time-label">Mapped over time</span>
+      <div class="time-right">
+        <button id="time-play" class="time-play-btn" aria-label="Auto-play timeline" title="Auto-play timeline">
+          <svg class="play-icon" width="12" height="12" viewBox="0 0 12 12" fill="currentColor"><polygon points="2,0 11,6 2,12"/></svg>
+          <svg class="pause-icon" width="12" height="12" viewBox="0 0 12 12" fill="currentColor" style="display:none"><rect x="1" y="0" width="3.5" height="12"/><rect x="7.5" y="0" width="3.5" height="12"/></svg>
+        </button>
+        <span class="time-value" id="time-display">2026</span>
+      </div>
+    </div>
+    <!-- Mini sparkline chart -->
+    <canvas id="timeline-chart" width="400" height="36"></canvas>
+    <div class="slider-track">
+      <input type="range" id="time-slider" min="2008" max="2026" step="1" value="2026">
+      <div class="slider-ticks" id="slider-ticks"></div>
+    </div>
+    <!-- Cumulative counts -->
+    <div class="timeline-counts" id="timeline-counts">
+      <span class="tc-item"><span class="tc-dot tc-trees"></span><span class="tc-val" id="tc-trees">8,423</span></span>
+      <span class="tc-item"><span class="tc-dot tc-parks"></span><span class="tc-val" id="tc-parks">3,193</span></span>
+      <span class="tc-item"><span class="tc-dot tc-water"></span><span class="tc-val" id="tc-water">4,288</span></span>
+    </div>
+  </div>
+
+  <!-- Species legend (right) -->
+  <div id="legend">
+    <div class="legend-header">
+      <div class="legend-title">Species</div>
+      <button id="legend-toggle-all" class="legend-toggle" title="Toggle all">All</button>
+    </div>
+    <div id="legend-items"></div>
+  </div>
+
+  <!-- Detail card for clicked tree -->
+  <div id="detail-card" class="detail-card hidden">
+    <button id="detail-close" class="detail-close" aria-label="Close">&times;</button>
+    <div class="detail-dot" id="detail-dot"></div>
+    <div class="detail-info">
+      <div class="detail-species" id="detail-species"></div>
+      <div class="detail-coords" id="detail-coords"></div>
+      <div class="detail-year" id="detail-year"></div>
+    </div>
+  </div>
+
+  <!-- Source -->
+  <div id="source">
+    Data from <a href="https://www.openstreetmap.org" target="_blank" rel="noopener noreferrer">OpenStreetMap</a> via Overpass API &middot;
+    <a href="https://www.perplexity.ai/computer" target="_blank" rel="noopener noreferrer">Created with Perplexity Computer</a>
+  </div>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="./app.js"></script>
+</body>
+</html>
