@@ -1,7 +1,7 @@
 import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
-import cron from 'node-cron';
+
 import cookieParser from 'cookie-parser';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
@@ -116,10 +116,12 @@ app.get('/api/status', (req, res) => {
   const commentCt = db.prepare('SELECT COUNT(*) as n FROM figma_comments').get().n;
   const componentCt = db.prepare('SELECT COUNT(*) as n FROM figma_components').get().n;
 
+  const syncInterval = parseInt(getConfig('sync_interval') || process.env.SYNC_INTERVAL || '5', 10);
   res.json({
     configured,
     syncing: isSyncing(),
     lastSync: lastSync ? { completedAt: lastSync.completed_at, durationMs: lastSync.duration_ms, details: JSON.parse(lastSync.details || '{}') } : null,
+    syncInterval,
     counts: { files: fileCt, versions: versionCt, sessions: sessionCt, comments: commentCt, components: componentCt },
   });
 });
@@ -132,7 +134,7 @@ app.get('/api/config', (req, res) => {
   res.json({
     figma_team_id: getConfig('figma_team_id') || process.env.FIGMA_TEAM_ID || '',
     has_pat: !!(getConfig('figma_pat') || process.env.FIGMA_PAT),
-    sync_interval: getConfig('sync_interval') || process.env.SYNC_INTERVAL || '15',
+    sync_interval: getConfig('sync_interval') || process.env.SYNC_INTERVAL || '5',
   });
 });
 
@@ -303,7 +305,7 @@ app.get('/api/projects', (req, res) => {
   const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
 
   const projects = db.prepare(`
-    SELECT project_name, COUNT(*) as file_count, MAX(last_modified) as last_activity
+    SELECT project_name, MIN(project_id) as project_id, COUNT(*) as file_count, MAX(last_modified) as last_activity
     FROM figma_files
     WHERE project_name IS NOT NULL
     GROUP BY project_name
@@ -646,6 +648,39 @@ app.get('/api/files/:key/timeline', (req, res) => {
   `).all(key);
 
   res.json({ file, versions, sessions, comments, velocity });
+});
+
+// ──────────────────────────────────────────
+// API: Gallery — all files with thumbnails
+// ──────────────────────────────────────────
+
+app.get('/api/gallery', (req, res) => {
+  const db = getDb();
+  const { search, project, sort = 'last_modified', order = 'desc', limit = '100', offset = '0' } = req.query;
+
+  let sql = 'SELECT file_key, name, project_name, project_id, last_modified, thumbnail_url, version_count FROM figma_files WHERE 1=1';
+  const params = [];
+
+  if (search) {
+    sql += ' AND (name LIKE ? OR project_name LIKE ?)';
+    params.push(`%${search}%`, `%${search}%`);
+  }
+  if (project) {
+    sql += ' AND project_name = ?';
+    params.push(project);
+  }
+
+  const allowedSorts = ['last_modified', 'name', 'version_count'];
+  const sortCol = allowedSorts.includes(sort) ? sort : 'last_modified';
+  sql += ` ORDER BY ${sortCol} ${order === 'asc' ? 'ASC' : 'DESC'}`;
+  sql += ' LIMIT ? OFFSET ?';
+  params.push(parseInt(limit), parseInt(offset));
+
+  const files = db.prepare(sql).all(...params);
+  const total = db.prepare('SELECT COUNT(*) as n FROM figma_files').get().n;
+  const projectList = db.prepare('SELECT DISTINCT project_name FROM figma_files WHERE project_name IS NOT NULL ORDER BY project_name').all().map(r => r.project_name);
+
+  res.json({ files, total, projects: projectList });
 });
 
 app.get('/api/milestones', (req, res) => {
@@ -1487,13 +1522,14 @@ if (!process.env.VERCEL) {
   const pat = getConfig('figma_pat') || process.env.FIGMA_PAT;
   if (pat) setToken(pat);
 
-  const interval = parseInt(getConfig('sync_interval') || process.env.SYNC_INTERVAL || '15', 10);
-  cron.schedule(`*/${interval} * * * *`, () => {
-    console.log('[cron] Running scheduled sync');
-    fullSync().catch(err => console.error('[cron] Sync failed:', err));
-  });
+  const interval = parseInt(getConfig('sync_interval') || process.env.SYNC_INTERVAL || '5', 10);
+  const syncIntervalMs = interval * 60 * 1000;
+  setInterval(() => {
+    console.log('[auto-sync] Running scheduled sync');
+    fullSync().catch(err => console.error('[auto-sync] Sync failed:', err));
+  }, syncIntervalMs);
 
-  console.log(`[gravity] Sync scheduled every ${interval} minutes`);
+  console.log(`[gravity] Auto-sync every ${interval} minutes`);
 
   app.listen(PORT, () => {
     console.log(`[gravity] Server running at http://localhost:${PORT}`);

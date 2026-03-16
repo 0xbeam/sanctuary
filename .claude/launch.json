@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "gravity",
+      "runtimeExecutable": "/bin/bash",
+      "runtimeArgs": ["-c", "cd /Users/pluto/Downloads/Documents/sanctuary-parc/miniverse/gravity && node server/index.js"],
+      "port": 3847
+    }
+  ]
+}

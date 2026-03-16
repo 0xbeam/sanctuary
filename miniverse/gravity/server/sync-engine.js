@@ -56,20 +56,27 @@ export async function fullSync() {
     const allFiles = [];
     const changedFiles = [];
 
-    for (const proj of projects) {
-      try {
-        const files = await figma.getProjectFiles(proj.id);
-        for (const f of files) {
-          upsertFile.run(f.key, f.name, proj.name, String(proj.id), f.last_modified, f.thumbnail_url || null);
-          allFiles.push({ key: f.key, lastModified: f.last_modified });
-
-          if (!isIncremental || f.last_modified > lastSyncTime) {
-            changedFiles.push({ key: f.key, lastModified: f.last_modified });
+    // Batch projects in groups of 3 for parallel fetching
+    const BATCH_SIZE = 3;
+    for (let i = 0; i < projects.length; i += BATCH_SIZE) {
+      const batch = projects.slice(i, i + BATCH_SIZE);
+      const results = await Promise.allSettled(
+        batch.map(proj => figma.getProjectFiles(proj.id).then(files => ({ proj, files })))
+      );
+      for (const r of results) {
+        if (r.status === 'fulfilled') {
+          const { proj, files } = r.value;
+          for (const f of files) {
+            upsertFile.run(f.key, f.name, proj.name, String(proj.id), f.last_modified, f.thumbnail_url || null);
+            allFiles.push({ key: f.key, lastModified: f.last_modified });
+            if (!isIncremental || f.last_modified > lastSyncTime) {
+              changedFiles.push({ key: f.key, lastModified: f.last_modified });
+            }
           }
+          counts.files += files.length;
+        } else {
+          console.warn(`[sync] Failed to get files for project ${batch[results.indexOf(r)]?.name}:`, r.reason?.message);
         }
-        counts.files += files.length;
-      } catch (err) {
-        console.warn(`[sync] Failed to get files for project ${proj.name}:`, err.message);
       }
     }
 
@@ -90,34 +97,37 @@ export async function fullSync() {
     `);
 
     const filesWithNewVersions = new Set();
+    const maxPages = isIncremental ? 1 : 2;
 
-    for (const f of targetFiles) {
-      try {
-        const maxPages = isIncremental ? 1 : 2;
-        const versions = await figma.getFileVersions(f.key, maxPages);
-
-        let newCount = 0;
-        const tx = db.transaction(() => {
-          for (const v of versions) {
-            const existing = db.prepare('SELECT id FROM figma_versions WHERE file_key = ? AND id = ?').get(f.key, String(v.id));
-            if (!existing) newCount++;
-            upsertVersion.run(
-              String(v.id), f.key,
-              v.user?.id || 'unknown', v.user?.handle || 'Unknown',
-              v.label || null, v.description || null,
-              v.created_at
-            );
-          }
-        });
-        tx();
-        counts.versions += versions.length;
-
-        if (newCount > 0) filesWithNewVersions.add(f.key);
-
-        db.prepare('UPDATE figma_files SET version_count = ? WHERE file_key = ?')
-          .run(versions.length, f.key);
-      } catch (err) {
-        console.warn(`[sync] Failed to get versions for ${f.key}:`, err.message);
+    // Batch version fetches in groups of 3
+    for (let i = 0; i < targetFiles.length; i += BATCH_SIZE) {
+      const batch = targetFiles.slice(i, i + BATCH_SIZE);
+      const results = await Promise.allSettled(
+        batch.map(f => figma.getFileVersions(f.key, maxPages).then(versions => ({ key: f.key, versions })))
+      );
+      for (const r of results) {
+        if (r.status === 'fulfilled') {
+          const { key, versions } = r.value;
+          let newCount = 0;
+          const tx = db.transaction(() => {
+            for (const v of versions) {
+              const existing = db.prepare('SELECT id FROM figma_versions WHERE file_key = ? AND id = ?').get(key, String(v.id));
+              if (!existing) newCount++;
+              upsertVersion.run(
+                String(v.id), key,
+                v.user?.id || 'unknown', v.user?.handle || 'Unknown',
+                v.label || null, v.description || null,
+                v.created_at
+              );
+            }
+          });
+          tx();
+          counts.versions += versions.length;
+          if (newCount > 0) filesWithNewVersions.add(key);
+          db.prepare('UPDATE figma_files SET version_count = ? WHERE file_key = ?').run(versions.length, key);
+        } else {
+          console.warn(`[sync] Failed to get versions for batch item:`, r.reason?.message);
+        }
       }
     }
     console.log(`[sync] Synced ${counts.versions} versions (${filesWithNewVersions.size} files with new data)`);
@@ -132,23 +142,30 @@ export async function fullSync() {
         synced_at = excluded.synced_at
     `);
 
-    for (const f of commentFiles) {
-      try {
-        const comments = await figma.getFileComments(f.key);
-        const tx = db.transaction(() => {
-          for (const c of comments) {
-            upsertComment.run(
-              c.id, f.key,
-              c.user?.handle || 'Unknown', c.user?.id || 'unknown',
-              c.message || '', c.parent_id || null,
-              c.created_at, c.resolved_at || null
-            );
-          }
-        });
-        tx();
-        counts.comments += comments.length;
-      } catch (err) {
-        console.warn(`[sync] Failed to get comments for ${f.key}:`, err.message);
+    // Batch comment fetches in groups of 3
+    for (let i = 0; i < commentFiles.length; i += BATCH_SIZE) {
+      const batch = commentFiles.slice(i, i + BATCH_SIZE);
+      const results = await Promise.allSettled(
+        batch.map(f => figma.getFileComments(f.key).then(comments => ({ key: f.key, comments })))
+      );
+      for (const r of results) {
+        if (r.status === 'fulfilled') {
+          const { key, comments } = r.value;
+          const tx = db.transaction(() => {
+            for (const c of comments) {
+              upsertComment.run(
+                c.id, key,
+                c.user?.handle || 'Unknown', c.user?.id || 'unknown',
+                c.message || '', c.parent_id || null,
+                c.created_at, c.resolved_at || null
+              );
+            }
+          });
+          tx();
+          counts.comments += comments.length;
+        } else {
+          console.warn(`[sync] Failed to get comments for batch item:`, r.reason?.message);
+        }
       }
     }
     console.log(`[sync] Synced ${counts.comments} comments`);

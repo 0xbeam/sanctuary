@@ -1344,10 +1344,121 @@ tr.expanded td { background: rgba(42,122,91,0.05); }
 .thread-status-badge.resolved { background: var(--card); color: var(--text-muted); }
 .thread-meta { font-family: var(--mono); font-size: 0.58rem; color: var(--text-faint); }
 
+/* ===== FIGMA LINKS ===== */
+.figma-link {
+  display: inline-flex; align-items: center;
+  color: var(--text-faint); margin-left: 4px;
+  transition: color var(--transition);
+  vertical-align: middle;
+}
+.figma-link:hover { color: var(--accent); }
+.figma-link svg { width: 12px; height: 12px; }
+.figma-open-btn {
+  display: inline-flex; align-items: center; gap: 4px;
+  background: none; border: 1px solid var(--border); border-radius: var(--radius);
+  padding: 3px 8px; font-size: 0.58rem; font-family: var(--mono);
+  color: var(--text-muted); cursor: pointer; text-transform: uppercase;
+  letter-spacing: .04em; transition: all var(--transition); text-decoration: none;
+}
+.figma-open-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+/* ===== GALLERY ===== */
+.gallery-toolbar {
+  display: flex; gap: 10px; align-items: center;
+  margin-bottom: 16px; flex-wrap: wrap;
+}
+.gallery-search {
+  flex: 1; min-width: 200px;
+  padding: 6px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  font-family: var(--font);
+  font-size: 0.78rem;
+  background: var(--bg);
+  color: var(--text);
+  outline: none;
+}
+.gallery-search:focus { border-color: var(--accent); }
+.gallery-filter {
+  padding: 5px 10px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  font-family: var(--mono);
+  font-size: 0.62rem;
+  background: var(--bg);
+  color: var(--text);
+  cursor: pointer;
+}
+.gallery-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 16px;
+}
+.gallery-card {
+  background: var(--card);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  cursor: pointer;
+  transition: transform 200ms var(--ease), box-shadow 200ms var(--ease);
+  border: 1px solid var(--border);
+}
+.gallery-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0,0,0,.06);
+}
+.gallery-thumb {
+  width: 100%; aspect-ratio: 4/3;
+  object-fit: cover;
+  background: var(--card-hover);
+  display: block;
+}
+.gallery-thumb-placeholder {
+  width: 100%; aspect-ratio: 4/3;
+  background: var(--card-hover);
+  display: flex; align-items: center; justify-content: center;
+  color: var(--text-faint); font-family: var(--mono); font-size: 0.62rem;
+}
+.gallery-info { padding: 10px 12px; }
+.gallery-name {
+  font-size: 0.78rem; font-weight: 500;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.gallery-meta {
+  font-size: 0.62rem; font-family: var(--mono);
+  color: var(--text-faint); margin-top: 3px;
+}
+.gallery-actions {
+  display: flex; gap: 6px; align-items: center; margin-top: 6px;
+}
+.gallery-count {
+  font-family: var(--mono); font-size: 0.62rem;
+  color: var(--text-faint); margin-bottom: 12px;
+}
+.gallery-load-more {
+  display: block; margin: 20px auto 0; padding: 8px 24px;
+  background: none; border: 1px solid var(--border); border-radius: var(--radius);
+  font-family: var(--mono); font-size: 0.62rem; color: var(--text-muted);
+  cursor: pointer; text-transform: uppercase; letter-spacing: .04em;
+  transition: all var(--transition);
+}
+.gallery-load-more:hover { border-color: var(--accent); color: var(--accent); }
+
+/* ===== SYNC FOOTER ===== */
+.sync-footer {
+  position: fixed; bottom: 0; left: 0; right: 0;
+  height: 24px;
+  background: var(--card);
+  border-top: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  font-family: var(--mono); font-size: 0.56rem;
+  color: var(--text-faint); z-index: 50;
+}
+.sync-footer .sync-dot { width: 5px; height: 5px; }
+
 /* ===== FOOTER ===== */
 .footer {
   text-align: center;
-  padding: 24px clamp(20px, 4vw, 48px);
+  padding: 24px clamp(20px, 4vw, 48px) 40px;
   border-top: 1px solid var(--border);
   font-size: 0.62rem;
   color: var(--text-faint);
@@ -1467,6 +1578,7 @@ tr.expanded td { background: rgba(42,122,91,0.05); }
   <button class="tab-btn" data-tab="projects">Projects</button>
   <button class="tab-btn" data-tab="assets">Design System</button>
   <button class="tab-btn" data-tab="reviews">Reviews<span id="reviewsBadge" class="tab-badge" style="display:none"></span></button>
+  <button class="tab-btn" data-tab="gallery">Gallery</button>
   <button class="tab-btn" data-tab="feed">Activity</button>
   <button class="tab-btn" data-tab="reports">Reports</button>
 </nav>
@@ -1505,7 +1617,7 @@ tr.expanded td { background: rgba(42,122,91,0.05); }
         </div>
         <div class="form-group">
           <label class="form-label">Sync Interval (minutes)</label>
-          <input type="number" class="form-input" id="settingsInterval" placeholder="15" min="5" max="120">
+          <input type="number" class="form-input" id="settingsInterval" placeholder="5" min="1" max="120">
         </div>
         <div id="connectionResult"></div>
         <div class="form-actions">
@@ -1517,6 +1629,18 @@ tr.expanded td { background: rgba(42,122,91,0.05); }
       <!-- RELEASE LOG PANEL -->
       <div class="settings-panel" id="settingsReleases">
         <div class="release-log">
+          <div class="release-entry">
+            <div class="release-version">v5.0.0</div>
+            <div class="release-date">March 16, 2026</div>
+            <ul class="release-items">
+              <li><span class="release-tag new">new</span> Universal Gallery — visual grid of every design file with search & filter</li>
+              <li><span class="release-tag new">new</span> Bidirectional Figma links — click to open files, versions, components in Figma</li>
+              <li><span class="release-tag new">new</span> Persistent sync status footer bar with exact timestamps</li>
+              <li><span class="release-tag improve">improve</span> Auto-sync every 5 minutes (was 15) with parallel fetching</li>
+              <li><span class="release-tag improve">improve</span> 3x faster sync — parallel project, version, and comment fetching</li>
+              <li><span class="release-tag improve">improve</span> Removed node-cron dependency — using native setInterval</li>
+            </ul>
+          </div>
           <div class="release-entry">
             <div class="release-version">v4.0.0</div>
             <div class="release-date">March 16, 2026</div>
@@ -1609,7 +1733,10 @@ tr.expanded td { background: rgba(42,122,91,0.05); }
   <div class="profile-card" style="max-width:800px">
     <div class="profile-header">
       <div class="profile-name" id="fileDetailName">Loading…</div>
-      <button class="modal-close" onclick="closeFileDetail()">×</button>
+      <div style="display:flex;align-items:center;gap:8px">
+        <a class="figma-open-btn" id="fileDetailFigmaLink" href="#" target="_blank" rel="noopener" style="display:none">Open in Figma</a>
+        <button class="modal-close" onclick="closeFileDetail()">×</button>
+      </div>
     </div>
     <div class="profile-stats" id="fileDetailStats"></div>
     <div class="profile-body" id="fileDetailBody">
@@ -1620,8 +1747,14 @@ tr.expanded td { background: rgba(42,122,91,0.05); }
 
 <!-- FOOTER -->
 <footer class="footer">
-  Gravity v4 — Spacekayak Design Operations
+  Gravity v5 — Spacekayak Design Operations
 </footer>
+
+<!-- SYNC FOOTER BAR -->
+<div class="sync-footer" id="syncFooter">
+  <span class="sync-dot offline" id="footerSyncDot"></span>
+  <span id="footerSyncStatus">--</span>
+</div>
 
 <script>
 // ============================================================
@@ -1805,7 +1938,37 @@ const API = {
   designerCollaborators: (name) => API.get(`/api/designers/${encodeURIComponent(name)}/collaborators`),
   reportProject: (name, from, to) => API.get(`/api/reports/project?name=${encodeURIComponent(name)}&from=${from}&to=${to}`),
   reportProjectMd: (name, from, to) => fetch(`/api/reports/project?name=${encodeURIComponent(name)}&from=${from}&to=${to}&format=markdown`).then(r => r.text()),
+  gallery: (params = {}) => {
+    const qs = new URLSearchParams(params).toString();
+    return API.get(`/api/gallery${qs ? '?' + qs : ''}`);
+  },
 };
+
+// ============================================================
+// FIGMA URL HELPERS
+// ============================================================
+
+function figmaFileUrl(fileKey) {
+  return `https://www.figma.com/design/${fileKey}`;
+}
+function figmaVersionUrl(fileKey, versionId) {
+  return `https://www.figma.com/design/${fileKey}?version-id=${versionId}`;
+}
+function figmaComponentUrl(fileKey, nodeId) {
+  return `https://www.figma.com/design/${fileKey}?node-id=${encodeURIComponent(nodeId)}`;
+}
+function figmaProjectUrl(projectId) {
+  const teamId = LIVE_DATA?.config?.figma_team_id || '';
+  return `https://www.figma.com/files/${teamId}/project/${projectId}`;
+}
+
+function figmaLinkIcon(url, title = 'Open in Figma') {
+  return `<a href="${url}" target="_blank" rel="noopener" class="figma-link" title="${title}" onclick="event.stopPropagation()">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/>
+    </svg>
+  </a>`;
+}
 
 // ============================================================
 // DATA LOAD
@@ -1858,15 +2021,17 @@ async function loadData() {
     LIVE_DATA.commentMetrics = commentMetrics.status === 'fulfilled' ? commentMetrics.value : {};
     LIVE_DATA.alerts = alerts.status === 'fulfilled' ? alerts.value : {};
 
-    // v4 data: digest, workload, milestones (non-blocking)
-    const [digest, workload, milestones] = await Promise.allSettled([
+    // v4 data: digest, workload, milestones, config (non-blocking)
+    const [digest, workload, milestones, config] = await Promise.allSettled([
       API.digestWeekly(),
       API.workloadCurrent(),
       API.milestones(10),
+      API.config(),
     ]);
     LIVE_DATA.digest = digest.status === 'fulfilled' ? digest.value : null;
     LIVE_DATA.workload = workload.status === 'fulfilled' ? workload.value : [];
     LIVE_DATA.milestones = milestones.status === 'fulfilled' ? milestones.value : [];
+    LIVE_DATA.config = config.status === 'fulfilled' ? config.value : {};
 
   } catch (e) {
     // Fall back to static data.json
@@ -1905,14 +2070,14 @@ async function loadData() {
   renderAllTabs();
   initTabNav();
 
-  // Poll sync status every 30s when live
+  // Poll sync status every 15s when live
   if (LIVE) {
     setInterval(async () => {
       try {
         const status = await API.status();
         updateSyncStatus(status);
       } catch (e) { /* ignore */ }
-    }, 30000);
+    }, 15000);
   }
 }
 
@@ -1924,33 +2089,47 @@ function updateSyncStatus(status) {
   const dot = document.getElementById('syncDot');
   const label = document.getElementById('syncLabel');
   const btn = document.getElementById('syncBtn');
+  const footerDot = document.getElementById('footerSyncDot');
+  const footerLabel = document.getElementById('footerSyncStatus');
 
   if (!status) {
     dot.className = 'sync-dot offline';
     label.textContent = 'Static mode';
     btn.style.display = 'none';
+    if (footerDot) footerDot.className = 'sync-dot offline';
+    if (footerLabel) footerLabel.textContent = 'Static mode — no live sync';
     return;
   }
 
   btn.style.display = '';
   btn.disabled = status.syncing;
+  const intervalMin = status.syncInterval || 5;
 
   if (status.syncing) {
     dot.className = 'sync-dot syncing';
     label.textContent = 'Syncing…';
     label.title = '';
+    if (footerDot) footerDot.className = 'sync-dot syncing';
+    if (footerLabel) footerLabel.textContent = 'Syncing in progress…';
   } else if (status.lastSync) {
     dot.className = 'sync-dot';
     const ago = timeAgo(status.lastSync.completedAt);
-    const exact = new Date(status.lastSync.completedAt).toLocaleString();
+    const exact = new Date(status.lastSync.completedAt).toLocaleTimeString();
+    const duration = status.lastSync.durationMs ? Math.round(status.lastSync.durationMs / 1000) + 's' : '—';
     label.textContent = `Synced ${ago}`;
-    label.title = `Last sync: ${exact}\nDuration: ${status.lastSync.durationMs ? Math.round(status.lastSync.durationMs / 1000) + 's' : '—'}`;
+    label.title = `Last sync: ${exact}\nDuration: ${duration}\nAuto-sync: every ${intervalMin} min`;
+    if (footerDot) footerDot.className = 'sync-dot';
+    if (footerLabel) footerLabel.textContent = `Last synced: ${exact} (${ago}) · ${duration} · Auto-sync every ${intervalMin}m`;
   } else if (status.configured) {
     dot.className = 'sync-dot';
     label.textContent = 'Ready';
+    if (footerDot) footerDot.className = 'sync-dot';
+    if (footerLabel) footerLabel.textContent = `Ready · Auto-sync every ${intervalMin}m`;
   } else {
     dot.className = 'sync-dot offline';
     label.textContent = 'Not configured';
+    if (footerDot) footerDot.className = 'sync-dot offline';
+    if (footerLabel) footerLabel.textContent = 'Not configured — add Figma PAT in Settings';
   }
 }
 
@@ -2071,6 +2250,7 @@ function renderAllTabs() {
     <div class="tab-content" id="tab-projects">${renderProjects()}</div>
     <div class="tab-content" id="tab-assets">${renderAssets()}</div>
     <div class="tab-content" id="tab-reviews">${renderReviews()}</div>
+    <div class="tab-content" id="tab-gallery">${renderGallery()}</div>
     <div class="tab-content" id="tab-feed">${renderFeed()}</div>
     <div class="tab-content" id="tab-reports">${renderReports()}</div>
   `;
@@ -2080,6 +2260,7 @@ function renderAllTabs() {
   initProjectsTab();
   initAssetsTab();
   initReviewsTab();
+  initGalleryTab();
   initFeedTab();
   initReportsTab();
 }
@@ -3651,6 +3832,7 @@ function renderMilestonesCard(milestones) {
       <span class="milestone-label">${m.label}</span>
       <div style="flex:1">
         <a href="#" onclick="openFileDetail('${m.file_key}');return false" style="color:var(--text);text-decoration:none">${m.file_name || 'Unknown file'}</a>
+        ${figmaLinkIcon(figmaVersionUrl(m.file_key, m.id), 'Open version in Figma')}
         ${m.description ? `<div class="milestone-meta">${m.description}</div>` : ''}
       </div>
       <div class="milestone-meta">${m.user_name} · ${timeAgo(m.created_at)}</div>
@@ -3672,7 +3854,10 @@ async function openFileDetail(fileKey) {
   try {
     const data = await API.fileTimeline(fileKey);
     const f = data.file;
-    document.getElementById('fileDetailName').textContent = f.name;
+    document.getElementById('fileDetailName').innerHTML = `${f.name} ${figmaLinkIcon(figmaFileUrl(fileKey))}`;
+    const figLink = document.getElementById('fileDetailFigmaLink');
+    figLink.href = figmaFileUrl(fileKey);
+    figLink.style.display = '';
 
     // Stats
     const totalVersions = data.versions.length;
@@ -3705,6 +3890,7 @@ async function openFileDetail(fileKey) {
               <span style="font-weight:500">${v.user_name}</span>
               ${isLabeled ? `<span class="milestone-label" style="margin-left:6px">${v.label}</span>` : ''}
               <span class="milestone-meta" style="margin-left:8px">${timeAgo(v.created_at)}</span>
+              ${figmaLinkIcon(figmaVersionUrl(fileKey, v.id), 'Open this version in Figma')}
             </div>
             ${v.description ? `<div class="timeline-desc">${v.description}</div>` : ''}
           </div>
@@ -4012,6 +4198,127 @@ async function toggleUserMenu() {
     await fetch('/api/auth/logout', { method: 'POST' });
     window.location.reload();
   }
+}
+
+// ============================================================
+// GALLERY TAB
+// ============================================================
+
+let _galleryOffset = 0;
+const GALLERY_PAGE_SIZE = 60;
+
+function renderGallery() {
+  if (!LIVE) return '<div class="text-muted" style="padding:40px;text-align:center">Gallery requires live Figma connection</div>';
+
+  return `
+    <div class="section-grid" style="grid-template-columns:1fr">
+      <div class="card full-width">
+        <div class="card-head">
+          <span class="card-title">Design File Gallery</span>
+          <span class="text-faint" style="font-size:0.65rem">Every file across all projects</span>
+        </div>
+        <div class="card-body" style="padding:16px">
+          <div class="gallery-toolbar">
+            <input type="text" class="gallery-search" id="gallerySearch" placeholder="Search files by name or project…">
+            <select class="gallery-filter" id="galleryProject">
+              <option value="">All Projects</option>
+            </select>
+            <select class="gallery-filter" id="gallerySort">
+              <option value="last_modified">Last Modified</option>
+              <option value="name">Name</option>
+              <option value="version_count">Most Versions</option>
+            </select>
+          </div>
+          <div class="gallery-count" id="galleryCount"></div>
+          <div class="gallery-grid" id="galleryGrid">
+            <div class="loading-state"><div class="spinner"></div> Loading gallery…</div>
+          </div>
+          <button class="gallery-load-more" id="galleryLoadMore" style="display:none" onclick="loadMoreGallery()">Load More</button>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function initGalleryTab() {
+  if (!LIVE) return;
+  loadGallery();
+
+  let searchTimer;
+  document.getElementById('gallerySearch')?.addEventListener('input', () => {
+    clearTimeout(searchTimer);
+    searchTimer = setTimeout(() => { _galleryOffset = 0; loadGallery(); }, 300);
+  });
+  document.getElementById('galleryProject')?.addEventListener('change', () => { _galleryOffset = 0; loadGallery(); });
+  document.getElementById('gallerySort')?.addEventListener('change', () => { _galleryOffset = 0; loadGallery(); });
+}
+
+async function loadGallery(append = false) {
+  const search = document.getElementById('gallerySearch')?.value || '';
+  const project = document.getElementById('galleryProject')?.value || '';
+  const sort = document.getElementById('gallerySort')?.value || 'last_modified';
+
+  try {
+    const data = await API.gallery({ search, project, sort, limit: GALLERY_PAGE_SIZE, offset: _galleryOffset });
+
+    // Populate project filter (first load only)
+    const projSelect = document.getElementById('galleryProject');
+    if (projSelect && projSelect.options.length <= 1 && data.projects?.length) {
+      for (const p of data.projects) {
+        const opt = document.createElement('option');
+        opt.value = p; opt.textContent = p;
+        projSelect.appendChild(opt);
+      }
+    }
+
+    document.getElementById('galleryCount').textContent =
+      `Showing ${append ? _galleryOffset + data.files.length : data.files.length} of ${data.total} files`;
+
+    const grid = document.getElementById('galleryGrid');
+    const cardsHtml = data.files.map(f => `
+      <div class="gallery-card" onclick="openFileDetail('${f.file_key}')">
+        ${f.thumbnail_url
+          ? `<img class="gallery-thumb" src="${f.thumbnail_url}" alt="${escHtml(f.name)}" loading="lazy" onerror="this.outerHTML='<div class=\\'gallery-thumb-placeholder\\'>No preview</div>'">`
+          : '<div class="gallery-thumb-placeholder">No preview</div>'
+        }
+        <div class="gallery-info">
+          <div class="gallery-name" title="${escHtml(f.name)}">${escHtml(f.name)}</div>
+          <div class="gallery-meta">${escHtml(f.project_name || 'No project')} · ${timeAgo(f.last_modified)}</div>
+          <div class="gallery-actions">
+            <span class="gallery-meta">${f.version_count || 0} versions</span>
+            ${figmaLinkIcon(figmaFileUrl(f.file_key))}
+          </div>
+        </div>
+      </div>
+    `).join('');
+
+    if (append) {
+      grid.insertAdjacentHTML('beforeend', cardsHtml);
+    } else if (!data.files.length) {
+      grid.innerHTML = '<div class="text-muted" style="padding:40px;text-align:center">No files found</div>';
+    } else {
+      grid.innerHTML = cardsHtml;
+    }
+
+    // Show/hide load more
+    const loadMoreBtn = document.getElementById('galleryLoadMore');
+    if (loadMoreBtn) {
+      loadMoreBtn.style.display = (_galleryOffset + data.files.length < data.total) ? '' : 'none';
+    }
+  } catch (e) {
+    document.getElementById('galleryGrid').innerHTML =
+      `<div class="text-muted" style="padding:40px;text-align:center">Failed to load gallery: ${e.message}</div>`;
+  }
+}
+
+function loadMoreGallery() {
+  _galleryOffset += GALLERY_PAGE_SIZE;
+  loadGallery(true);
+}
+
+function escHtml(str) {
+  if (!str) return '';
+  return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
 
 // ============================================================
