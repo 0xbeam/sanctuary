@@ -192,6 +192,16 @@ export async function fullSync() {
     }
     console.log(`[sync] Reconstructed ${counts.sessions} sessions from ${sessionFiles.length} files`);
 
+    // 7. Post-sync computations (v4)
+    try {
+      computeCollaborationEdges(db);
+      computeWorkloadSnapshots(db);
+      snapshotComponents(db);
+      console.log('[sync] Post-sync computations completed');
+    } catch (err) {
+      console.warn('[sync] Post-sync computation error:', err.message);
+    }
+
     setConfig('last_sync', new Date().toISOString());
     completeSync(syncId, 'completed', counts, startedAt);
     console.log(`[sync] ${counts.mode} sync completed:`, counts);
@@ -203,4 +213,164 @@ export async function fullSync() {
   } finally {
     syncing = false;
   }
+}
+
+/**
+ * Compute collaboration edges: which designers co-edit the same files within 7-day windows.
+ */
+function computeCollaborationEdges(db) {
+  const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+
+  // Get all designer-file pairs from recent sessions
+  const pairs = db.prepare(`
+    SELECT DISTINCT designer_name, file_key, MAX(end_time) as last_active
+    FROM design_sessions
+    WHERE start_time >= datetime('now', '-90 days')
+    GROUP BY designer_name, file_key
+  `).all();
+
+  // Build file -> designers map
+  const fileDesigners = {};
+  for (const p of pairs) {
+    if (!fileDesigners[p.file_key]) fileDesigners[p.file_key] = [];
+    fileDesigners[p.file_key].push({ designer: p.designer_name, last: p.last_active });
+  }
+
+  // Compute edges
+  const edges = {};
+  for (const [fileKey, designers] of Object.entries(fileDesigners)) {
+    for (let i = 0; i < designers.length; i++) {
+      for (let j = i + 1; j < designers.length; j++) {
+        const a = designers[i].designer < designers[j].designer ? designers[i] : designers[j];
+        const b = designers[i].designer < designers[j].designer ? designers[j] : designers[i];
+        const key = `${a.designer}||${b.designer}`;
+        if (!edges[key]) edges[key] = { a: a.designer, b: b.designer, files: 0, lastOverlap: '' };
+        edges[key].files++;
+        const latest = a.last > b.last ? a.last : b.last;
+        if (latest > edges[key].lastOverlap) edges[key].lastOverlap = latest;
+      }
+    }
+  }
+
+  // Write to DB
+  const now = new Date().toISOString();
+  db.prepare('DELETE FROM collaboration_edges').run();
+  const insert = db.prepare(`
+    INSERT INTO collaboration_edges (designer_a, designer_b, shared_files, co_work_score, last_overlap, computed_at)
+    VALUES (?, ?, ?, ?, ?, ?)
+  `);
+  const tx = db.transaction(() => {
+    for (const e of Object.values(edges)) {
+      insert.run(e.a, e.b, e.files, e.files, e.lastOverlap, now);
+    }
+  });
+  tx();
+  console.log(`[sync] Computed ${Object.keys(edges).length} collaboration edges`);
+}
+
+/**
+ * Compute workload snapshots for the current week.
+ */
+function computeWorkloadSnapshots(db) {
+  const now = new Date();
+  const dayOfWeek = now.getDay();
+  const mondayOffset = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
+  const weekStart = new Date(now);
+  weekStart.setDate(now.getDate() + mondayOffset);
+  weekStart.setHours(0, 0, 0, 0);
+  const weekLabel = weekStart.toISOString().slice(0, 10);
+
+  const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+  const fourWeeksAgo = new Date(Date.now() - 28 * 24 * 60 * 60 * 1000).toISOString();
+
+  const designers = db.prepare('SELECT DISTINCT designer_name FROM design_sessions').all();
+
+  const upsert = db.prepare(`
+    INSERT INTO workload_snapshots (designer_name, week, total_minutes, after_hours_pct, weekend_pct, projects, workload_score, risk_level, computed_at)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+    ON CONFLICT(designer_name, week) DO UPDATE SET
+      total_minutes = excluded.total_minutes,
+      after_hours_pct = excluded.after_hours_pct,
+      weekend_pct = excluded.weekend_pct,
+      projects = excluded.projects,
+      workload_score = excluded.workload_score,
+      risk_level = excluded.risk_level,
+      computed_at = excluded.computed_at
+  `);
+
+  const tx = db.transaction(() => {
+    for (const { designer_name } of designers) {
+      const sessions = db.prepare(`
+        SELECT start_time, duration_minutes FROM design_sessions
+        WHERE designer_name = ? AND start_time >= ?
+      `).all(designer_name, weekAgo);
+
+      let totalMins = 0, afterMins = 0, weekendMins = 0;
+      const projects = new Set();
+
+      for (const s of sessions) {
+        const d = new Date(s.start_time);
+        totalMins += s.duration_minutes;
+        if (d.getHours() < 9 || d.getHours() >= 18) afterMins += s.duration_minutes;
+        if (d.getDay() === 0 || d.getDay() === 6) weekendMins += s.duration_minutes;
+      }
+
+      // Get projects
+      const projRows = db.prepare(`
+        SELECT DISTINCT project_name FROM design_sessions
+        WHERE designer_name = ? AND start_time >= ?
+      `).all(designer_name, weekAgo);
+
+      const afterPct = totalMins > 0 ? Math.round((afterMins / totalMins) * 100) : 0;
+      const weekendPct = totalMins > 0 ? Math.round((weekendMins / totalMins) * 100) : 0;
+
+      // Average from previous 4 weeks
+      const avg = db.prepare(`
+        SELECT SUM(duration_minutes) / 4.0 as avg FROM design_sessions
+        WHERE designer_name = ? AND start_time >= ? AND start_time < ?
+      `).get(designer_name, fourWeeksAgo, weekAgo);
+      const avgMins = avg?.avg || totalMins;
+
+      // Score
+      let score = 50;
+      if (avgMins > 0) score = Math.min(100, Math.round((totalMins / avgMins) * 50));
+      if (afterPct > 20) score += 15;
+      if (weekendPct > 10) score += 10;
+      score = Math.min(100, Math.max(0, score));
+
+      // Risk
+      const recentSnaps = db.prepare(`
+        SELECT risk_level FROM workload_snapshots
+        WHERE designer_name = ? AND week < ? ORDER BY week DESC LIMIT 3
+      `).all(designer_name, weekLabel);
+      const consecutiveHigh = recentSnaps.filter(s => s.risk_level !== 'green').length;
+
+      let risk = 'green';
+      const overAvg = avgMins > 0 && totalMins > avgMins * 1.2;
+      const suddenDrop = avgMins > 0 && totalMins < avgMins * 0.5;
+      if ((overAvg && consecutiveHigh >= 2 && afterPct > 30) || (suddenDrop && avgMins > 60)) risk = 'red';
+      else if (overAvg || afterPct > 20 || consecutiveHigh >= 1) risk = 'amber';
+
+      upsert.run(designer_name, weekLabel, totalMins, afterPct, weekendPct, projRows.length, score, risk, new Date().toISOString());
+    }
+  });
+  tx();
+  console.log(`[sync] Computed workload snapshots for ${designers.length} designers`);
+}
+
+/**
+ * Snapshot current component state for change detection.
+ */
+function snapshotComponents(db) {
+  const now = new Date().toISOString();
+  const components = db.prepare('SELECT key, name, description FROM figma_components').all();
+
+  const insert = db.prepare('INSERT INTO component_snapshots (component_key, name, description, synced_at) VALUES (?, ?, ?, ?)');
+  const tx = db.transaction(() => {
+    for (const c of components) {
+      insert.run(c.key, c.name, c.description, now);
+    }
+  });
+  tx();
+  console.log(`[sync] Snapshot ${components.length} components`);
 }

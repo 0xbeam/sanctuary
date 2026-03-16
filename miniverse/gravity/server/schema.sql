@@ -94,6 +94,48 @@ CREATE TABLE IF NOT EXISTS allowed_users (
   added_at TEXT NOT NULL
 );
 
+-- v4 tables
+
+CREATE TABLE IF NOT EXISTS digests (
+  id          INTEGER PRIMARY KEY AUTOINCREMENT,
+  type        TEXT NOT NULL CHECK(type IN ('weekly','monthly')),
+  period_start TEXT NOT NULL,
+  period_end   TEXT NOT NULL,
+  data        TEXT NOT NULL,
+  created_at  TEXT NOT NULL,
+  UNIQUE(type, period_start)
+);
+
+CREATE TABLE IF NOT EXISTS collaboration_edges (
+  designer_a   TEXT NOT NULL,
+  designer_b   TEXT NOT NULL,
+  shared_files INTEGER NOT NULL DEFAULT 0,
+  co_work_score REAL NOT NULL DEFAULT 0,
+  last_overlap TEXT,
+  computed_at  TEXT NOT NULL,
+  PRIMARY KEY (designer_a, designer_b)
+);
+
+CREATE TABLE IF NOT EXISTS workload_snapshots (
+  designer_name TEXT NOT NULL,
+  week          TEXT NOT NULL,
+  total_minutes INTEGER NOT NULL DEFAULT 0,
+  after_hours_pct REAL NOT NULL DEFAULT 0,
+  weekend_pct   REAL NOT NULL DEFAULT 0,
+  projects      INTEGER NOT NULL DEFAULT 0,
+  workload_score INTEGER NOT NULL DEFAULT 50,
+  risk_level    TEXT NOT NULL DEFAULT 'green' CHECK(risk_level IN ('green','amber','red')),
+  computed_at   TEXT NOT NULL,
+  PRIMARY KEY (designer_name, week)
+);
+
+CREATE TABLE IF NOT EXISTS component_snapshots (
+  component_key TEXT NOT NULL,
+  name          TEXT NOT NULL,
+  description   TEXT,
+  synced_at     TEXT NOT NULL
+);
+
 -- Indexes for common queries
 CREATE INDEX IF NOT EXISTS idx_auth_expires ON auth_sessions(expires_at);
 CREATE INDEX IF NOT EXISTS idx_versions_file ON figma_versions(file_key);
@@ -104,3 +146,6 @@ CREATE INDEX IF NOT EXISTS idx_sessions_file ON design_sessions(file_key);
 CREATE INDEX IF NOT EXISTS idx_sessions_start ON design_sessions(start_time);
 CREATE INDEX IF NOT EXISTS idx_comments_file ON figma_comments(file_key);
 CREATE INDEX IF NOT EXISTS idx_comments_resolved ON figma_comments(resolved_at);
+CREATE INDEX IF NOT EXISTS idx_comments_parent ON figma_comments(parent_id);
+CREATE INDEX IF NOT EXISTS idx_workload_week ON workload_snapshots(week);
+CREATE INDEX IF NOT EXISTS idx_component_snap ON component_snapshots(component_key, synced_at);

@@ -1130,6 +1130,220 @@ tr.expanded td { background: rgba(42,122,91,0.05); }
 }
 .user-badge-name { max-width: 100px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
+/* ===== TAB BADGE ===== */
+.tab-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--red);
+  color: #fff;
+  font-size: 0.55rem;
+  min-width: 16px;
+  height: 16px;
+  border-radius: 8px;
+  padding: 0 4px;
+  margin-left: 4px;
+  font-family: var(--mono);
+  font-weight: 500;
+}
+
+/* ===== DIGEST CARD ===== */
+.digest-card { padding: 16px; }
+.digest-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+.digest-delta { font-family: var(--mono); font-size: 0.72rem; }
+.digest-delta.up { color: var(--green); }
+.digest-delta.down { color: var(--red); }
+.digest-section { margin-bottom: 12px; }
+.digest-section-title {
+  font-family: var(--mono);
+  font-size: 0.62rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-faint);
+  margin-bottom: 6px;
+}
+.digest-bar-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+  font-size: 0.72rem;
+}
+.digest-bar-name { width: 120px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.digest-bar-fill { height: 6px; border-radius: 3px; background: var(--accent); transition: width 0.3s ease; }
+.digest-bar-value { font-family: var(--mono); color: var(--text-muted); min-width: 40px; }
+.digest-momentum { font-size: 0.65rem; font-family: var(--mono); padding: 1px 5px; border-radius: 3px; }
+.digest-momentum.up { background: var(--green-dim); color: var(--green); }
+.digest-momentum.down { background: var(--red-dim); color: var(--red); }
+.digest-momentum.steady { background: var(--card); color: var(--text-muted); }
+.digest-copy-btn {
+  background: none;
+  border: 1px solid var(--border);
+  padding: 3px 10px;
+  border-radius: var(--radius);
+  font-family: var(--mono);
+  font-size: 0.62rem;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all var(--transition);
+}
+.digest-copy-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+/* ===== WORKLOAD ===== */
+.workload-bar-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+  font-size: 0.72rem;
+}
+.workload-name { width: 110px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.workload-track { flex: 1; height: 8px; background: var(--card); border-radius: 4px; position: relative; overflow: hidden; }
+.workload-fill { height: 100%; border-radius: 4px; transition: width 0.3s ease; }
+.workload-avg-line { position: absolute; top: 0; width: 2px; height: 100%; background: var(--text-faint); opacity: 0.6; }
+.workload-value { font-family: var(--mono); min-width: 45px; text-align: right; }
+.risk-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 4px; }
+.risk-dot.green { background: var(--green); }
+.risk-dot.amber { background: var(--amber); }
+.risk-dot.red { background: var(--red); }
+
+/* ===== MILESTONES ===== */
+.milestone-item {
+  display: flex;
+  gap: 12px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 0.72rem;
+  align-items: flex-start;
+}
+.milestone-item:last-child { border-bottom: none; }
+.milestone-label {
+  background: var(--accent-dim);
+  color: var(--accent);
+  padding: 2px 8px;
+  border-radius: var(--radius);
+  font-family: var(--mono);
+  font-size: 0.62rem;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.milestone-meta { color: var(--text-muted); font-family: var(--mono); font-size: 0.62rem; }
+
+/* ===== FILE TIMELINE ===== */
+.timeline-item {
+  display: flex;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 0.72rem;
+}
+.timeline-item:last-child { border-bottom: none; }
+.timeline-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--border); margin-top: 4px; flex-shrink: 0; }
+.timeline-dot.labeled { background: var(--accent); }
+.timeline-body { flex: 1; }
+.timeline-desc { color: var(--text-muted); font-size: 0.66rem; margin-top: 2px; }
+
+/* ===== REPORTS TAB ===== */
+.report-controls {
+  display: flex;
+  gap: 12px;
+  align-items: flex-end;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+.report-controls label {
+  font-family: var(--mono);
+  font-size: 0.62rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.report-controls select, .report-controls input[type="date"] {
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  padding: 6px 10px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg);
+  color: var(--text);
+}
+.report-preview {
+  background: var(--card);
+  border-radius: var(--radius);
+  padding: 20px;
+  font-size: 0.72rem;
+  max-height: 600px;
+  overflow-y: auto;
+}
+.report-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+}
+.report-btn {
+  padding: 6px 14px;
+  border-radius: var(--radius);
+  font-family: var(--mono);
+  font-size: 0.62rem;
+  cursor: pointer;
+  transition: all var(--transition);
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--text);
+}
+.report-btn:hover { border-color: var(--accent); color: var(--accent); }
+.report-btn.primary { background: var(--accent); color: #fff; border-color: var(--accent); }
+.report-btn.primary:hover { background: #1f5e44; }
+
+/* ===== THREAD VIEW ===== */
+.thread-item {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  margin-bottom: 10px;
+  overflow: hidden;
+}
+.thread-root {
+  display: flex;
+  gap: 10px;
+  padding: 10px 14px;
+  background: var(--card);
+  cursor: pointer;
+  align-items: flex-start;
+  font-size: 0.72rem;
+}
+.thread-root:hover { background: var(--card-hover); }
+.thread-replies {
+  display: none;
+  padding: 0 14px 10px;
+  border-top: 1px solid var(--border);
+}
+.thread-replies.open { display: block; }
+.thread-reply {
+  display: flex;
+  gap: 8px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 0.68rem;
+}
+.thread-reply:last-child { border-bottom: none; }
+.thread-status-badge {
+  font-family: var(--mono);
+  font-size: 0.58rem;
+  padding: 2px 6px;
+  border-radius: 3px;
+  white-space: nowrap;
+}
+.thread-status-badge.awaiting { background: var(--amber-dim); color: var(--amber); }
+.thread-status-badge.stale { background: var(--red-dim); color: var(--red); }
+.thread-status-badge.active { background: var(--green-dim); color: var(--green); }
+.thread-status-badge.resolved { background: var(--card); color: var(--text-muted); }
+.thread-meta { font-family: var(--mono); font-size: 0.58rem; color: var(--text-faint); }
+
 /* ===== FOOTER ===== */
 .footer {
   text-align: center;
@@ -1252,8 +1466,9 @@ tr.expanded td { background: rgba(42,122,91,0.05); }
   <button class="tab-btn" data-tab="designers">Designers</button>
   <button class="tab-btn" data-tab="projects">Projects</button>
   <button class="tab-btn" data-tab="assets">Design System</button>
-  <button class="tab-btn" data-tab="reviews">Reviews</button>
+  <button class="tab-btn" data-tab="reviews">Reviews<span id="reviewsBadge" class="tab-badge" style="display:none"></span></button>
   <button class="tab-btn" data-tab="feed">Activity</button>
+  <button class="tab-btn" data-tab="reports">Reports</button>
 </nav>
 
 <!-- MAIN -->
@@ -1303,13 +1518,31 @@ tr.expanded td { background: rgba(42,122,91,0.05); }
       <div class="settings-panel" id="settingsReleases">
         <div class="release-log">
           <div class="release-entry">
-            <div class="release-version">v2.1.0</div>
+            <div class="release-version">v4.0.0</div>
             <div class="release-date">March 16, 2026</div>
             <ul class="release-items">
-              <li><span class="release-tag new">new</span> Release log in settings panel</li>
-              <li><span class="release-tag new">new</span> Last sync time KPI on overview dashboard</li>
-              <li><span class="release-tag new">new</span> Sync timestamp tooltip with duration</li>
-              <li><span class="release-tag improve">improve</span> Vercel deployment support</li>
+              <li><span class="release-tag new">new</span> Weekly Studio Digest with Markdown export for Slack</li>
+              <li><span class="release-tag new">new</span> Workload Balancer with burnout risk detection (green/amber/red)</li>
+              <li><span class="release-tag new">new</span> File Version Timeline modal — click any file name</li>
+              <li><span class="release-tag new">new</span> Milestones feed from labeled Figma versions</li>
+              <li><span class="release-tag new">new</span> Comment Threading — expandable thread view with status badges</li>
+              <li><span class="release-tag new">new</span> Response Time analytics per designer</li>
+              <li><span class="release-tag new">new</span> Design System Governance — maturity model (active/stable/orphaned)</li>
+              <li><span class="release-tag new">new</span> Collaboration Network — co-work scores, isolation alerts</li>
+              <li><span class="release-tag new">new</span> Reports tab — project time reports with Markdown/JSON export</li>
+              <li><span class="release-tag improve">improve</span> Unified API between local and Vercel serverless</li>
+            </ul>
+          </div>
+          <div class="release-entry">
+            <div class="release-version">v3.0.0</div>
+            <div class="release-date">March 16, 2026</div>
+            <ul class="release-items">
+              <li><span class="release-tag new">new</span> Incremental sync engine — only fetches changed files</li>
+              <li><span class="release-tag new">new</span> Designer profile modal with heatmap and session timeline</li>
+              <li><span class="release-tag new">new</span> Project velocity modal with weekly chart</li>
+              <li><span class="release-tag new">new</span> Stale file and inactive designer alerts</li>
+              <li><span class="release-tag new">new</span> Google and Figma OAuth login</li>
+              <li><span class="release-tag improve">improve</span> Vercel seed.json for cold start data</li>
             </ul>
           </div>
           <div class="release-entry">
@@ -1371,14 +1604,28 @@ tr.expanded td { background: rgba(42,122,91,0.05); }
   </div>
 </div>
 
+<!-- FILE DETAIL MODAL -->
+<div class="profile-overlay" id="fileDetailModal">
+  <div class="profile-card" style="max-width:800px">
+    <div class="profile-header">
+      <div class="profile-name" id="fileDetailName">Loading…</div>
+      <button class="modal-close" onclick="closeFileDetail()">×</button>
+    </div>
+    <div class="profile-stats" id="fileDetailStats"></div>
+    <div class="profile-body" id="fileDetailBody">
+      <div class="loading-state"><div class="spinner"></div> Loading file details…</div>
+    </div>
+  </div>
+</div>
+
 <!-- FOOTER -->
 <footer class="footer">
-  Gravity v2 — Spacekayak Design Operations
+  Gravity v4 — Spacekayak Design Operations
 </footer>
 
 <script>
 // ============================================================
-// GRAVITY v2 — Spacekayak Design Operations Dashboard
+// GRAVITY v4 — Spacekayak Design Operations Dashboard
 // ============================================================
 
 let DATA = null;      // Dashboard data (from API or static)
@@ -1537,6 +1784,27 @@ const API = {
   alerts: () => API.get('/api/alerts/stale'),
   designerProfile: (name) => API.get(`/api/designers/${encodeURIComponent(name)}/profile`),
   projectVelocity: (name) => API.get(`/api/projects/${encodeURIComponent(name)}/velocity`),
+  // v4
+  fileTimeline: (key) => API.get(`/api/files/${encodeURIComponent(key)}/timeline`),
+  milestones: (limit = 30) => API.get(`/api/milestones?limit=${limit}`),
+  digestWeekly: () => API.get('/api/digest/weekly'),
+  digestWeeklyMd: () => fetch('/api/digest/weekly?format=markdown').then(r => r.text()),
+  digestHistory: (limit = 8) => API.get(`/api/digest/history?type=weekly&limit=${limit}`),
+  workloadCurrent: () => API.get('/api/workload/current'),
+  workloadBalance: () => API.get('/api/workload/balance'),
+  workloadHistory: (designer, weeks = 12) => API.get(`/api/workload/history?designer=${encodeURIComponent(designer)}&weeks=${weeks}`),
+  commentThreads: (file) => API.get(`/api/comments/threads${file ? '?file=' + encodeURIComponent(file) : ''}`),
+  commentThreadsOpen: () => API.get('/api/comments/threads/open'),
+  commentResponseTimes: () => API.get('/api/comments/response-times'),
+  commentReviewStatus: () => API.get('/api/comments/review-status'),
+  componentsGovernance: () => API.get('/api/components/governance'),
+  componentsCoverageTrend: () => API.get('/api/components/coverage-trend'),
+  componentsChangelog: () => API.get('/api/components/changelog'),
+  collaborationNetwork: () => API.get('/api/collaboration/network'),
+  collaborationIsolation: () => API.get('/api/collaboration/isolation'),
+  designerCollaborators: (name) => API.get(`/api/designers/${encodeURIComponent(name)}/collaborators`),
+  reportProject: (name, from, to) => API.get(`/api/reports/project?name=${encodeURIComponent(name)}&from=${from}&to=${to}`),
+  reportProjectMd: (name, from, to) => fetch(`/api/reports/project?name=${encodeURIComponent(name)}&from=${from}&to=${to}&format=markdown`).then(r => r.text()),
 };
 
 // ============================================================
@@ -1589,6 +1857,16 @@ async function loadData() {
     LIVE_DATA.components = components.status === 'fulfilled' ? components.value : {};
     LIVE_DATA.commentMetrics = commentMetrics.status === 'fulfilled' ? commentMetrics.value : {};
     LIVE_DATA.alerts = alerts.status === 'fulfilled' ? alerts.value : {};
+
+    // v4 data: digest, workload, milestones (non-blocking)
+    const [digest, workload, milestones] = await Promise.allSettled([
+      API.digestWeekly(),
+      API.workloadCurrent(),
+      API.milestones(10),
+    ]);
+    LIVE_DATA.digest = digest.status === 'fulfilled' ? digest.value : null;
+    LIVE_DATA.workload = workload.status === 'fulfilled' ? workload.value : [];
+    LIVE_DATA.milestones = milestones.status === 'fulfilled' ? milestones.value : [];
 
   } catch (e) {
     // Fall back to static data.json
@@ -1794,6 +2072,7 @@ function renderAllTabs() {
     <div class="tab-content" id="tab-assets">${renderAssets()}</div>
     <div class="tab-content" id="tab-reviews">${renderReviews()}</div>
     <div class="tab-content" id="tab-feed">${renderFeed()}</div>
+    <div class="tab-content" id="tab-reports">${renderReports()}</div>
   `;
   initOverviewCharts();
   initOverviewSearch();
@@ -1802,6 +2081,7 @@ function renderAllTabs() {
   initAssetsTab();
   initReviewsTab();
   initFeedTab();
+  initReportsTab();
 }
 
 // ============================================================
@@ -1893,18 +2173,23 @@ function renderOverview() {
       </div>
     </div>
 
-    <!-- ROW 3 -->
+    <!-- ROW 3: DIGEST + HEALTH -->
     <div class="row-2">
-      ${!LIVE && DATA.categories?.length ? `
+      ${LIVE && LIVE_DATA.digest ? `
       <div class="card">
-        <div class="card-head"><span class="card-title">Category Breakdown</span></div>
-        <div class="card-body"><canvas id="chartCategories" height="220"></canvas></div>
+        <div class="card-head">
+          <span class="card-title">Weekly Briefing</span>
+          <button class="digest-copy-btn" onclick="copyDigestMarkdown()">Copy as Markdown</button>
+        </div>
+        <div class="card-body digest-card" id="digestCard">
+          ${renderDigestCard(LIVE_DATA.digest)}
+        </div>
       </div>
       ` : `
       <div class="card">
-        <div class="card-head"><span class="card-title">Recent Sessions</span><span class="text-faint" style="font-size:0.75rem">Last 10</span></div>
+        <div class="card-head"><span class="card-title">${LIVE ? 'Recent Sessions' : 'Category Breakdown'}</span></div>
         <div class="card-body" style="max-height:300px;overflow-y:auto">
-          ${renderRecentSessions()}
+          ${LIVE ? renderRecentSessions() : (DATA.categories?.length ? '<canvas id="chartCategories" height="220"></canvas>' : renderRecentSessions())}
         </div>
       </div>
       `}
@@ -1923,6 +2208,24 @@ function renderOverview() {
         </div>
       </div>
     </div>
+
+    ${LIVE ? `
+    <!-- ROW 4: WORKLOAD + MILESTONES -->
+    <div class="row-2">
+      <div class="card">
+        <div class="card-head"><span class="card-title">Team Workload Balance</span><span class="text-faint" style="font-size:0.65rem">This week vs 4-week avg</span></div>
+        <div class="card-body" style="padding:16px" id="workloadCard">
+          ${renderWorkloadCard(LIVE_DATA.workload)}
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-head"><span class="card-title">Recent Milestones</span><span class="text-faint" style="font-size:0.65rem">Labeled versions</span></div>
+        <div class="card-body" style="max-height:300px;overflow-y:auto;padding:12px 16px">
+          ${renderMilestonesCard(LIVE_DATA.milestones)}
+        </div>
+      </div>
+    </div>
+    ` : ''}
 
     <!-- SEARCH -->
     <div class="row-full">
@@ -2249,6 +2552,10 @@ function renderDesignerTable() {
 }
 
 function renderDesignerTableLive() {
+  // Build workload risk lookup
+  const riskMap = {};
+  for (const w of (LIVE_DATA.workload || [])) riskMap[w.designer_name] = w.risk_level;
+
   const sorted = [...LIVE_DATA.designers].sort((a,b) => {
     let va, vb;
     switch(designerSortCol) {
@@ -2276,7 +2583,7 @@ function renderDesignerTableLive() {
       <td class="mono text-faint">${i + 1}</td>
       <td><div style="display:flex;align-items:center;gap:8px">
         <div class="feed-avatar" style="background:${avatarColor(d.designer_name)};width:28px;height:28px;font-size:0.68rem">${initials(d.designer_name)}</div>
-        ${d.designer_name}
+        ${riskMap[d.designer_name] && riskMap[d.designer_name] !== 'green' ? `<span class="risk-dot ${riskMap[d.designer_name]}"></span>` : ''}${d.designer_name}
       </div></td>
       <td class="mono text-green">${formatHours(d.week_minutes)}</td>
       <td class="mono">${formatHours(d.month_minutes)}</td>
@@ -2865,6 +3172,21 @@ function renderReviews() {
       </div>
     </div>
 
+    <div class="row-2">
+      <div class="card">
+        <div class="card-head"><span class="card-title">Open Threads</span><span class="text-faint" style="font-size:0.65rem">Click to expand</span></div>
+        <div class="card-body" style="max-height:500px;overflow-y:auto;padding:12px">
+          <div id="threadedReviewsContainer"><div class="loading-state"><div class="spinner"></div> Loading…</div></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-head"><span class="card-title">Response Times</span><span class="text-faint" style="font-size:0.65rem">By primary editor</span></div>
+        <div class="card-body" style="padding:12px">
+          <div id="responseTimesContainer"><div class="loading-state"><div class="spinner"></div> Loading…</div></div>
+        </div>
+      </div>
+    </div>
+
     <div class="card">
       <div class="card-head"><span class="card-title">Recent Comments</span></div>
       <div class="card-body" style="max-height:500px;overflow-y:auto">
@@ -2923,6 +3245,10 @@ async function initReviewsTab() {
   } catch (e) {
     console.error('[gravity] Failed to load comments:', e);
   }
+
+  // v4: Load threaded reviews and response times
+  loadThreadedReviews();
+  loadResponseTimes();
 }
 
 function renderCommentItem(c) {
@@ -3214,6 +3540,414 @@ function closeVelocity() {
 document.getElementById('velocityModal').addEventListener('click', function(e) {
   if (e.target === this) closeVelocity();
 });
+
+// ============================================================
+// V4: DIGEST CARD
+// ============================================================
+
+function renderDigestCard(digest) {
+  if (!digest) return '<div class="text-muted" style="padding:20px;text-align:center">No digest available</div>';
+
+  const delta = digest.totalHours - digest.prevTotalHours;
+  const deltaClass = delta >= 0 ? 'up' : 'down';
+  const maxDesignerMins = Math.max(...(digest.designers || []).map(d => d.minutes), 1);
+
+  let html = `
+    <div class="digest-header">
+      <div>
+        <span style="font-size:1.4rem;font-weight:600;font-family:var(--display)">${digest.totalHours}h</span>
+        <span class="digest-delta ${deltaClass}">${delta >= 0 ? '+' : ''}${delta.toFixed(1)}h</span>
+      </div>
+      <span class="text-faint" style="font-size:0.62rem;font-family:var(--mono)">${digest.activeDesigners} designers · ${digest.totalSessions} sessions</span>
+    </div>
+  `;
+
+  if (digest.designers?.length) {
+    html += '<div class="digest-section"><div class="digest-section-title">Designer Hours</div>';
+    for (const d of digest.designers.slice(0, 6)) {
+      const pct = Math.round((d.minutes / maxDesignerMins) * 100);
+      html += `<div class="digest-bar-row">
+        <span class="digest-bar-name">${d.designer_name}</span>
+        <div style="flex:1;background:var(--card);border-radius:3px;height:6px"><div class="digest-bar-fill" style="width:${pct}%"></div></div>
+        <span class="digest-bar-value">${(d.minutes / 60).toFixed(1)}h</span>
+      </div>`;
+    }
+    html += '</div>';
+  }
+
+  if (digest.projects?.length) {
+    html += '<div class="digest-section"><div class="digest-section-title">Project Momentum</div>';
+    for (const p of digest.projects.slice(0, 5)) {
+      html += `<div class="digest-bar-row">
+        <span class="digest-bar-name">${p.project_name}</span>
+        <span class="digest-bar-value">${(p.minutes / 60).toFixed(1)}h</span>
+        <span class="digest-momentum ${p.momentum}">${p.momentum === 'up' ? 'Rising' : p.momentum === 'down' ? 'Cooling' : 'Steady'}</span>
+      </div>`;
+    }
+    html += '</div>';
+  }
+
+  if (digest.topFiles?.length) {
+    html += '<div class="digest-section"><div class="digest-section-title">Most Active Files</div>';
+    for (const f of digest.topFiles) {
+      html += `<div class="digest-bar-row">
+        <a href="#" onclick="openFileDetail('${f.file_key}');return false" style="color:var(--text);text-decoration:none;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${f.name}</a>
+        <span class="digest-bar-value">${f.version_count} ver</span>
+      </div>`;
+    }
+    html += '</div>';
+  }
+
+  return html;
+}
+
+async function copyDigestMarkdown() {
+  try {
+    const md = await API.digestWeeklyMd();
+    await navigator.clipboard.writeText(md);
+    const btn = document.querySelector('.digest-copy-btn');
+    btn.textContent = 'Copied!';
+    setTimeout(() => btn.textContent = 'Copy as Markdown', 2000);
+  } catch (e) {
+    console.error('Failed to copy digest:', e);
+  }
+}
+
+// ============================================================
+// V4: WORKLOAD CARD
+// ============================================================
+
+function renderWorkloadCard(workload) {
+  if (!workload?.length) return '<div class="text-muted" style="padding:20px;text-align:center">No workload data yet</div>';
+
+  const maxMins = Math.max(...workload.map(d => Math.max(d.week_minutes, d.avg_week_minutes)), 1);
+
+  return workload.slice(0, 10).map(d => {
+    const pct = Math.round((d.week_minutes / maxMins) * 100);
+    const avgPct = Math.round((d.avg_week_minutes / maxMins) * 100);
+    const fillColor = d.risk_level === 'red' ? 'var(--red)' : d.risk_level === 'amber' ? 'var(--amber)' : 'var(--accent)';
+
+    return `<div class="workload-bar-row">
+      <span class="risk-dot ${d.risk_level}"></span>
+      <span class="workload-name">${d.designer_name}</span>
+      <div class="workload-track">
+        <div class="workload-fill" style="width:${pct}%;background:${fillColor}"></div>
+        <div class="workload-avg-line" style="left:${avgPct}%"></div>
+      </div>
+      <span class="workload-value">${(d.week_minutes / 60).toFixed(1)}h</span>
+    </div>`;
+  }).join('');
+}
+
+// ============================================================
+// V4: MILESTONES CARD
+// ============================================================
+
+function renderMilestonesCard(milestones) {
+  if (!milestones?.length) return '<div class="text-muted" style="padding:20px;text-align:center">No labeled versions found</div>';
+
+  return milestones.map(m => `
+    <div class="milestone-item">
+      <span class="milestone-label">${m.label}</span>
+      <div style="flex:1">
+        <a href="#" onclick="openFileDetail('${m.file_key}');return false" style="color:var(--text);text-decoration:none">${m.file_name || 'Unknown file'}</a>
+        ${m.description ? `<div class="milestone-meta">${m.description}</div>` : ''}
+      </div>
+      <div class="milestone-meta">${m.user_name} · ${timeAgo(m.created_at)}</div>
+    </div>
+  `).join('');
+}
+
+// ============================================================
+// V4: FILE DETAIL MODAL
+// ============================================================
+
+async function openFileDetail(fileKey) {
+  const modal = document.getElementById('fileDetailModal');
+  modal.classList.add('open');
+  document.getElementById('fileDetailName').textContent = 'Loading...';
+  document.getElementById('fileDetailStats').innerHTML = '';
+  document.getElementById('fileDetailBody').innerHTML = '<div class="loading-state"><div class="spinner"></div> Loading file details…</div>';
+
+  try {
+    const data = await API.fileTimeline(fileKey);
+    const f = data.file;
+    document.getElementById('fileDetailName').textContent = f.name;
+
+    // Stats
+    const totalVersions = data.versions.length;
+    const totalSessions = data.sessions.length;
+    const totalComments = data.comments.length;
+    const designers = [...new Set(data.versions.map(v => v.user_name))];
+    const labeledVersions = data.versions.filter(v => v.label);
+
+    document.getElementById('fileDetailStats').innerHTML = `
+      <div class="profile-stat"><div class="profile-stat-value">${totalVersions}</div><div class="profile-stat-label">Versions</div></div>
+      <div class="profile-stat"><div class="profile-stat-value">${totalSessions}</div><div class="profile-stat-label">Sessions</div></div>
+      <div class="profile-stat"><div class="profile-stat-value">${totalComments}</div><div class="profile-stat-label">Comments</div></div>
+      <div class="profile-stat"><div class="profile-stat-value">${designers.length}</div><div class="profile-stat-label">Contributors</div></div>
+      <div class="profile-stat"><div class="profile-stat-value">${labeledVersions.length}</div><div class="profile-stat-label">Milestones</div></div>
+    `;
+
+    // Body: version timeline
+    let bodyHtml = '<div style="font-family:var(--mono);font-size:0.62rem;color:var(--text-faint);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:8px">Version Timeline</div>';
+
+    if (data.versions.length === 0) {
+      bodyHtml += '<div class="text-muted" style="padding:20px;text-align:center">No versions found</div>';
+    } else {
+      bodyHtml += '<div style="max-height:400px;overflow-y:auto">';
+      for (const v of data.versions.slice(0, 50)) {
+        const isLabeled = !!v.label;
+        bodyHtml += `<div class="timeline-item">
+          <div class="timeline-dot ${isLabeled ? 'labeled' : ''}"></div>
+          <div class="timeline-body">
+            <div>
+              <span style="font-weight:500">${v.user_name}</span>
+              ${isLabeled ? `<span class="milestone-label" style="margin-left:6px">${v.label}</span>` : ''}
+              <span class="milestone-meta" style="margin-left:8px">${timeAgo(v.created_at)}</span>
+            </div>
+            ${v.description ? `<div class="timeline-desc">${v.description}</div>` : ''}
+          </div>
+        </div>`;
+      }
+      bodyHtml += '</div>';
+    }
+
+    // Velocity sparkline
+    if (data.velocity?.length > 1) {
+      bodyHtml += `
+        <div style="margin-top:16px;font-family:var(--mono);font-size:0.62rem;color:var(--text-faint);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:8px">Version Velocity (12 weeks)</div>
+        <canvas id="fileVelocityChart" height="120"></canvas>
+      `;
+    }
+
+    document.getElementById('fileDetailBody').innerHTML = bodyHtml;
+
+    // Render velocity chart
+    if (data.velocity?.length > 1) {
+      new Chart(document.getElementById('fileVelocityChart'), {
+        type: 'bar',
+        data: {
+          labels: data.velocity.map(v => v.week),
+          datasets: [{ data: data.velocity.map(v => v.versions), backgroundColor: COLORS.accent + '80', borderRadius: 3 }]
+        },
+        options: {
+          plugins: { legend: { display: false } },
+          scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } }, x: { ticks: { font: { size: 9 } } } },
+        }
+      });
+    }
+  } catch (e) {
+    document.getElementById('fileDetailBody').innerHTML = `<div class="text-muted" style="padding:20px;text-align:center">Failed to load: ${e.message}</div>`;
+  }
+}
+
+function closeFileDetail() {
+  document.getElementById('fileDetailModal').classList.remove('open');
+}
+document.getElementById('fileDetailModal').addEventListener('click', function(e) {
+  if (e.target === this) closeFileDetail();
+});
+
+// ============================================================
+// V4: REPORTS TAB
+// ============================================================
+
+function renderReports() {
+  if (!LIVE) return '<div class="text-muted" style="padding:40px;text-align:center">Reports require live Figma connection</div>';
+
+  const projectOptions = (LIVE_DATA.projects || []).map(p => `<option value="${p.project_name}">${p.project_name}</option>`).join('');
+
+  const today = new Date().toISOString().slice(0, 10);
+  const monthAgo = new Date(Date.now() - 30 * 86400000).toISOString().slice(0, 10);
+
+  return `
+    <div class="card" style="margin-bottom:16px">
+      <div class="card-head"><span class="card-title">Project Time Report</span></div>
+      <div class="card-body" style="padding:16px">
+        <div class="report-controls">
+          <div><label>Project</label><br><select id="reportProject">${projectOptions}</select></div>
+          <div><label>From</label><br><input type="date" id="reportFrom" value="${monthAgo}"></div>
+          <div><label>To</label><br><input type="date" id="reportTo" value="${today}"></div>
+          <button class="report-btn primary" onclick="generateReport()">Generate Report</button>
+        </div>
+        <div id="reportPreview"></div>
+        <div class="report-actions" id="reportActions" style="display:none">
+          <button class="report-btn" onclick="copyReportMarkdown()">Copy as Markdown</button>
+          <button class="report-btn" onclick="downloadReportJSON()">Download JSON</button>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function initReportsTab() {}
+
+let _lastReport = null;
+
+async function generateReport() {
+  const name = document.getElementById('reportProject').value;
+  const from = document.getElementById('reportFrom').value;
+  const to = document.getElementById('reportTo').value;
+  if (!name) return;
+
+  const preview = document.getElementById('reportPreview');
+  preview.innerHTML = '<div class="loading-state"><div class="spinner"></div> Generating report…</div>';
+
+  try {
+    const report = await API.reportProject(name, from, to);
+    _lastReport = { name, from, to, data: report };
+
+    let html = '<div class="report-preview">';
+    html += `<div style="font-family:var(--display);font-size:1.6rem;margin-bottom:4px">${report.project}</div>`;
+    html += `<div class="text-faint" style="font-family:var(--mono);font-size:0.66rem;margin-bottom:16px">${new Date(from).toLocaleDateString()} — ${new Date(to).toLocaleDateString()}</div>`;
+
+    html += `<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:16px">
+      <div style="background:var(--bg);padding:12px;border-radius:var(--radius)">
+        <div class="text-faint" style="font-size:0.62rem;font-family:var(--mono)">HOURS</div>
+        <div style="font-size:1.4rem;font-weight:600;color:var(--accent)">${report.totalHours}</div>
+      </div>
+      <div style="background:var(--bg);padding:12px;border-radius:var(--radius)">
+        <div class="text-faint" style="font-size:0.62rem;font-family:var(--mono)">SESSIONS</div>
+        <div style="font-size:1.4rem;font-weight:600">${report.totalSessions}</div>
+      </div>
+      <div style="background:var(--bg);padding:12px;border-radius:var(--radius)">
+        <div class="text-faint" style="font-size:0.62rem;font-family:var(--mono)">DESIGNERS</div>
+        <div style="font-size:1.4rem;font-weight:600">${report.activeDesigners}</div>
+      </div>
+    </div>`;
+
+    if (report.byDesigner?.length) {
+      html += '<div style="margin-bottom:12px"><div style="font-family:var(--mono);font-size:0.62rem;color:var(--text-faint);text-transform:uppercase;margin-bottom:6px">Team Contributions</div>';
+      html += '<table style="width:100%;font-size:0.72rem"><thead><tr><th style="text-align:left">Designer</th><th>Hours</th><th>Sessions</th></tr></thead><tbody>';
+      for (const d of report.byDesigner) {
+        html += `<tr><td>${d.designer_name}</td><td class="mono" style="text-align:center">${(d.minutes / 60).toFixed(1)}</td><td class="mono" style="text-align:center">${d.sessions}</td></tr>`;
+      }
+      html += '</tbody></table></div>';
+    }
+
+    if (report.milestones?.length) {
+      html += '<div style="margin-bottom:12px"><div style="font-family:var(--mono);font-size:0.62rem;color:var(--text-faint);text-transform:uppercase;margin-bottom:6px">Milestones</div>';
+      for (const m of report.milestones) {
+        html += `<div class="milestone-item"><span class="milestone-label">${m.label}</span><span>${m.file_name}</span><span class="milestone-meta">${m.user_name}</span></div>`;
+      }
+      html += '</div>';
+    }
+
+    if (report.comments) {
+      html += `<div style="font-family:var(--mono);font-size:0.62rem;color:var(--text-faint);text-transform:uppercase;margin-bottom:4px">Comments</div>`;
+      html += `<div style="font-size:0.72rem;margin-bottom:12px">${report.comments.total || 0} total · ${report.comments.resolved || 0} resolved · ${report.comments.open || 0} open</div>`;
+    }
+
+    html += '</div>';
+    preview.innerHTML = html;
+    document.getElementById('reportActions').style.display = 'flex';
+  } catch (e) {
+    preview.innerHTML = `<div class="text-muted" style="padding:20px">Failed: ${e.message}</div>`;
+  }
+}
+
+async function copyReportMarkdown() {
+  if (!_lastReport) return;
+  try {
+    const md = await API.reportProjectMd(_lastReport.name, _lastReport.from, _lastReport.to);
+    await navigator.clipboard.writeText(md);
+    const btns = document.querySelectorAll('.report-btn');
+    btns[0].textContent = 'Copied!';
+    setTimeout(() => btns[0].textContent = 'Copy as Markdown', 2000);
+  } catch (e) {
+    console.error('Failed to copy report:', e);
+  }
+}
+
+function downloadReportJSON() {
+  if (!_lastReport?.data) return;
+  const blob = new Blob([JSON.stringify(_lastReport.data, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `${_lastReport.name}-report.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+// ============================================================
+// V4: ENHANCED REVIEWS TAB (Comment Threading)
+// ============================================================
+
+async function loadThreadedReviews() {
+  const container = document.getElementById('threadedReviewsContainer');
+  if (!container) return;
+  container.innerHTML = '<div class="loading-state"><div class="spinner"></div> Loading threads…</div>';
+
+  try {
+    const threads = await API.commentThreadsOpen();
+    if (!threads.length) {
+      container.innerHTML = '<div class="text-muted" style="padding:20px;text-align:center">No open threads</div>';
+      return;
+    }
+
+    // Update badge
+    const awaiting = threads.filter(t => t.status === 'awaiting').length;
+    const badge = document.getElementById('reviewsBadge');
+    if (awaiting > 0) {
+      badge.textContent = awaiting;
+      badge.style.display = 'inline-flex';
+    }
+
+    container.innerHTML = threads.slice(0, 30).map(t => `
+      <div class="thread-item">
+        <div class="thread-root" onclick="this.nextElementSibling.classList.toggle('open')">
+          <div class="feed-avatar" style="background:${avatarColor(t.user_name)};width:24px;height:24px;font-size:0.52rem;flex-shrink:0">${initials(t.user_name)}</div>
+          <div style="flex:1;min-width:0">
+            <div style="display:flex;gap:8px;align-items:center">
+              <span style="font-weight:500">${t.user_name}</span>
+              <span class="thread-status-badge ${t.status}">${t.status}</span>
+              ${t.reply_count > 0 ? `<span class="thread-meta">${t.reply_count} ${t.reply_count === 1 ? 'reply' : 'replies'}</span>` : ''}
+            </div>
+            <div style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--text-muted);max-width:500px">${t.message || ''}</div>
+            <div class="thread-meta">${t.file_name || ''} · ${timeAgo(t.created_at)}</div>
+          </div>
+        </div>
+        <div class="thread-replies">${(t.replies || []).map(r => `
+          <div class="thread-reply">
+            <div class="feed-avatar" style="background:${avatarColor(r.user_name)};width:20px;height:20px;font-size:0.45rem;flex-shrink:0">${initials(r.user_name)}</div>
+            <div><span style="font-weight:500">${r.user_name}</span> <span class="thread-meta">${timeAgo(r.created_at)}</span><br>${r.message || ''}</div>
+          </div>
+        `).join('')}</div>
+      </div>
+    `).join('');
+  } catch (e) {
+    container.innerHTML = `<div class="text-muted" style="padding:20px">Failed: ${e.message}</div>`;
+  }
+}
+
+async function loadResponseTimes() {
+  const container = document.getElementById('responseTimesContainer');
+  if (!container) return;
+  container.innerHTML = '<div class="loading-state"><div class="spinner"></div></div>';
+
+  try {
+    const times = await API.commentResponseTimes();
+    if (!times.length) {
+      container.innerHTML = '<div class="text-muted" style="padding:20px;text-align:center">No response time data</div>';
+      return;
+    }
+    container.innerHTML = `<table style="width:100%;font-size:0.72rem">
+      <thead><tr><th style="text-align:left">Designer</th><th>Avg Response</th><th>Median</th><th>Resolved</th></tr></thead>
+      <tbody>${times.map(t => `
+        <tr>
+          <td>${t.designer_name}</td>
+          <td class="mono" style="text-align:center;color:${t.avg_hours < 24 ? 'var(--green)' : t.avg_hours < 72 ? 'var(--amber)' : 'var(--red)'}">${t.avg_hours}h</td>
+          <td class="mono" style="text-align:center">${t.median_hours}h</td>
+          <td class="mono" style="text-align:center">${t.total_resolved}</td>
+        </tr>
+      `).join('')}</tbody>
+    </table>`;
+  } catch (e) {
+    container.innerHTML = `<div class="text-muted" style="padding:20px">Failed: ${e.message}</div>`;
+  }
+}
 
 // ============================================================
 // AUTH
