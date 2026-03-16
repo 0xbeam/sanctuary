@@ -1209,7 +1209,7 @@ app.get('/api/components/coverage-trend', (req, res) => {
 
   // Also compute current coverage
   const total = db.prepare('SELECT COUNT(*) as n FROM figma_components').get().n;
-  const withDesc = db.prepare('SELECT COUNT(*) as n FROM figma_components WHERE description IS NOT NULL AND description != ""').get().n;
+  const withDesc = db.prepare(`SELECT COUNT(*) as n FROM figma_components WHERE description IS NOT NULL AND description != ''`).get().n;
 
   const trend = [{ date: new Date().toISOString(), coverage: total ? Math.round((withDesc / total) * 100) : 0 }];
 
@@ -1217,7 +1217,7 @@ app.get('/api/components/coverage-trend', (req, res) => {
   const snapDates = db.prepare('SELECT DISTINCT synced_at FROM component_snapshots ORDER BY synced_at DESC LIMIT 12').all();
   for (const { synced_at } of snapDates) {
     const snapTotal = db.prepare('SELECT COUNT(*) as n FROM component_snapshots WHERE synced_at = ?').get(synced_at).n;
-    const snapDesc = db.prepare('SELECT COUNT(*) as n FROM component_snapshots WHERE synced_at = ? AND description IS NOT NULL AND description != ""').get(synced_at).n;
+    const snapDesc = db.prepare(`SELECT COUNT(*) as n FROM component_snapshots WHERE synced_at = ? AND description IS NOT NULL AND description != ''`).get(synced_at).n;
     if (snapTotal > 0) trend.push({ date: synced_at, coverage: Math.round((snapDesc / snapTotal) * 100) });
   }
 
