@@ -1,6 +1,6 @@
 import Queue from "bull";
 import { prisma } from "../server";
-import { embedBatch, chunkText } from "@atlas/ai";
+import { embedBatch, chunkText, generateBriefing } from "@atlas/ai";
 
 const REDIS_URL = process.env.REDIS_URL || "redis://localhost:6379";
 export const embeddingQueue = new Queue("embeddings", REDIS_URL);
@@ -134,9 +134,85 @@ export function setupEmbeddingWorker() {
     { repeat: { every: 60 * 60 * 1000 }, jobId: "context-embed-hourly" }
   );
 
-  embeddingQueue.on("failed", (job, err) => {
-    console.error(`Embedding job ${job.id} failed:`, err.message);
+  // Routine scheduler — runs enabled routines on their cron schedule
+  embeddingQueue.process("run-routine", async (job) => {
+    const { routineId } = job.data;
+    const routine = await prisma.routine.findUnique({ where: { id: routineId } });
+    if (!routine || !routine.enabled) return;
+
+    console.log(`Running routine: ${routine.name}`);
+    const template = routine.template as "daily_briefing" | "weekly_digest";
+    const now = new Date();
+    const rangeStart =
+      template === "daily_briefing"
+        ? new Date(now.getFullYear(), now.getMonth(), now.getDate())
+        : new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+
+    const [meetings, actionItems, contextEvents] = await Promise.all([
+      prisma.meeting.findMany({
+        where: { startedAt: { gte: rangeStart } },
+        include: { summaries: { take: 1 } },
+      }),
+      prisma.actionItem.findMany({ where: { createdAt: { gte: rangeStart } } }),
+      prisma.contextEvent.findMany({
+        where: { timestamp: { gte: rangeStart } },
+        orderBy: { timestamp: "asc" },
+      }),
+    ]);
+
+    const meetingsText = meetings
+      .map((m) => `- ${m.title || "Untitled"}: ${m.summaries[0]?.summaryText?.slice(0, 200) || "No summary"}`)
+      .join("\n");
+
+    const actionItemsText = actionItems
+      .map((a) => `- [${a.status}] ${a.text}${a.assignee ? ` (@${a.assignee})` : ""}`)
+      .join("\n");
+
+    // Summarize context events
+    const appTime: Record<string, number> = {};
+    for (const e of contextEvents) {
+      appTime[e.appName] = (appTime[e.appName] || 0) + (e.durationSecs || 0);
+    }
+    const contextSummary = Object.entries(appTime)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 10)
+      .map(([app, secs]) => `${app}: ${Math.round(secs / 60)}min`)
+      .join(", ");
+
+    const output = await generateBriefing(template, {
+      meetings: meetingsText || "No meetings",
+      actionItems: actionItemsText || "No action items",
+      contextSummary: contextSummary || "No context data",
+    });
+
+    await prisma.routineRun.create({ data: { routineId: routine.id, output } });
+    await prisma.routine.update({ where: { id: routine.id }, data: { lastRunAt: now } });
+    console.log(`Routine ${routine.name} completed`);
   });
 
-  console.log("Embedding worker ready");
+  // Schedule enabled routines on startup
+  scheduleRoutines();
+
+  embeddingQueue.on("failed", (job, err) => {
+    console.error(`Job ${job.id} failed:`, err.message);
+  });
+
+  console.log("Embedding worker + routine scheduler ready");
+}
+
+// Load enabled routines and schedule them via Bull cron
+async function scheduleRoutines() {
+  try {
+    const routines = await prisma.routine.findMany({ where: { enabled: true } });
+    for (const routine of routines) {
+      await embeddingQueue.add(
+        "run-routine",
+        { routineId: routine.id },
+        { repeat: { cron: routine.schedule }, jobId: `routine-${routine.id}` }
+      );
+      console.log(`Scheduled routine "${routine.name}" with cron: ${routine.schedule}`);
+    }
+  } catch {
+    console.warn("Could not schedule routines (DB may not be ready)");
+  }
 }
