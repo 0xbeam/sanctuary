@@ -1,13 +1,14 @@
 import { getDb, logSync, completeSync, getConfig, setConfig } from './db.js';
 import * as figma from './figma-client.js';
-import { reconstructAllSessions } from './session-engine.js';
+import { reconstructSessions } from './session-engine.js';
 
 let syncing = false;
 
 export function isSyncing() { return syncing; }
 
 /**
- * Full sync: teams → projects → files → versions → comments → components → sessions
+ * Smart sync: full on first run, incremental after that.
+ * Incremental only fetches versions/comments for files modified since last sync.
  */
 export async function fullSync() {
   if (syncing) {
@@ -21,13 +22,21 @@ export async function fullSync() {
   syncing = true;
   const startedAt = new Date().toISOString();
   const syncId = logSync('full_sync', 'started');
-  const counts = { projects: 0, files: 0, versions: 0, comments: 0, components: 0, sessions: 0 };
+  const counts = { projects: 0, files: 0, versions: 0, comments: 0, components: 0, sessions: 0, mode: 'full' };
 
   try {
-    console.log('[sync] Starting full sync for team', teamId);
     const db = getDb();
+    const lastSyncTime = getConfig('last_sync');
+    const isIncremental = !!lastSyncTime;
 
-    // 1. Get all projects
+    if (isIncremental) {
+      counts.mode = 'incremental';
+      console.log(`[sync] Incremental sync since ${lastSyncTime}`);
+    } else {
+      console.log('[sync] Full initial sync for team', teamId);
+    }
+
+    // 1. Get all projects (always — lightweight call)
     const projects = await figma.getTeamProjects(teamId);
     counts.projects = projects.length;
     console.log(`[sync] Found ${projects.length} projects`);
@@ -45,25 +54,33 @@ export async function fullSync() {
     `);
 
     const allFiles = [];
+    const changedFiles = [];
+
     for (const proj of projects) {
       try {
         const files = await figma.getProjectFiles(proj.id);
         for (const f of files) {
           upsertFile.run(f.key, f.name, proj.name, String(proj.id), f.last_modified, f.thumbnail_url || null);
           allFiles.push({ key: f.key, lastModified: f.last_modified });
+
+          if (!isIncremental || f.last_modified > lastSyncTime) {
+            changedFiles.push({ key: f.key, lastModified: f.last_modified });
+          }
         }
         counts.files += files.length;
       } catch (err) {
         console.warn(`[sync] Failed to get files for project ${proj.name}:`, err.message);
       }
     }
-    console.log(`[sync] Found ${allFiles.length} files across ${projects.length} projects`);
 
-    // 3. Get versions for recently modified files (last 90 days)
-    const cutoff = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString();
-    const recentFiles = allFiles.filter(f => f.lastModified >= cutoff);
-    console.log(`[sync] Fetching versions for ${recentFiles.length} recently modified files`);
+    const targetFiles = isIncremental ? changedFiles : allFiles.filter(f => {
+      const cutoff = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString();
+      return f.lastModified >= cutoff;
+    });
 
+    console.log(`[sync] ${allFiles.length} total files, ${targetFiles.length} to process (${counts.mode})`);
+
+    // 3. Get versions for target files
     const upsertVersion = db.prepare(`
       INSERT INTO figma_versions (id, file_key, user_id, user_name, label, description, created_at, synced_at)
       VALUES (?, ?, ?, ?, ?, ?, ?, datetime('now'))
@@ -72,11 +89,18 @@ export async function fullSync() {
         synced_at = excluded.synced_at
     `);
 
-    for (const f of recentFiles) {
+    const filesWithNewVersions = new Set();
+
+    for (const f of targetFiles) {
       try {
-        const versions = await figma.getFileVersions(f.key, 2); // 2 pages = ~50 versions
+        const maxPages = isIncremental ? 1 : 2;
+        const versions = await figma.getFileVersions(f.key, maxPages);
+
+        let newCount = 0;
         const tx = db.transaction(() => {
           for (const v of versions) {
+            const existing = db.prepare('SELECT id FROM figma_versions WHERE file_key = ? AND id = ?').get(f.key, String(v.id));
+            if (!existing) newCount++;
             upsertVersion.run(
               String(v.id), f.key,
               v.user?.id || 'unknown', v.user?.handle || 'Unknown',
@@ -88,17 +112,18 @@ export async function fullSync() {
         tx();
         counts.versions += versions.length;
 
-        // Update version count
+        if (newCount > 0) filesWithNewVersions.add(f.key);
+
         db.prepare('UPDATE figma_files SET version_count = ? WHERE file_key = ?')
           .run(versions.length, f.key);
       } catch (err) {
         console.warn(`[sync] Failed to get versions for ${f.key}:`, err.message);
       }
     }
-    console.log(`[sync] Synced ${counts.versions} versions`);
+    console.log(`[sync] Synced ${counts.versions} versions (${filesWithNewVersions.size} files with new data)`);
 
-    // 4. Get comments for recent files
-    const commentFiles = recentFiles.slice(0, 50); // Limit to avoid rate limits
+    // 4. Get comments for target files
+    const commentFiles = targetFiles.slice(0, 50);
     const upsertComment = db.prepare(`
       INSERT INTO figma_comments (id, file_key, user_name, user_id, message, parent_id, created_at, resolved_at, synced_at)
       VALUES (?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))
@@ -158,13 +183,18 @@ export async function fullSync() {
       console.warn('[sync] Failed to get components:', err.message);
     }
 
-    // 6. Reconstruct sessions from version history
-    counts.sessions = reconstructAllSessions();
-    console.log(`[sync] Reconstructed ${counts.sessions} design sessions`);
+    // 6. Reconstruct sessions only for files with new versions (or all on first sync)
+    const sessionFiles = isIncremental
+      ? [...filesWithNewVersions]
+      : db.prepare('SELECT file_key FROM figma_files').all().map(f => f.file_key);
+    for (const fk of sessionFiles) {
+      counts.sessions += reconstructSessions(fk);
+    }
+    console.log(`[sync] Reconstructed ${counts.sessions} sessions from ${sessionFiles.length} files`);
 
     setConfig('last_sync', new Date().toISOString());
     completeSync(syncId, 'completed', counts, startedAt);
-    console.log('[sync] Full sync completed:', counts);
+    console.log(`[sync] ${counts.mode} sync completed:`, counts);
     return counts;
   } catch (err) {
     completeSync(syncId, 'failed', { error: err.message }, startedAt);

@@ -273,6 +273,40 @@ app.get('/api/dashboard', (req, res) => {
   });
 });
 
+// ── Stale Alerts ──
+app.get('/api/alerts/stale', (req, res) => {
+  const db = getDb();
+  const staleFiles = db.prepare(`SELECT f.file_key, f.name, f.project_name, f.last_modified, CAST((julianday('now') - julianday(f.last_modified)) AS INTEGER) as days_stale FROM figma_files f WHERE julianday('now') - julianday(f.last_modified) > 14 ORDER BY f.last_modified ASC LIMIT 50`).all();
+  const unresolvedComments = db.prepare(`SELECT c.file_key, f.name as file_name, f.project_name, COUNT(*) as count, MIN(c.created_at) as oldest FROM figma_comments c JOIN figma_files f ON c.file_key = f.file_key WHERE c.resolved_at IS NULL AND julianday('now') - julianday(c.created_at) > 2 GROUP BY c.file_key ORDER BY count DESC LIMIT 20`).all();
+  const inactiveDesigners = db.prepare(`SELECT designer_name, MAX(end_time) as last_active, CAST((julianday('now') - julianday(MAX(end_time))) AS INTEGER) as days_inactive FROM design_sessions GROUP BY designer_name HAVING julianday('now') - julianday(MAX(end_time)) > 7 ORDER BY last_active ASC`).all();
+  res.json({ staleFiles, unresolvedComments, inactiveDesigners });
+});
+
+// ── Designer Profile ──
+app.get('/api/designers/:name/profile', (req, res) => {
+  const db = getDb();
+  const { name } = req.params;
+  const monthAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
+  const stats = db.prepare(`SELECT SUM(duration_minutes) as total_minutes, COUNT(*) as total_sessions, COUNT(DISTINCT file_key) as total_files, COUNT(DISTINCT project_name) as total_projects, AVG(duration_minutes) as avg_session_min, MIN(start_time) as first_active, MAX(end_time) as last_active FROM design_sessions WHERE designer_name = ?`).get(name);
+  const sessions = db.prepare(`SELECT file_name, project_name, start_time, end_time, duration_minutes, version_count, confidence FROM design_sessions WHERE designer_name = ? AND start_time >= ? ORDER BY start_time DESC`).all(name, monthAgo);
+  const dailyHours = db.prepare(`SELECT DATE(start_time) as day, SUM(duration_minutes) as minutes, COUNT(*) as sessions FROM design_sessions WHERE designer_name = ? AND start_time >= ? GROUP BY DATE(start_time) ORDER BY day`).all(name, monthAgo);
+  const topProjects = db.prepare(`SELECT project_name, SUM(duration_minutes) as minutes, COUNT(*) as sessions FROM design_sessions WHERE designer_name = ? AND start_time >= ? GROUP BY project_name ORDER BY minutes DESC LIMIT 10`).all(name, monthAgo);
+  const allSessions = db.prepare(`SELECT start_time, duration_minutes FROM design_sessions WHERE designer_name = ? AND start_time >= ?`).all(name, monthAgo);
+  const grid = Array.from({ length: 7 }, () => Array(24).fill(0));
+  for (const s of allSessions) { const d = new Date(s.start_time); grid[d.getDay()][d.getHours()] += s.duration_minutes; }
+  res.json({ designer: name, stats, sessions, dailyHours, topProjects, heatmap: grid });
+});
+
+// ── Project Velocity ──
+app.get('/api/projects/:name/velocity', (req, res) => {
+  const db = getDb();
+  const { name } = req.params;
+  const weekly = db.prepare(`SELECT strftime('%Y-W%W', start_time) as week, SUM(duration_minutes) as minutes, COUNT(*) as sessions, COUNT(DISTINCT designer_name) as designers FROM design_sessions WHERE project_name = ? AND start_time >= datetime('now', '-84 days') GROUP BY week ORDER BY week`).all(name);
+  const daily = db.prepare(`SELECT DATE(start_time) as day, SUM(duration_minutes) as minutes, COUNT(*) as sessions FROM design_sessions WHERE project_name = ? AND start_time >= datetime('now', '-30 days') GROUP BY day ORDER BY day`).all(name);
+  const contributors = db.prepare(`SELECT designer_name, SUM(duration_minutes) as minutes, COUNT(*) as sessions, MAX(end_time) as last_active FROM design_sessions WHERE project_name = ? GROUP BY designer_name ORDER BY minutes DESC`).all(name);
+  res.json({ project: name, weekly, daily, contributors });
+});
+
 // ── Webhook ──
 app.post('/api/webhook', (req, res) => {
   const { event_type, file_key, timestamp } = req.body;
