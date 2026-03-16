@@ -11,9 +11,13 @@ export default function ActionItemsPage() {
   const [items, setItems] = useState<ActionItem[]>([]);
   const [filter, setFilter] = useState<Filter>("all");
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    api.getActionItems().then(setItems).catch(console.error).finally(() => setLoading(false));
+    api.getActionItems()
+      .then(setItems)
+      .catch(() => setError("Could not connect to backend"))
+      .finally(() => setLoading(false));
   }, []);
 
   const filtered = filter === "all" ? items : items.filter((i) => i.status === filter);
@@ -35,6 +39,16 @@ export default function ActionItemsPage() {
   };
 
   if (loading) return <div className="p-8"><div className="h-8 w-40 bg-bg-card rounded animate-pulse" /></div>;
+
+  if (error) return (
+    <div className="p-8 max-w-4xl">
+      <div className="bg-warning-dim border border-warning/20 rounded-[var(--radius-lg)] p-6 text-center">
+        <p className="text-sm font-medium mb-1">{error}</p>
+        <p className="text-xs text-text-muted">Make sure the backend is running: <code className="font-[family-name:var(--font-mono)]">docker compose up -d</code></p>
+        <button onClick={() => window.location.reload()} className="mt-3 text-xs text-accent hover:text-accent-hover">Retry</button>
+      </div>
+    </div>
+  );
 
   return (
     <div className="p-8 max-w-4xl">

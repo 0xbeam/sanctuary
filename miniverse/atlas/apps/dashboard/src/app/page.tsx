@@ -8,9 +8,13 @@ import { api } from "@/lib/api";
 export default function MeetingsPage() {
   const [meetings, setMeetings] = useState<Meeting[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    api.getMeetings().then(setMeetings).catch(console.error).finally(() => setLoading(false));
+    api.getMeetings()
+      .then(setMeetings)
+      .catch(() => setError("Could not connect to backend"))
+      .finally(() => setLoading(false));
   }, []);
 
   const completed = meetings.filter((m) => m.status === "complete").length;
@@ -25,6 +29,16 @@ export default function MeetingsPage() {
   ];
 
   if (loading) return <LoadingSkeleton />;
+
+  if (error) return (
+    <div className="p-8 max-w-5xl">
+      <div className="bg-warning-dim border border-warning/20 rounded-[var(--radius-lg)] p-6 text-center">
+        <p className="text-sm font-medium mb-1">{error}</p>
+        <p className="text-xs text-text-muted">Make sure the backend is running: <code className="font-[family-name:var(--font-mono)]">docker compose up -d</code></p>
+        <button onClick={() => window.location.reload()} className="mt-3 text-xs text-accent hover:text-accent-hover">Retry</button>
+      </div>
+    </div>
+  );
 
   return (
     <div className="p-8 max-w-5xl">
