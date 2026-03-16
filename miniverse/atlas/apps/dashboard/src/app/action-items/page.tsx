@@ -46,7 +46,7 @@ export default function ActionItemsPage() {
           <button
             key={f}
             onClick={() => setFilter(f)}
-            className={`text-sm px-3 py-1.5 rounded-lg capitalize transition-colors ${filter === f ? "bg-accent text-white" : "text-text-muted hover:text-text hover:bg-bg-hover"}`}
+            className={`text-sm px-3 py-1.5 rounded-[var(--radius)] capitalize transition-colors ${filter === f ? "bg-accent text-white" : "text-text-muted hover:text-text hover:bg-bg-hover"}`}
           >
             {f} ({counts[f]})
           </button>
@@ -63,7 +63,7 @@ export default function ActionItemsPage() {
               <h2 className="text-sm font-medium text-text-muted mb-2">{assignee}</h2>
               <div className="space-y-2">
                 {assigneeItems.map((item) => (
-                  <div key={item.id} className="flex items-start gap-3 bg-bg-card border border-border rounded-lg p-3">
+                  <div key={item.id} className="flex items-start gap-3 bg-bg-card border border-border rounded-[var(--radius)] p-3">
                     <button onClick={() => toggle(item.id, item.status)} className={`mt-0.5 w-4 h-4 rounded border shrink-0 flex items-center justify-center ${item.status === "done" ? "bg-success border-success" : "border-text-muted"}`}>
                       {item.status === "done" && <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" strokeWidth={3} stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" /></svg>}
                     </button>

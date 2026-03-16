@@ -41,9 +41,9 @@ export default function DraftsPage() {
   };
 
   const statusColors: Record<string, string> = {
-    draft: "bg-yellow-500/10 text-yellow-400",
-    sent: "bg-green-500/10 text-green-400",
-    archived: "bg-zinc-500/10 text-zinc-400",
+    draft: "bg-warning-dim text-warning",
+    sent: "bg-success-dim text-success",
+    archived: "bg-bg-hover text-text-muted",
   };
 
   if (loading) return <div className="p-8"><div className="h-8 w-40 bg-bg-card rounded animate-pulse" /></div>;
@@ -55,12 +55,12 @@ export default function DraftsPage() {
           <h1 className="text-2xl font-semibold">Drafts</h1>
           <p className="text-sm text-text-muted mt-1">AI-generated content from your meetings</p>
         </div>
-        <div className="flex gap-1 bg-bg-card border border-border rounded-lg p-1">
+        <div className="flex gap-1 bg-bg-card border border-border rounded-[var(--radius)] p-1">
           {(["all", "draft", "sent", "archived"] as const).map((f) => (
             <button
               key={f}
               onClick={() => setFilter(f)}
-              className={`text-xs px-3 py-1.5 rounded-md capitalize transition-colors ${filter === f ? "bg-bg-hover text-text" : "text-text-muted"}`}
+              className={`text-xs px-3 py-1.5 rounded-[var(--radius)] capitalize transition-colors ${filter === f ? "bg-bg-hover text-text" : "text-text-muted"}`}
             >
               {f}
             </button>
@@ -69,7 +69,7 @@ export default function DraftsPage() {
       </div>
 
       {filtered.length === 0 ? (
-        <div className="bg-bg-card border border-border rounded-xl p-8 text-center">
+        <div className="bg-bg-card border border-border rounded-[var(--radius-lg)] p-8 text-center">
           <p className="text-text-muted">
             {drafts.length === 0
               ? "No drafts yet. Generate one from a meeting detail page."
@@ -82,7 +82,7 @@ export default function DraftsPage() {
             <button
               key={d.id}
               onClick={() => setSelected(d)}
-              className={`w-full bg-bg-card border rounded-xl p-4 text-left hover:border-accent/40 transition-colors ${selected?.id === d.id ? "border-accent/60" : "border-border"}`}
+              className={`w-full bg-bg-card border rounded-[var(--radius-lg)] p-4 text-left hover:border-accent/40 hover:shadow-sm transition-all ${selected?.id === d.id ? "border-accent/60" : "border-border"}`}
             >
               <div className="flex items-center justify-between">
                 <div>
@@ -106,9 +106,9 @@ export default function DraftsPage() {
 
       {/* Draft detail panel */}
       {selected && (
-        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-8" onClick={() => setSelected(null)}>
-          <div className="bg-bg-card border border-border rounded-xl max-w-3xl w-full max-h-[85vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
-            <div className="sticky top-0 bg-bg-card border-b border-border p-5 flex items-center justify-between">
+        <div className="fixed inset-0 bg-black/20 backdrop-blur-sm flex items-center justify-center z-50 p-8" onClick={() => setSelected(null)}>
+          <div className="bg-bg border border-border rounded-[var(--radius-lg)] max-w-3xl w-full max-h-[85vh] overflow-y-auto shadow-xl" onClick={(e) => e.stopPropagation()}>
+            <div className="sticky top-0 bg-bg border-b border-border p-5 flex items-center justify-between">
               <div>
                 <h3 className="font-medium">{selected.title}</h3>
                 <span className="text-xs text-text-muted">{typeLabels[selected.type] || selected.type}</span>
@@ -117,7 +117,7 @@ export default function DraftsPage() {
                 {selected.status === "draft" && (
                   <button
                     onClick={() => updateStatus(selected.id, "sent")}
-                    className="text-xs px-3 py-1.5 rounded-lg bg-accent text-white hover:bg-accent-hover"
+                    className="text-xs px-3 py-1.5 rounded-[var(--radius)] bg-accent text-white hover:bg-accent-hover"
                   >
                     Mark Sent
                   </button>
@@ -125,7 +125,7 @@ export default function DraftsPage() {
                 {selected.status !== "archived" && (
                   <button
                     onClick={() => updateStatus(selected.id, "archived")}
-                    className="text-xs px-3 py-1.5 rounded-lg bg-bg-hover text-text-muted hover:text-text"
+                    className="text-xs px-3 py-1.5 rounded-[var(--radius)] bg-bg-hover text-text-muted hover:text-text"
                   >
                     Archive
                   </button>

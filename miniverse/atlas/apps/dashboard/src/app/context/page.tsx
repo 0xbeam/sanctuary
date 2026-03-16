@@ -87,14 +87,14 @@ export default function ContextPage() {
           type="date"
           value={date}
           onChange={(e) => setDate(e.target.value)}
-          className="bg-bg-card border border-border rounded-lg px-3 py-1.5 text-sm"
+          className="bg-bg-card border border-border rounded-[var(--radius)] px-3 py-1.5 text-sm"
         />
       </div>
 
       {loading ? (
         <div className="text-sm text-text-muted">Loading...</div>
       ) : !summary || summary.totalEvents === 0 ? (
-        <div className="bg-bg-card border border-border rounded-xl p-8 text-center">
+        <div className="bg-bg-card border border-border rounded-[var(--radius-lg)] p-8 text-center">
           <p className="text-text-muted">No context data for this date.</p>
           <p className="text-sm text-text-muted mt-2">
             Context tracking requires the Atlas desktop app to be running.
@@ -110,13 +110,13 @@ export default function ContextPage() {
           </div>
 
           {/* AI Summary */}
-          <div className="bg-bg-card border border-border rounded-xl p-5">
+          <div className="bg-bg-card border border-border rounded-[var(--radius-lg)] p-5">
             <div className="flex items-center justify-between mb-3">
               <h2 className="text-sm font-medium">AI Daily Summary</h2>
               <button
                 onClick={generateAiSummary}
                 disabled={aiLoading}
-                className="text-xs px-3 py-1 rounded-lg bg-accent/10 text-accent hover:bg-accent/20 transition-colors disabled:opacity-50"
+                className="text-xs px-3 py-1 rounded-[var(--radius)] bg-accent/10 text-accent hover:bg-accent/20 transition-colors disabled:opacity-50"
               >
                 {aiLoading ? "Generating..." : summary.aiSummary ? "Regenerate" : "Generate Summary"}
               </button>
@@ -129,7 +129,7 @@ export default function ContextPage() {
           </div>
 
           {/* View toggle */}
-          <div className="flex gap-1 bg-bg-card border border-border rounded-lg p-1 w-fit">
+          <div className="flex gap-1 bg-bg-card border border-border rounded-[var(--radius)] p-1 w-fit">
             <button
               onClick={() => setView("timeline")}
               className={`text-xs px-3 py-1.5 rounded-md transition-colors ${view === "timeline" ? "bg-bg-hover text-text" : "text-text-muted"}`}
@@ -146,15 +146,15 @@ export default function ContextPage() {
 
           {view === "apps" ? (
             /* App breakdown */
-            <div className="bg-bg-card border border-border rounded-xl p-5">
+            <div className="bg-bg-card border border-border rounded-[var(--radius-lg)] p-5">
               <h2 className="text-sm font-medium mb-4">App Usage</h2>
               <div className="space-y-3">
                 {summary.topApps.map((a) => (
                   <div key={a.app} className="flex items-center gap-3">
                     <span className="text-sm w-32 shrink-0 truncate">{a.app}</span>
-                    <div className="flex-1 h-6 bg-bg-hover rounded-md overflow-hidden">
+                    <div className="flex-1 h-6 bg-bg-hover rounded-[var(--radius)] overflow-hidden">
                       <div
-                        className="h-full bg-accent/30 rounded-md"
+                        className="h-full bg-accent-dim rounded-[var(--radius)]"
                         style={{ width: `${(a.minutes / maxAppMinutes) * 100}%` }}
                       />
                     </div>
@@ -165,7 +165,7 @@ export default function ContextPage() {
             </div>
           ) : (
             /* Hourly timeline */
-            <div className="bg-bg-card border border-border rounded-xl p-5">
+            <div className="bg-bg-card border border-border rounded-[var(--radius-lg)] p-5">
               <h2 className="text-sm font-medium mb-4">Hourly Activity</h2>
               <div className="space-y-4">
                 {summary.hourlyBreakdown.map((block) => (
@@ -178,7 +178,7 @@ export default function ContextPage() {
                         {block.apps.map((a) => (
                           <span
                             key={a.app}
-                            className="text-xs px-2 py-1 rounded-md bg-bg-hover"
+                            className="text-xs px-2 py-1 rounded-[var(--radius)] bg-bg-hover"
                           >
                             {a.app} <span className="text-text-muted">{a.minutes}m</span>
                           </span>
@@ -193,7 +193,7 @@ export default function ContextPage() {
 
           {/* Recent events */}
           {events.length > 0 && (
-            <div className="bg-bg-card border border-border rounded-xl p-5">
+            <div className="bg-bg-card border border-border rounded-[var(--radius-lg)] p-5">
               <h2 className="text-sm font-medium mb-4">Recent Events ({events.length})</h2>
               <div className="max-h-64 overflow-y-auto space-y-1">
                 {events.slice(-50).reverse().map((e) => (
@@ -221,9 +221,9 @@ export default function ContextPage() {
 
 function StatCard({ label, value }: { label: string; value: string }) {
   return (
-    <div className="bg-bg-card border border-border rounded-xl p-4">
+    <div className="bg-bg-card border border-border rounded-[var(--radius-lg)] p-4">
       <p className="text-xs text-text-muted">{label}</p>
-      <p className="text-xl font-semibold mt-1">{value}</p>
+      <p className="text-xl font-semibold mt-1 font-[family-name:var(--font-display)]">{value}</p>
     </div>
   );
 }

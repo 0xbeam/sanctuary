@@ -55,11 +55,11 @@ export default function RoutinesPage() {
       {/* Create buttons */}
       {routines.length === 0 && (
         <div className="grid grid-cols-2 gap-4 mb-8">
-          <button onClick={() => createRoutine("daily_briefing")} className="bg-bg-card border border-border rounded-xl p-6 text-left hover:border-accent/40 transition-colors">
+          <button onClick={() => createRoutine("daily_briefing")} className="bg-bg-card border border-border rounded-[var(--radius-lg)] p-6 text-left hover:border-accent/40 transition-colors">
             <h3 className="font-medium mb-1">Daily Briefing</h3>
             <p className="text-sm text-text-muted">Get a morning summary of meetings, action items, and activity. Runs weekdays at 8am.</p>
           </button>
-          <button onClick={() => createRoutine("weekly_digest")} className="bg-bg-card border border-border rounded-xl p-6 text-left hover:border-accent/40 transition-colors">
+          <button onClick={() => createRoutine("weekly_digest")} className="bg-bg-card border border-border rounded-[var(--radius-lg)] p-6 text-left hover:border-accent/40 transition-colors">
             <h3 className="font-medium mb-1">Weekly Digest</h3>
             <p className="text-sm text-text-muted">Weekly overview of all meetings, decisions, and progress. Runs Mondays at 9am.</p>
           </button>
@@ -69,7 +69,7 @@ export default function RoutinesPage() {
       {/* Routine list */}
       <div className="space-y-3">
         {routines.map((r) => (
-          <div key={r.id} className="bg-bg-card border border-border rounded-xl p-5">
+          <div key={r.id} className="bg-bg-card border border-border rounded-[var(--radius-lg)] p-5">
             <div className="flex items-center justify-between">
               <div>
                 <h3 className="font-medium">{r.name}</h3>
@@ -94,13 +94,13 @@ export default function RoutinesPage() {
 
       {/* Run output modal */}
       {selectedRun && (
-        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-8" onClick={() => setSelectedRun(null)}>
-          <div className="bg-bg-card border border-border rounded-xl max-w-2xl w-full max-h-[80vh] overflow-y-auto p-6" onClick={(e) => e.stopPropagation()}>
+        <div className="fixed inset-0 bg-black/20 backdrop-blur-sm flex items-center justify-center z-50 p-8" onClick={() => setSelectedRun(null)}>
+          <div className="bg-bg border border-border rounded-[var(--radius-lg)] max-w-2xl w-full max-h-[80vh] overflow-y-auto p-6 shadow-xl" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-between mb-4">
               <h3 className="font-medium">Briefing Output</h3>
               <button onClick={() => setSelectedRun(null)} className="text-text-muted hover:text-text">&times;</button>
             </div>
-            <div className="prose prose-invert prose-sm max-w-none">
+            <div className="prose prose-sm max-w-none">
               <pre className="whitespace-pre-wrap text-sm text-text-muted">{selectedRun.output}</pre>
             </div>
           </div>

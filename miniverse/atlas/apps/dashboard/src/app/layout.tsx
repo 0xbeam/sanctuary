@@ -1,10 +1,6 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
 import Link from "next/link";
 import "./globals.css";
-
-const geist = Geist({ subsets: ["latin"], variable: "--font-geist" });
-const geistMono = Geist_Mono({ subsets: ["latin"], variable: "--font-mono" });
 
 export const metadata: Metadata = {
   title: "Atlas",
@@ -25,12 +21,12 @@ const navItems = [
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
-      <body className={`${geist.variable} ${geistMono.variable} font-[family-name:var(--font-geist)] antialiased`}>
+      <body className="antialiased">
         <div className="flex h-screen">
           {/* Sidebar */}
           <aside className="w-56 border-r border-border flex flex-col bg-bg">
             <div className="p-5 border-b border-border">
-              <h1 className="text-lg font-semibold tracking-tight">Atlas</h1>
+              <h1 className="text-lg font-semibold tracking-tight font-[family-name:var(--font-display)]">Atlas</h1>
               <p className="text-xs text-text-muted mt-0.5">AI Work Assistant</p>
             </div>
             <nav className="flex-1 p-3 space-y-0.5">
@@ -38,7 +34,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 <Link
                   key={item.href}
                   href={item.href}
-                  className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-text-muted hover:text-text hover:bg-bg-hover transition-colors"
+                  className="flex items-center gap-3 px-3 py-2 rounded-[var(--radius)] text-sm text-text-muted hover:text-text hover:bg-bg-hover transition-all duration-200"
                 >
                   <svg className="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" d={item.icon} />

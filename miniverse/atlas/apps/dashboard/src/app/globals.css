@@ -1,26 +1,60 @@
 @import "tailwindcss";
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Cormorant:wght@400;500;600;700&family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;600;700&display=swap');
 
 @theme {
-  --color-bg: #09090b;
-  --color-bg-card: #18181b;
-  --color-bg-hover: #27272a;
-  --color-bg-input: #1c1c1f;
-  --color-border: #2e2e33;
-  --color-text: #fafafa;
-  --color-text-muted: #a1a1aa;
-  --color-accent: #6366f1;
-  --color-accent-hover: #818cf8;
-  --color-success: #22c55e;
-  --color-warning: #f59e0b;
-  --color-danger: #ef4444;
+  --color-bg: #FFFFFF;
+  --color-bg-card: #F6F5F2;
+  --color-bg-hover: #EFEDE8;
+  --color-bg-input: #FFFFFF;
+  --color-border: #E8E5E0;
+  --color-border-light: #D8D5D0;
+  --color-text: #111111;
+  --color-text-muted: #888888;
+  --color-text-faint: #aaaaaa;
+  --color-accent: #2A7A5B;
+  --color-accent-hover: #1F5C43;
+  --color-accent-dim: #E8F5EE;
+  --color-success: #2A7A5B;
+  --color-success-dim: #E8F5EE;
+  --color-warning: #B8860B;
+  --color-warning-dim: #FFF3E0;
+  --color-danger: #C0392B;
+  --color-danger-dim: #FDEDEC;
+  --color-navy: #111114;
+
+  --font-sans: 'DM Sans', -apple-system, system-ui, sans-serif;
+  --font-serif: 'Cormorant Garamond', Georgia, serif;
+  --font-display: 'Cormorant', serif;
+  --font-mono: 'DM Mono', monospace;
+
+  --radius: 5px;
+  --radius-lg: 6px;
+  --ease: cubic-bezier(.16, 1, .3, 1);
+}
+
+html {
+  font-size: 14px;
 }
 
 body {
   background: var(--color-bg);
   color: var(--color-text);
+  font-family: var(--font-sans);
+  line-height: 1.5;
 }
 
 ::-webkit-scrollbar { width: 6px; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: var(--color-border); border-radius: 3px; }
 ::-webkit-scrollbar-thumb:hover { background: var(--color-text-muted); }
+
+/* Gravity-style focus ring */
+:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+/* Date input styling for light theme */
+input[type="date"] {
+  color-scheme: light;
+}

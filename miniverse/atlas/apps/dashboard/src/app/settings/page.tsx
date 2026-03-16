@@ -120,7 +120,7 @@ export default function SettingsPage() {
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <div className="bg-bg-card border border-border rounded-xl p-5">
+    <div className="bg-bg-card border border-border rounded-[var(--radius-lg)] p-5">
       <h2 className="text-sm font-medium mb-4">{title}</h2>
       <div className="space-y-3">{children}</div>
     </div>
