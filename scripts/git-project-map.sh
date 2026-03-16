@@ -11,6 +11,9 @@ project_for_path() {
     miniverse/design-plus|miniverse/design-plus/*)
       echo "design-plus"
       ;;
+    miniverse/atlas|miniverse/atlas/*)
+      echo "atlas"
+      ;;
     bangalore|bangalore/*)
       echo "bangalore"
       ;;
@@ -39,6 +42,9 @@ branch_for_project() {
       ;;
     design-plus)
       echo "project/design-plus"
+      ;;
+    atlas)
+      echo "project/atlas"
       ;;
     bangalore)
       echo "project/bangalore"
@@ -69,6 +75,9 @@ path_for_project() {
     design-plus)
       echo "miniverse/design-plus"
       ;;
+    atlas)
+      echo "miniverse/atlas"
+      ;;
     bangalore)
       echo "bangalore"
       ;;
@@ -92,6 +101,7 @@ list_known_projects() {
     "proposal-builder" \
     "andromeda" \
     "design-plus" \
+    "atlas" \
     "bangalore" \
     "data" \
     "dashboard-fork"
