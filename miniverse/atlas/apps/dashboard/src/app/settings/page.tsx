@@ -1,15 +1,25 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { isDesktop, getDesktopBridge } from "@/lib/desktop";
 
 export default function SettingsPage() {
   const [health, setHealth] = useState<{ status: string } | null>(null);
+  const [tracking, setTracking] = useState(false);
+  const [stats, setStats] = useState<{ totalEvents: number; todayEvents: number; topApps: { app: string; minutes: number }[] } | null>(null);
 
   useEffect(() => {
     fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001"}/health`)
       .then((r) => r.json())
       .then(setHealth)
       .catch(() => {});
+
+    // Desktop-only: get tracking status
+    const bridge = getDesktopBridge();
+    if (bridge) {
+      bridge.getTrackingStatus().then(setTracking);
+      bridge.getContextStats().then((s) => s && setStats(s));
+    }
   }, []);
 
   return (
@@ -49,12 +59,53 @@ export default function SettingsPage() {
 
         {/* Desktop App */}
         <Section title="Desktop App">
-          <p className="text-sm text-text-muted">
-            Context tracking requires the Atlas desktop app. The Electron app monitors your active windows and syncs context to the backend.
-          </p>
-          <p className="text-sm text-text-muted mt-2">
-            Status: <span className="text-warning">Not connected</span>
-          </p>
+          {isDesktop() ? (
+            <>
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-text-muted">Context Tracking</span>
+                <button
+                  onClick={async () => {
+                    const bridge = getDesktopBridge();
+                    if (bridge) {
+                      const newState = await bridge.toggleTracking();
+                      setTracking(newState);
+                    }
+                  }}
+                  className={`w-10 h-5 rounded-full transition-colors relative ${tracking ? "bg-accent" : "bg-bg-hover"}`}
+                >
+                  <span className={`absolute top-0.5 w-4 h-4 rounded-full bg-white transition-transform ${tracking ? "left-5" : "left-0.5"}`} />
+                </button>
+              </div>
+              {stats && (
+                <>
+                  <SettingRow label="Events Today" value={String(stats.todayEvents)} />
+                  <SettingRow label="Total Events" value={String(stats.totalEvents)} />
+                  {stats.topApps.length > 0 && (
+                    <div className="mt-2">
+                      <span className="text-xs text-text-muted">Top Apps Today</span>
+                      <div className="mt-1 space-y-1">
+                        {stats.topApps.slice(0, 5).map((a) => (
+                          <div key={a.app} className="flex items-center justify-between text-xs">
+                            <span>{a.app}</span>
+                            <span className="text-text-muted">{a.minutes}min</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </>
+              )}
+            </>
+          ) : (
+            <>
+              <p className="text-sm text-text-muted">
+                Context tracking requires the Atlas desktop app.
+              </p>
+              <p className="text-sm text-text-muted mt-2">
+                Status: <span className="text-warning">Not connected</span>
+              </p>
+            </>
+          )}
         </Section>
 
         {/* API Info */}

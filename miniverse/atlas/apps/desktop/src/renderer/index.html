@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Atlas</title>
+  <style>
+    body {
+      margin: 0;
+      background: #09090b;
+      color: #fafafa;
+      font-family: system-ui, -apple-system, sans-serif;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+    }
+    .loading {
+      text-align: center;
+    }
+    .loading h1 { font-size: 24px; font-weight: 600; }
+    .loading p { color: #a1a1aa; font-size: 14px; margin-top: 8px; }
+    .spinner {
+      width: 32px;
+      height: 32px;
+      border: 3px solid #27272a;
+      border-top-color: #6366f1;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin: 0 auto 16px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
+</head>
+<body>
+  <div class="loading">
+    <div class="spinner"></div>
+    <h1>Atlas</h1>
+    <p>Connecting to dashboard...</p>
+  </div>
+</body>
+</html>
