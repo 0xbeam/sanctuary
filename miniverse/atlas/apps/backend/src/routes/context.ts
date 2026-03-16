@@ -1,5 +1,6 @@
 import { Router } from "express";
 import { prisma } from "../server";
+import { generateBriefing } from "@atlas/ai";
 
 export const contextRoutes = Router();
 
@@ -66,10 +67,45 @@ contextRoutes.get("/api/context/summary", async (req, res) => {
     .slice(0, 10)
     .map(([app, seconds]) => ({ app, minutes: Math.round(seconds / 60) }));
 
+  // Build hourly breakdown
+  const hourly: Record<number, Record<string, number>> = {};
+  for (const e of events) {
+    const hour = new Date(e.timestamp).getHours();
+    if (!hourly[hour]) hourly[hour] = {};
+    const secs = e.durationSecs || 0;
+    hourly[hour][e.appName] = (hourly[hour][e.appName] || 0) + secs;
+  }
+
+  const hourlyBreakdown = Object.entries(hourly)
+    .sort((a, b) => Number(a[0]) - Number(b[0]))
+    .map(([hour, apps]) => ({
+      hour: Number(hour),
+      apps: Object.entries(apps)
+        .sort((a, b) => b[1] - a[1])
+        .map(([app, seconds]) => ({ app, minutes: Math.round(seconds / 60) })),
+    }));
+
+  // Generate AI summary if requested
+  let aiSummary: string | undefined;
+  if (req.query.ai === "true" && events.length > 0) {
+    const activityLines = topApps
+      .map((a) => `${a.app}: ${a.minutes} min`)
+      .join(", ");
+    const windowTitles = [...new Set(events.map((e) => e.windowTitle).filter(Boolean))].slice(0, 20);
+    const context = `Activity on ${start.toISOString().split("T")[0]}:\nTop apps: ${activityLines}\nWindow titles: ${windowTitles.join("; ")}`;
+    try {
+      aiSummary = await generateBriefing("daily_briefing", { contextSummary: context });
+    } catch {
+      // AI summary is optional
+    }
+  }
+
   res.json({
     date: start.toISOString().split("T")[0],
     totalEvents: events.length,
     totalMinutes: Math.round(Object.values(appTime).reduce((a, b) => a + b, 0) / 60),
     topApps,
+    hourlyBreakdown,
+    aiSummary,
   });
 });

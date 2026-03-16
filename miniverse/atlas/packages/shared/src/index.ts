@@ -96,6 +96,15 @@ export interface ContextEvent {
   durationSecs: number | null;
 }
 
+export interface ContextSummary {
+  date: string;
+  totalEvents: number;
+  totalMinutes: number;
+  topApps: { app: string; minutes: number }[];
+  hourlyBreakdown: { hour: number; apps: { app: string; minutes: number }[] }[];
+  aiSummary?: string;
+}
+
 // ─── Routine Types ───
 
 export interface Routine {
@@ -247,6 +256,10 @@ export class AtlasAPI {
   // Context
   getContextTimeline(from: string, to: string) {
     return this.request<ContextEvent[]>(`/api/context/timeline?from=${from}&to=${to}`);
+  }
+
+  getContextSummary(date: string, ai = false) {
+    return this.request<ContextSummary>(`/api/context/summary?date=${date}${ai ? "&ai=true" : ""}`);
   }
 
   // Health
