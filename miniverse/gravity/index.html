@@ -1574,11 +1574,11 @@ tr.expanded td { background: rgba(42,122,91,0.05); }
 <!-- TABS -->
 <nav class="tabs" id="tabNav">
   <button class="tab-btn active" data-tab="overview">Overview</button>
+  <button class="tab-btn" data-tab="gallery">Gallery</button>
   <button class="tab-btn" data-tab="designers">Designers</button>
   <button class="tab-btn" data-tab="projects">Projects</button>
   <button class="tab-btn" data-tab="assets">Design System</button>
   <button class="tab-btn" data-tab="reviews">Reviews<span id="reviewsBadge" class="tab-badge" style="display:none"></span></button>
-  <button class="tab-btn" data-tab="gallery">Gallery</button>
   <button class="tab-btn" data-tab="feed">Activity</button>
   <button class="tab-btn" data-tab="reports">Reports</button>
 </nav>
@@ -2246,11 +2246,11 @@ function renderAllTabs() {
   const app = document.getElementById('app');
   app.innerHTML = `
     <div class="tab-content active" id="tab-overview">${renderOverview()}</div>
+    <div class="tab-content" id="tab-gallery">${renderGallery()}</div>
     <div class="tab-content" id="tab-designers">${renderDesigners()}</div>
     <div class="tab-content" id="tab-projects">${renderProjects()}</div>
     <div class="tab-content" id="tab-assets">${renderAssets()}</div>
     <div class="tab-content" id="tab-reviews">${renderReviews()}</div>
-    <div class="tab-content" id="tab-gallery">${renderGallery()}</div>
     <div class="tab-content" id="tab-feed">${renderFeed()}</div>
     <div class="tab-content" id="tab-reports">${renderReports()}</div>
   `;
