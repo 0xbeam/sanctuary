@@ -1,0 +1,210 @@
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["postgresqlExtensions"]
+}
+
+datasource db {
+  provider   = "postgresql"
+  url        = env("DATABASE_URL")
+  extensions = [pgvector(map: "vector"), pg_trgm]
+}
+
+// ─── Meetings ───
+
+model Meeting {
+  id              String           @id @default(uuid())
+  title           String?
+  meetUrl          String
+  calendarEventId String?          @unique
+  startedAt       DateTime?
+  endedAt         DateTime?
+  participants    String[]
+  recordingPath   String?
+  recordingUrl    String?
+  durationSeconds Int?
+  status          String           @default("scheduled") // scheduled, joining, recording, processing, complete, failed
+
+  segments        Segment[]
+  summaries       MeetingSummary[]
+  actionItems     ActionItem[]
+  drafts          Draft[]
+  jobs            MeetingJob[]
+
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+
+  @@index([status])
+  @@index([startedAt])
+}
+
+model Segment {
+  id        String   @id @default(uuid())
+  meetingId String
+  meeting   Meeting  @relation(fields: [meetingId], references: [id], onDelete: Cascade)
+  speaker   String
+  text      String
+  startMs   Int
+  endMs     Int
+  source    String   @default("captions") // captions, deepgram, both
+
+  createdAt DateTime @default(now())
+
+  @@index([meetingId])
+  @@index([speaker])
+}
+
+model MeetingSummary {
+  id          String   @id @default(uuid())
+  meetingId   String
+  meeting     Meeting  @relation(fields: [meetingId], references: [id], onDelete: Cascade)
+  summaryJson Json
+  summaryText String
+  model       String   @default("gpt-4o-mini")
+  generatedAt DateTime @default(now())
+
+  @@index([meetingId])
+}
+
+model ActionItem {
+  id        String   @id @default(uuid())
+  meetingId String
+  meeting   Meeting  @relation(fields: [meetingId], references: [id], onDelete: Cascade)
+  text      String
+  assignee  String?
+  deadline  String?
+  status    String   @default("open") // open, done
+
+  createdAt DateTime @default(now())
+
+  @@index([meetingId])
+  @@index([status])
+  @@index([assignee])
+}
+
+model MeetingJob {
+  id        String   @id @default(uuid())
+  meetingId String
+  meeting   Meeting  @relation(fields: [meetingId], references: [id], onDelete: Cascade)
+  status    String   @default("queued") // queued, running, complete, failed
+  error     String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([meetingId])
+}
+
+// ─── Calendar ───
+
+model CalendarWatch {
+  id          String   @id @default(uuid())
+  calendarId  String   @unique
+  syncToken   String?
+  lastSynced  DateTime?
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+// ─── Embeddings (pgvector) ───
+
+model Embedding {
+  id         String   @id @default(uuid())
+  sourceType String   // segment, summary, context_event, action_item
+  sourceId   String
+  content    String
+  vector     Unsupported("vector(1536)")
+
+  createdAt  DateTime @default(now())
+
+  @@index([sourceType, sourceId])
+}
+
+// ─── Chat ───
+
+model ChatSession {
+  id        String        @id @default(uuid())
+  title     String?
+  messages  ChatMessage[]
+
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+}
+
+model ChatMessage {
+  id        String      @id @default(uuid())
+  sessionId String
+  session   ChatSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  role      String      // user, assistant
+  content   String
+  sources   Json?       // [{sourceType, sourceId, snippet}]
+
+  createdAt DateTime    @default(now())
+
+  @@index([sessionId])
+}
+
+// ─── Context Tracking ───
+
+model ContextEvent {
+  id           String   @id @default(uuid())
+  timestamp    DateTime
+  appName      String
+  bundleId     String?
+  windowTitle  String?
+  browserUrl   String?
+  tabTitle     String?
+  durationSecs Int?
+
+  createdAt    DateTime @default(now())
+
+  @@index([timestamp])
+  @@index([appName])
+}
+
+// ─── Routines ───
+
+model Routine {
+  id        String       @id @default(uuid())
+  name      String
+  schedule  String       // Cron expression
+  template  String       // daily_briefing, weekly_digest
+  config    Json?
+  enabled   Boolean      @default(true)
+  lastRunAt DateTime?
+
+  runs      RoutineRun[]
+
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+}
+
+model RoutineRun {
+  id        String   @id @default(uuid())
+  routineId String
+  routine   Routine  @relation(fields: [routineId], references: [id], onDelete: Cascade)
+  output    String
+  outputJson Json?
+
+  createdAt DateTime @default(now())
+
+  @@index([routineId])
+}
+
+// ─── Drafts ───
+
+model Draft {
+  id        String   @id @default(uuid())
+  meetingId String?
+  meeting   Meeting? @relation(fields: [meetingId], references: [id], onDelete: SetNull)
+  type      String   // follow_up_email, meeting_notes, project_plan
+  title     String
+  content   String
+  status    String   @default("draft") // draft, sent, archived
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([meetingId])
+  @@index([status])
+}

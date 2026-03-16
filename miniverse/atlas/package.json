@@ -1,0 +1,21 @@
+{
+  "name": "atlas",
+  "version": "0.1.0",
+  "private": true,
+  "description": "AI work assistant — meetings, context tracking, chat, routines",
+  "workspaces": [
+    "apps/bot",
+    "apps/backend",
+    "apps/dashboard",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev:backend": "npm run dev -w apps/backend",
+    "dev:dashboard": "npm run dev -w apps/dashboard",
+    "build": "npm run build -w packages/shared && npm run build -w packages/ai && npm run build -w apps/backend && npm run build -w apps/dashboard",
+    "db:generate": "npx prisma generate --schema apps/backend/prisma/schema.prisma",
+    "db:push": "npx prisma db push --schema apps/backend/prisma/schema.prisma",
+    "db:migrate": "npx prisma migrate dev --schema apps/backend/prisma/schema.prisma",
+    "db:studio": "npx prisma studio --schema apps/backend/prisma/schema.prisma"
+  }
+}

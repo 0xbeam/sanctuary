@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "atlas-dashboard",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["next", "dev", "--port", "3088"],
+      "port": 3088
+    }
+  ]
+}

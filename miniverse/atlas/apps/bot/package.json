@@ -1,0 +1,21 @@
+{
+  "name": "@atlas/bot",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "start": "node src/bot/index.js"
+  },
+  "dependencies": {
+    "@deepgram/sdk": "^3.11.0",
+    "dotenv": "^16.4.7",
+    "playwright": "^1.52.0",
+    "puppeteer-stream": "^2.1.0",
+    "uuid": "^11.0.0",
+    "ws": "^8.18.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "@types/uuid": "^10.0.0",
+    "@types/ws": "^8.5.12"
+  }
+}
