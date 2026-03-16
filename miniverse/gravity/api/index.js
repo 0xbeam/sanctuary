@@ -1,17 +1,86 @@
 import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
+import cookieParser from 'cookie-parser';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 import { getDb, getConfig, setConfig, getLastSync } from '../server/db.js';
 import { setToken, testConnection } from '../server/figma-client.js';
 import { fullSync, isSyncing } from '../server/sync-engine.js';
+import { requireAuth, createSession, getSession, deleteSession, googleCallback, figmaCallback } from '../server/auth.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const app = express();
 
 app.use(cors());
 app.use(express.json());
+app.use(cookieParser());
+
+// ── Auth routes (public) ──
+app.get('/api/auth/status', (req, res) => {
+  const authEnabled = !!(process.env.GOOGLE_CLIENT_ID || process.env.FIGMA_CLIENT_ID);
+  const token = req.cookies?.gravity_session || req.headers['x-auth-token'];
+  const session = getSession(token);
+  res.json({
+    auth_enabled: authEnabled,
+    logged_in: !!session,
+    user: session ? { name: session.user_name, email: session.user_email, avatar: session.user_avatar, provider: session.provider } : null,
+    providers: { google: !!process.env.GOOGLE_CLIENT_ID, figma: !!process.env.FIGMA_CLIENT_ID },
+  });
+});
+
+app.get('/api/auth/google', (req, res) => {
+  if (!process.env.GOOGLE_CLIENT_ID) return res.status(400).json({ error: 'Google OAuth not configured' });
+  const base = `${req.protocol}://${req.get('host')}`;
+  const redirectUri = `${base}/api/auth/google/callback`;
+  const url = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${encodeURIComponent(process.env.GOOGLE_CLIENT_ID)}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=code&scope=openid%20email%20profile&access_type=offline`;
+  res.redirect(url);
+});
+
+app.get('/api/auth/google/callback', async (req, res) => {
+  try {
+    const base = `${req.protocol}://${req.get('host')}`;
+    const user = await googleCallback(req.query.code, `${base}/api/auth/google/callback`);
+    const token = createSession('google', user);
+    res.cookie('gravity_session', token, { httpOnly: true, secure: true, sameSite: 'lax', maxAge: 30 * 24 * 60 * 60 * 1000 });
+    res.redirect('/');
+  } catch (e) {
+    res.redirect('/?auth_error=' + encodeURIComponent(e.message));
+  }
+});
+
+app.get('/api/auth/figma', (req, res) => {
+  if (!process.env.FIGMA_CLIENT_ID) return res.status(400).json({ error: 'Figma OAuth not configured' });
+  const base = `${req.protocol}://${req.get('host')}`;
+  const redirectUri = `${base}/api/auth/figma/callback`;
+  const url = `https://www.figma.com/oauth?client_id=${encodeURIComponent(process.env.FIGMA_CLIENT_ID)}&redirect_uri=${encodeURIComponent(redirectUri)}&scope=file_read&state=gravity&response_type=code`;
+  res.redirect(url);
+});
+
+app.get('/api/auth/figma/callback', async (req, res) => {
+  try {
+    const base = `${req.protocol}://${req.get('host')}`;
+    const user = await figmaCallback(req.query.code, `${base}/api/auth/figma/callback`);
+    const token = createSession('figma', user);
+    res.cookie('gravity_session', token, { httpOnly: true, secure: true, sameSite: 'lax', maxAge: 30 * 24 * 60 * 60 * 1000 });
+    res.redirect('/');
+  } catch (e) {
+    res.redirect('/?auth_error=' + encodeURIComponent(e.message));
+  }
+});
+
+app.post('/api/auth/logout', (req, res) => {
+  const token = req.cookies?.gravity_session;
+  if (token) deleteSession(token);
+  res.clearCookie('gravity_session');
+  res.json({ ok: true });
+});
+
+// ── Auth middleware for protected routes ──
+app.use('/api', (req, res, next) => {
+  if (req.path.startsWith('/auth/') || req.path === '/cron' || req.path === '/webhook') return next();
+  requireAuth(req, res, next);
+});
 
 // ── Status ──
 app.get('/api/status', (req, res) => {

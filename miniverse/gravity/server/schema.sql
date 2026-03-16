@@ -78,7 +78,24 @@ CREATE TABLE IF NOT EXISTS config (
   updated_at TEXT NOT NULL
 );
 
+CREATE TABLE IF NOT EXISTS auth_sessions (
+  token      TEXT PRIMARY KEY,
+  provider   TEXT NOT NULL CHECK(provider IN ('google','figma')),
+  user_email TEXT,
+  user_name  TEXT NOT NULL,
+  user_avatar TEXT,
+  created_at TEXT NOT NULL,
+  expires_at TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS allowed_users (
+  email TEXT PRIMARY KEY,
+  added_by TEXT,
+  added_at TEXT NOT NULL
+);
+
 -- Indexes for common queries
+CREATE INDEX IF NOT EXISTS idx_auth_expires ON auth_sessions(expires_at);
 CREATE INDEX IF NOT EXISTS idx_versions_file ON figma_versions(file_key);
 CREATE INDEX IF NOT EXISTS idx_versions_user ON figma_versions(user_name);
 CREATE INDEX IF NOT EXISTS idx_versions_created ON figma_versions(created_at);
