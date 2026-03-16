@@ -1,0 +1,5 @@
+node_modules/
+server/gravity.db
+server/gravity.db-shm
+server/gravity.db-wal
+.env

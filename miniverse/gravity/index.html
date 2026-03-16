@@ -1,0 +1,2678 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gravity — Spacekayak</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500;1,600;1,700&family=Cormorant:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500;1,600;1,700&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300;1,9..40,400&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+/* ===== RESET & BASE ===== */
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+::selection { background: #2A7A5B; color: #fff; }
+:root {
+  --bg: #FFFFFF;
+  --card: #F6F5F2;
+  --card-hover: #EFEDE8;
+  --border: #E8E5E0;
+  --border-light: #D8D5D0;
+  --text: #111;
+  --text-muted: #888;
+  --text-faint: #aaa;
+  --accent: #2A7A5B;
+  --accent-dim: #E8F5EE;
+  --accent-light: #E8F5EE;
+  --green: #2A7A5B;
+  --green-dim: #E8F5EE;
+  --amber: #B8860B;
+  --amber-dim: #FFF3E0;
+  --red: #C0392B;
+  --red-dim: #FDEDEC;
+  --cyan: #2980B9;
+  --pink: #8E44AD;
+  --navy: #111114;
+  --radius: 5px;
+  --radius-lg: 6px;
+  --serif: 'Cormorant Garamond', Georgia, serif;
+  --display: 'Cormorant', serif;
+  --font: 'DM Sans', -apple-system, system-ui, sans-serif;
+  --mono: 'DM Mono', monospace;
+  --ease: cubic-bezier(.16,1,.3,1);
+  --transition: 200ms ease;
+}
+html { font-size: 14px; scroll-behavior: smooth; }
+body {
+  font-family: var(--font);
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.5;
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+  font-weight: 400;
+}
+
+/* ===== SCROLLBAR ===== */
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--text-faint); }
+
+/* ===== HEADER ===== */
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 clamp(20px, 4vw, 48px);
+  height: 56px;
+  border-bottom: 1px solid rgba(0,0,0,.04);
+  background: rgba(255,255,255,.96);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+.header-left { display: flex; align-items: center; gap: 16px; }
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-family: var(--mono);
+  font-weight: 500;
+  font-size: 0.72rem;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--text);
+}
+.logo svg { width: 24px; height: 24px; }
+.logo-accent { color: var(--accent); }
+.header-right { display: flex; align-items: center; gap: 14px; }
+.header-meta {
+  font-size: 0.66rem;
+  color: var(--text-faint);
+  font-family: var(--mono);
+  letter-spacing: .02em;
+}
+
+/* ===== SYNC STATUS ===== */
+.sync-status {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.62rem;
+  font-family: var(--mono);
+  color: var(--text-faint);
+  letter-spacing: .02em;
+}
+.sync-dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--green);
+  flex-shrink: 0;
+}
+.sync-dot.syncing {
+  background: var(--amber);
+  animation: pulse 1.2s ease-in-out infinite;
+}
+.sync-dot.offline { background: var(--text-faint); }
+@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
+.sync-btn {
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  padding: 3px 8px;
+  font-size: 0.58rem;
+  font-family: var(--mono);
+  color: var(--text-muted);
+  cursor: pointer;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+  transition: all var(--transition);
+}
+.sync-btn:hover { border-color: var(--accent); color: var(--accent); }
+.sync-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+/* ===== SETTINGS TABS ===== */
+.settings-tabs {
+  display: flex;
+  gap: 0;
+  border-bottom: 1px solid var(--border);
+  margin: -24px -24px 20px -24px;
+  padding: 0 24px;
+}
+.settings-tab {
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  padding: 10px 16px;
+  font-family: var(--mono);
+  font-size: 0.6rem;
+  font-weight: 500;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all var(--transition);
+}
+.settings-tab:hover { color: var(--text); }
+.settings-tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+.settings-panel { display: none; }
+.settings-panel.active { display: block; }
+
+/* ===== RELEASE LOG ===== */
+.release-log { max-height: 400px; overflow-y: auto; }
+.release-entry { margin-bottom: 18px; padding-bottom: 18px; border-bottom: 1px solid var(--border); }
+.release-entry:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+.release-version {
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  font-weight: 500;
+  color: var(--accent);
+  margin-bottom: 2px;
+}
+.release-date {
+  font-family: var(--mono);
+  font-size: 0.58rem;
+  color: var(--text-faint);
+  margin-bottom: 8px;
+}
+.release-items { list-style: none; padding: 0; }
+.release-items li {
+  font-size: 0.78rem;
+  color: var(--text);
+  padding: 2px 0;
+  padding-left: 14px;
+  position: relative;
+}
+.release-items li::before {
+  content: '·';
+  position: absolute;
+  left: 4px;
+  color: var(--text-faint);
+}
+.release-tag {
+  display: inline-block;
+  font-family: var(--mono);
+  font-size: 0.52rem;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+  padding: 1px 5px;
+  border-radius: 2px;
+  margin-right: 4px;
+}
+.release-tag.new { background: var(--green-dim); color: var(--green); }
+.release-tag.fix { background: var(--red-dim); color: var(--red); }
+.release-tag.improve { background: var(--amber-dim); color: var(--amber); }
+
+/* ===== SETTINGS GEAR ===== */
+.settings-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--text-muted);
+  font-size: 1.1rem;
+  padding: 4px;
+  transition: color var(--transition);
+  line-height: 1;
+}
+.settings-btn:hover { color: var(--accent); }
+
+/* ===== SETTINGS MODAL ===== */
+.modal-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.3);
+  z-index: 200;
+  backdrop-filter: blur(4px);
+}
+.modal-overlay.open { display: flex; align-items: center; justify-content: center; }
+.modal {
+  background: var(--bg);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border);
+  width: 90%;
+  max-width: 480px;
+  box-shadow: 0 20px 60px rgba(0,0,0,.12);
+}
+.modal-head {
+  padding: 18px 24px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.modal-title {
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  font-weight: 500;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+}
+.modal-close {
+  background: none;
+  border: none;
+  font-size: 1.2rem;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 4px;
+  line-height: 1;
+}
+.modal-close:hover { color: var(--text); }
+.modal-body { padding: 24px; }
+.form-group { margin-bottom: 18px; }
+.form-group:last-child { margin-bottom: 0; }
+.form-label {
+  display: block;
+  font-family: var(--mono);
+  font-size: 0.58rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  color: var(--text-muted);
+  margin-bottom: 6px;
+}
+.form-input {
+  width: 100%;
+  padding: 9px 14px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text);
+  font-family: var(--mono);
+  font-size: 0.78rem;
+  outline: none;
+  transition: border-color var(--transition);
+}
+.form-input:focus { border-color: var(--accent); }
+.form-input::placeholder { color: var(--text-faint); }
+.form-hint {
+  font-size: 0.62rem;
+  color: var(--text-faint);
+  margin-top: 4px;
+  font-family: var(--font);
+}
+.form-actions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+  margin-top: 24px;
+  padding-top: 18px;
+  border-top: 1px solid var(--border);
+}
+.btn-primary {
+  padding: 8px 20px;
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius);
+  font-family: var(--mono);
+  font-size: 0.68rem;
+  font-weight: 500;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: opacity var(--transition);
+}
+.btn-primary:hover { opacity: 0.85; }
+.btn-secondary {
+  padding: 8px 20px;
+  background: transparent;
+  color: var(--text-muted);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  font-family: var(--mono);
+  font-size: 0.68rem;
+  font-weight: 500;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all var(--transition);
+}
+.btn-secondary:hover { border-color: var(--text-muted); color: var(--text); }
+.connection-status {
+  padding: 8px 12px;
+  border-radius: var(--radius);
+  font-size: 0.72rem;
+  font-family: var(--mono);
+  margin-top: 12px;
+}
+.connection-status.ok { background: var(--green-dim); color: var(--green); }
+.connection-status.error { background: var(--red-dim); color: var(--red); }
+
+/* ===== TABS ===== */
+.tabs {
+  display: flex;
+  gap: 0;
+  padding: 0 clamp(20px, 4vw, 48px);
+  background: var(--bg);
+  border-bottom: 1px solid var(--border);
+}
+.tab-btn {
+  padding: 12px 20px;
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-family: var(--mono);
+  font-size: 0.68rem;
+  font-weight: 400;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+  cursor: pointer;
+  border-bottom: 1.5px solid transparent;
+  transition: color var(--transition), border-color var(--transition);
+  white-space: nowrap;
+}
+.tab-btn:hover { color: var(--text); }
+.tab-btn.active {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+  font-weight: 500;
+}
+
+/* ===== MAIN LAYOUT ===== */
+.main { padding: 28px clamp(20px, 4vw, 48px) 60px; max-width: 1400px; margin: 0 auto; }
+.tab-content { display: none; }
+.tab-content.active { display: block; }
+
+/* ===== KPI ROW ===== */
+.kpi-row {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 10px;
+  margin-bottom: 24px;
+}
+.kpi-card {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  transition: transform .25s var(--ease), box-shadow .25s var(--ease);
+}
+.kpi-card:hover { transform: translateY(-1px); box-shadow: 0 4px 20px rgba(0,0,0,.04); }
+.kpi-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.kpi-label {
+  font-family: var(--mono);
+  font-size: 0.56rem;
+  color: var(--text-muted);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+.kpi-icon {
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.85rem;
+}
+.kpi-icon.blue { background: var(--accent-dim); color: var(--accent); }
+.kpi-icon.green { background: var(--green-dim); color: var(--green); }
+.kpi-icon.amber { background: var(--amber-dim); color: var(--amber); }
+.kpi-icon.red { background: var(--red-dim); color: var(--red); }
+.kpi-value {
+  font-size: 1.9rem;
+  font-weight: 300;
+  font-family: var(--display);
+  letter-spacing: -0.02em;
+  line-height: 1;
+}
+.kpi-sub {
+  font-size: 0.62rem;
+  color: var(--text-faint);
+  font-family: var(--mono);
+  letter-spacing: .02em;
+}
+
+/* ===== GRID ROWS ===== */
+.row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 24px; }
+.row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-bottom: 24px; }
+.row-full { margin-bottom: 24px; }
+
+/* ===== CARD ===== */
+.card {
+  background: var(--bg);
+  border: 1px solid rgba(0,0,0,.03);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+.card-head {
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.card-title {
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  font-weight: 500;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+  color: var(--text);
+}
+.card-body { padding: 20px; }
+.card-body canvas { width: 100% !important; }
+
+/* ===== TABLES ===== */
+.table-wrap { overflow-x: auto; }
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.82rem;
+}
+th {
+  text-align: left;
+  padding: 9px 14px;
+  font-family: var(--mono);
+  font-weight: 500;
+  color: var(--text-muted);
+  font-size: 0.6rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  border-bottom: 1px solid var(--border);
+  cursor: pointer;
+  user-select: none;
+  white-space: nowrap;
+}
+th:hover { color: var(--text); }
+th .sort-arrow { margin-left: 4px; font-size: 0.6rem; opacity: 0.4; }
+th.sorted .sort-arrow { opacity: 1; color: var(--accent); }
+td {
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--border);
+  color: var(--text);
+  vertical-align: middle;
+  font-size: 0.82rem;
+}
+tr:hover td { background: rgba(42,122,91,0.03); }
+tr.expandable { cursor: pointer; }
+tr.expanded td { background: rgba(42,122,91,0.05); }
+.expand-row td {
+  padding: 0;
+  background: rgba(42,122,91,0.02);
+}
+.expand-content { padding: 14px 20px; }
+
+/* ===== BADGES ===== */
+.badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 3px;
+  font-size: 0.68rem;
+  font-weight: 500;
+  font-family: var(--mono);
+  letter-spacing: .02em;
+}
+.badge-green { background: var(--green-dim); color: var(--green); }
+.badge-amber { background: var(--amber-dim); color: var(--amber); }
+.badge-red { background: var(--red-dim); color: var(--red); }
+
+/* ===== ACTIVITY PULSE DOT ===== */
+.pulse-dot {
+  display: inline-block;
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  margin-right: 6px;
+  vertical-align: middle;
+}
+.pulse-dot.active { background: var(--green); }
+.pulse-dot.recent { background: var(--amber); }
+.pulse-dot.stale { background: var(--red); }
+
+/* ===== CONFIDENCE BADGE ===== */
+.confidence {
+  display: inline-block;
+  padding: 1px 5px;
+  border-radius: 3px;
+  font-size: 0.52rem;
+  font-weight: 500;
+  font-family: var(--mono);
+  letter-spacing: .03em;
+  text-transform: uppercase;
+}
+.confidence.high { background: var(--green-dim); color: var(--green); }
+.confidence.medium { background: var(--amber-dim); color: var(--amber); }
+.confidence.low { background: var(--card); color: var(--text-faint); }
+
+/* ===== SEARCH ===== */
+.search-wrap { position: relative; margin-bottom: 20px; }
+.search-input {
+  width: 100%;
+  padding: 10px 16px 10px 38px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text);
+  font-family: var(--font);
+  font-size: 0.82rem;
+  outline: none;
+  transition: border-color var(--transition);
+}
+.search-input:focus { border-color: var(--accent); }
+.search-input::placeholder { color: var(--text-faint); }
+.search-icon {
+  position: absolute;
+  left: 13px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-faint);
+  font-size: 0.88rem;
+}
+.search-results { display: none; }
+.search-results.has-results { display: block; }
+
+/* ===== FILTER BAR ===== */
+.filter-bar {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+.filter-btn {
+  padding: 4px 10px;
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  background: transparent;
+  color: var(--text-muted);
+  font-family: var(--mono);
+  font-size: 0.58rem;
+  font-weight: 400;
+  letter-spacing: .03em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all var(--transition);
+}
+.filter-btn:hover { border-color: var(--accent); color: var(--text); }
+.filter-btn.active {
+  background: var(--text);
+  border-color: var(--text);
+  color: #fff;
+}
+
+/* ===== HEATMAP ===== */
+.heatmap-grid {
+  display: grid;
+  gap: 2px;
+  overflow-x: auto;
+  padding-bottom: 8px;
+}
+.heatmap-cell {
+  width: 100%;
+  border-radius: 2px;
+  background: var(--card);
+  position: relative;
+  min-width: 14px;
+  height: 18px;
+}
+.heatmap-cell[title]:hover {
+  outline: 1px solid var(--accent);
+  z-index: 2;
+}
+.heatmap-label {
+  font-size: 0.66rem;
+  color: var(--text-muted);
+  font-family: var(--font);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: flex;
+  align-items: center;
+  padding-right: 6px;
+  height: 18px;
+}
+.heatmap-month-label {
+  font-size: 0.58rem;
+  color: var(--text-faint);
+  font-family: var(--mono);
+  text-align: center;
+  white-space: nowrap;
+}
+
+/* ===== WORK PATTERN GRID (7x24 heatmap) ===== */
+.pattern-grid {
+  display: grid;
+  grid-template-columns: 40px repeat(24, 1fr);
+  gap: 2px;
+  margin-top: 12px;
+}
+.pattern-cell {
+  height: 20px;
+  border-radius: 2px;
+  background: var(--card);
+}
+.pattern-label {
+  font-size: 0.56rem;
+  color: var(--text-faint);
+  font-family: var(--mono);
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding-right: 4px;
+}
+.pattern-hour {
+  font-size: 0.48rem;
+  color: var(--text-faint);
+  font-family: var(--mono);
+  text-align: center;
+}
+
+/* ===== ACTIVITY FEED ===== */
+.feed-list { display: flex; flex-direction: column; gap: 0; }
+.feed-item {
+  display: flex;
+  gap: 14px;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--border);
+  align-items: flex-start;
+}
+.feed-item:last-child { border-bottom: none; }
+.feed-avatar {
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 500;
+  font-size: 0.62rem;
+  flex-shrink: 0;
+  color: white;
+  font-family: var(--mono);
+  letter-spacing: .02em;
+}
+.feed-body { flex: 1; min-width: 0; }
+.feed-title {
+  font-size: 0.82rem;
+  color: var(--text);
+  line-height: 1.5;
+  font-family: var(--font);
+}
+.feed-title strong { font-weight: 500; color: var(--accent); }
+.feed-meta {
+  font-size: 0.66rem;
+  color: var(--text-faint);
+  margin-top: 2px;
+  font-family: var(--mono);
+  letter-spacing: .02em;
+}
+.feed-label {
+  display: inline-block;
+  padding: 1px 6px;
+  border-radius: 3px;
+  font-size: 0.56rem;
+  font-weight: 500;
+  font-family: var(--mono);
+  letter-spacing: .03em;
+  text-transform: uppercase;
+  background: var(--accent-dim);
+  color: var(--accent);
+  margin-left: 6px;
+}
+.feed-duration {
+  font-family: var(--mono);
+  font-size: 0.66rem;
+  color: var(--text-muted);
+  white-space: nowrap;
+  flex-shrink: 0;
+  text-align: right;
+  min-width: 60px;
+}
+
+/* ===== ASSET TAB ===== */
+.component-group {
+  margin-bottom: 16px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+.component-group-head {
+  padding: 12px 18px;
+  background: var(--card);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  transition: background .2s;
+}
+.component-group-head:hover { background: var(--card-hover); }
+.component-group-title {
+  font-size: 0.82rem;
+  font-weight: 500;
+  font-family: var(--font);
+}
+.component-group-count {
+  font-size: 0.62rem;
+  color: var(--text-muted);
+  font-family: var(--mono);
+  letter-spacing: .02em;
+}
+.component-list { padding: 8px 18px; display: none; }
+.component-list.open { display: block; }
+.component-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 0;
+  border-bottom: 1px solid var(--border);
+}
+.component-item:last-child { border-bottom: none; }
+.comp-tag {
+  font-size: 0.52rem;
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-weight: 500;
+  font-family: var(--mono);
+  letter-spacing: .03em;
+  text-transform: uppercase;
+  background: var(--card);
+  color: var(--text-muted);
+  border: 1px solid var(--border);
+}
+.comp-tag.button { background: var(--accent-dim); color: var(--accent); border-color: transparent; }
+.comp-tag.card { background: #E8F4FD; color: var(--cyan); border-color: transparent; }
+.comp-tag.input { background: var(--green-dim); color: var(--green); border-color: transparent; }
+.comp-tag.icon { background: #F3E8FD; color: var(--pink); border-color: transparent; }
+.comp-tag.state { background: var(--amber-dim); color: var(--amber); border-color: transparent; }
+.comp-tag.healthy { background: var(--green-dim); color: var(--green); border-color: transparent; }
+.comp-tag.aging { background: var(--amber-dim); color: var(--amber); border-color: transparent; }
+.comp-tag.stale { background: var(--red-dim); color: var(--red); border-color: transparent; }
+
+.style-tokens {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 8px;
+}
+.style-token {
+  padding: 12px 14px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  font-size: 0.78rem;
+}
+.style-token-type {
+  font-size: 0.5rem;
+  font-weight: 500;
+  font-family: var(--mono);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: 4px;
+}
+.style-token-type.text { color: var(--accent); }
+.style-token-type.fill { color: var(--green); }
+.style-token-type.effect { color: var(--pink); }
+.style-token-type.grid { color: var(--cyan); }
+.style-token-name { color: var(--text); font-weight: 500; font-size: 0.82rem; }
+.style-token-desc { color: var(--text-faint); font-size: 0.66rem; margin-top: 2px; font-family: var(--font); }
+
+.ds-score-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 32px;
+  text-align: center;
+  margin-bottom: 24px;
+}
+.ds-score-value {
+  font-size: 3.2rem;
+  font-weight: 300;
+  font-family: var(--display);
+  color: var(--accent);
+  line-height: 1;
+  -webkit-text-fill-color: var(--accent);
+}
+.ds-score-label {
+  font-family: var(--mono);
+  font-size: 0.62rem;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-top: 8px;
+}
+.ds-score-sub {
+  font-size: 0.72rem;
+  color: var(--text-faint);
+  margin-top: 6px;
+  font-family: var(--font);
+}
+
+/* ===== HEALTH ALERTS ===== */
+.alert-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border);
+}
+.alert-item:last-child { border-bottom: none; }
+.alert-name {
+  flex: 1;
+  font-size: 0.82rem;
+  font-weight: 500;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.alert-score {
+  font-family: var(--mono);
+  font-size: 0.76rem;
+  font-weight: 500;
+  width: 36px;
+  text-align: right;
+}
+.alert-issue {
+  font-size: 0.66rem;
+  color: var(--text-faint);
+  flex-shrink: 0;
+  font-family: var(--mono);
+}
+
+/* ===== COMMENT ITEM ===== */
+.comment-item {
+  padding: 14px 0;
+  border-bottom: 1px solid var(--border);
+}
+.comment-item:last-child { border-bottom: none; }
+.comment-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 6px;
+}
+.comment-user { font-weight: 500; font-size: 0.82rem; }
+.comment-file { font-size: 0.72rem; color: var(--text-muted); }
+.comment-message {
+  font-size: 0.82rem;
+  color: var(--text);
+  line-height: 1.5;
+  padding-left: 42px;
+}
+.comment-meta {
+  font-size: 0.62rem;
+  color: var(--text-faint);
+  font-family: var(--mono);
+  padding-left: 42px;
+  margin-top: 4px;
+}
+
+/* ===== SPARKLINE ===== */
+.sparkline-cell { width: 100px; height: 28px; }
+.sparkline-cell canvas { width: 100% !important; height: 100% !important; }
+
+/* ===== EXPAND CHART ===== */
+.expand-chart-wrap { width: 100%; height: 180px; margin-top: 8px; }
+
+/* ===== FOOTER ===== */
+.footer {
+  text-align: center;
+  padding: 24px clamp(20px, 4vw, 48px);
+  border-top: 1px solid var(--border);
+  font-size: 0.62rem;
+  color: var(--text-faint);
+  font-family: var(--mono);
+  letter-spacing: .02em;
+}
+.footer a { color: var(--text-muted); text-decoration: none; }
+.footer a:hover { color: var(--accent); }
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 1200px) {
+  .kpi-row { grid-template-columns: repeat(3, 1fr); }
+}
+@media (max-width: 900px) {
+  .kpi-row { grid-template-columns: repeat(2, 1fr); }
+  .row-2 { grid-template-columns: 1fr; }
+  .row-3 { grid-template-columns: 1fr; }
+  .header { flex-direction: column; gap: 8px; align-items: flex-start; height: auto; padding: 12px clamp(20px, 4vw, 48px); }
+  .tabs { overflow-x: auto; }
+  .main { padding: 20px; }
+}
+@media (max-width: 600px) {
+  .kpi-row { grid-template-columns: 1fr; }
+  html { font-size: 13px; }
+}
+
+/* ===== LOADING ===== */
+.loading-state {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  color: var(--text-faint);
+  font-size: 0.82rem;
+  font-family: var(--font);
+}
+.spinner {
+  width: 18px; height: 18px;
+  border: 1.5px solid var(--border);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  margin-right: 10px;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ===== MISC ===== */
+.mono { font-family: var(--mono); }
+.text-muted { color: var(--text-muted); }
+.text-faint { color: var(--text-faint); }
+.text-accent { color: var(--accent); }
+.text-green { color: var(--green); }
+.text-amber { color: var(--amber); }
+.text-red { color: var(--red); }
+.mt-12 { margin-top: 12px; }
+.mt-20 { margin-top: 20px; }
+.mb-12 { margin-bottom: 12px; }
+.mb-20 { margin-bottom: 20px; }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header class="header">
+  <div class="header-left">
+    <div class="logo">
+      <svg viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect width="28" height="28" rx="6" fill="#2A7A5B" fill-opacity="0.12"/>
+        <path d="M7 9h6v6H7V9Z" fill="#2A7A5B"/>
+        <path d="M15 9h6v6h-6V9Z" fill="#2A7A5B" fill-opacity="0.6"/>
+        <path d="M7 17h6v2H7v-2Z" fill="#2A7A5B" fill-opacity="0.4"/>
+        <path d="M15 17h6v2h-6v-2Z" fill="#2A7A5B" fill-opacity="0.25"/>
+      </svg>
+      <span>Spacekayak <span class="logo-accent">Gravity</span></span>
+    </div>
+  </div>
+  <div class="header-right">
+    <div class="sync-status" id="syncStatus">
+      <span class="sync-dot offline" id="syncDot"></span>
+      <span id="syncLabel">Offline</span>
+    </div>
+    <button class="sync-btn" id="syncBtn" onclick="triggerSync()" title="Sync Now">Sync</button>
+    <span class="header-meta" id="headerMeta">Loading…</span>
+    <button class="settings-btn" onclick="openSettings()" title="Settings">⚙</button>
+  </div>
+</header>
+
+<!-- TABS -->
+<nav class="tabs" id="tabNav">
+  <button class="tab-btn active" data-tab="overview">Overview</button>
+  <button class="tab-btn" data-tab="designers">Designers</button>
+  <button class="tab-btn" data-tab="projects">Projects</button>
+  <button class="tab-btn" data-tab="assets">Design System</button>
+  <button class="tab-btn" data-tab="reviews">Reviews</button>
+  <button class="tab-btn" data-tab="feed">Activity</button>
+</nav>
+
+<!-- MAIN -->
+<main class="main" id="app">
+  <div class="loading-state" id="loadingState">
+    <div class="spinner"></div> Loading dashboard data…
+  </div>
+</main>
+
+<!-- SETTINGS MODAL -->
+<div class="modal-overlay" id="settingsModal">
+  <div class="modal" style="max-width:540px">
+    <div class="modal-head">
+      <span class="modal-title">Settings</span>
+      <button class="modal-close" onclick="closeSettings()">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="settings-tabs">
+        <button class="settings-tab active" onclick="switchSettingsTab('config',this)">Configuration</button>
+        <button class="settings-tab" onclick="switchSettingsTab('releases',this)">Release Log</button>
+      </div>
+
+      <!-- CONFIG PANEL -->
+      <div class="settings-panel active" id="settingsConfig">
+        <div class="form-group">
+          <label class="form-label">Figma Personal Access Token</label>
+          <input type="password" class="form-input" id="settingsPat" placeholder="figd_xxxxx…">
+          <div class="form-hint">Generate at figma.com/developers → Personal access tokens</div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Team ID</label>
+          <input type="text" class="form-input" id="settingsTeam" placeholder="e.g. 123456789">
+          <div class="form-hint">Found in your Figma team URL: figma.com/files/team/TEAM_ID</div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Sync Interval (minutes)</label>
+          <input type="number" class="form-input" id="settingsInterval" placeholder="15" min="5" max="120">
+        </div>
+        <div id="connectionResult"></div>
+        <div class="form-actions">
+          <button class="btn-secondary" onclick="closeSettings()">Cancel</button>
+          <button class="btn-primary" onclick="saveSettings()">Save & Test</button>
+        </div>
+      </div>
+
+      <!-- RELEASE LOG PANEL -->
+      <div class="settings-panel" id="settingsReleases">
+        <div class="release-log">
+          <div class="release-entry">
+            <div class="release-version">v2.1.0</div>
+            <div class="release-date">March 16, 2026</div>
+            <ul class="release-items">
+              <li><span class="release-tag new">new</span> Release log in settings panel</li>
+              <li><span class="release-tag new">new</span> Last sync time KPI on overview dashboard</li>
+              <li><span class="release-tag new">new</span> Sync timestamp tooltip with duration</li>
+              <li><span class="release-tag improve">improve</span> Vercel deployment support</li>
+            </ul>
+          </div>
+          <div class="release-entry">
+            <div class="release-version">v2.0.0</div>
+            <div class="release-date">March 15, 2026</div>
+            <ul class="release-items">
+              <li><span class="release-tag new">new</span> Live Figma API sync engine with cron scheduling</li>
+              <li><span class="release-tag new">new</span> Session reconstruction from version history</li>
+              <li><span class="release-tag new">new</span> Designer analytics with work pattern heatmaps</li>
+              <li><span class="release-tag new">new</span> Design system health scoring and component freshness</li>
+              <li><span class="release-tag new">new</span> Reviews tab — comment feed, response times, alerts</li>
+              <li><span class="release-tag new">new</span> Project intelligence with activity pulse</li>
+              <li><span class="release-tag new">new</span> SQLite persistence with WAL mode</li>
+              <li><span class="release-tag new">new</span> Settings panel with Figma configuration</li>
+              <li><span class="release-tag new">new</span> Real-time sync status indicator</li>
+            </ul>
+          </div>
+          <div class="release-entry">
+            <div class="release-version">v1.0.0</div>
+            <div class="release-date">March 2026</div>
+            <ul class="release-items">
+              <li><span class="release-tag new">new</span> Initial static dashboard with Chart.js</li>
+              <li><span class="release-tag new">new</span> Overview, Designers, Projects, Assets, Activity tabs</li>
+              <li><span class="release-tag new">new</span> Imagine Fund editorial design aesthetic</li>
+              <li><span class="release-tag new">new</span> Static data.json fallback mode</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer class="footer">
+  Gravity v2 — Spacekayak Design Operations
+</footer>
+
+<script>
+// ============================================================
+// GRAVITY v2 — Spacekayak Design Operations Dashboard
+// ============================================================
+
+let DATA = null;      // Dashboard data (from API or static)
+let LIVE = false;     // Whether connected to live backend
+let LIVE_DATA = {};   // Cache for live API data (designers, sessions, etc.)
+
+const COLORS = {
+  accent: '#2A7A5B',
+  accentRgb: '42,122,91',
+  green: '#2A7A5B',
+  greenRgb: '42,122,91',
+  amber: '#B8860B',
+  amberRgb: '184,134,11',
+  red: '#C0392B',
+  cyan: '#2980B9',
+  pink: '#8E44AD',
+  card: '#F6F5F2',
+  border: '#E8E5E0',
+  textMuted: '#888',
+  textFaint: '#aaa',
+  text: '#111',
+  bg: '#FFFFFF',
+};
+
+const AVATAR_COLORS = [
+  '#2A7A5B','#5B8C7A','#3D6B5E','#7A9E8D','#4A8B6F','#6B9D87',
+  '#2980B9','#8E44AD','#B8860B','#C0392B','#1A5C3A','#4E7A65'
+];
+
+// ============================================================
+// UTILITY FUNCTIONS
+// ============================================================
+
+function avatarColor(name) {
+  let h = 0;
+  for (let i = 0; i < name.length; i++) h = name.charCodeAt(i) + ((h << 5) - h);
+  return AVATAR_COLORS[Math.abs(h) % AVATAR_COLORS.length];
+}
+
+function initials(name) {
+  const parts = name.trim().split(/\s+/);
+  if (parts.length === 1) return parts[0].substring(0,2).toUpperCase();
+  return (parts[0][0] + parts[parts.length-1][0]).toUpperCase();
+}
+
+function healthBadge(score) {
+  if (score >= 80) return `<span class="badge badge-green">${score}</span>`;
+  if (score >= 50) return `<span class="badge badge-amber">${score}</span>`;
+  return `<span class="badge badge-red">${score}</span>`;
+}
+
+function healthColor(score) {
+  if (score >= 80) return COLORS.green;
+  if (score >= 50) return COLORS.amber;
+  return COLORS.red;
+}
+
+function formatDate(d) {
+  if (!d) return '—';
+  const dt = new Date(d);
+  return dt.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+}
+
+function formatMonth(m) {
+  const [y, mo] = m.split('-');
+  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  return months[parseInt(mo)-1] + ' ' + y.slice(2);
+}
+
+function timeAgo(dateStr) {
+  if (!dateStr) return '—';
+  const diff = Date.now() - new Date(dateStr).getTime();
+  const mins = Math.floor(diff / 60000);
+  if (mins < 1) return 'just now';
+  if (mins < 60) return `${mins}m ago`;
+  const hrs = Math.floor(mins / 60);
+  if (hrs < 24) return `${hrs}h ago`;
+  const days = Math.floor(hrs / 24);
+  if (days === 1) return 'Yesterday';
+  if (days < 7) return `${days}d ago`;
+  return formatDate(dateStr);
+}
+
+function formatDuration(minutes) {
+  if (!minutes || minutes <= 0) return '—';
+  if (minutes < 60) return `${Math.round(minutes)}m`;
+  const h = Math.floor(minutes / 60);
+  const m = Math.round(minutes % 60);
+  return m > 0 ? `${h}h ${m}m` : `${h}h`;
+}
+
+function formatHours(minutes) {
+  if (!minutes || minutes <= 0) return '0h';
+  return `${Math.round(minutes / 60)}h`;
+}
+
+// ============================================================
+// CHART.JS DEFAULTS
+// ============================================================
+Chart.defaults.color = COLORS.textMuted;
+Chart.defaults.borderColor = COLORS.border;
+Chart.defaults.font.family = "'DM Sans', sans-serif";
+Chart.defaults.font.size = 11;
+Chart.defaults.plugins.legend.labels.boxWidth = 10;
+Chart.defaults.plugins.legend.labels.padding = 12;
+Chart.defaults.plugins.tooltip.backgroundColor = '#111114';
+Chart.defaults.plugins.tooltip.borderColor = 'rgba(255,255,255,.08)';
+Chart.defaults.plugins.tooltip.borderWidth = 1;
+Chart.defaults.plugins.tooltip.titleColor = '#fff';
+Chart.defaults.plugins.tooltip.bodyColor = 'rgba(255,255,255,.6)';
+Chart.defaults.plugins.tooltip.padding = 10;
+Chart.defaults.plugins.tooltip.cornerRadius = 4;
+Chart.defaults.plugins.tooltip.titleFont = { weight: '500', family: "'DM Mono', monospace" };
+Chart.defaults.scale.grid = { color: 'rgba(0,0,0,.04)' };
+
+// ============================================================
+// API LAYER
+// ============================================================
+
+const API = {
+  async get(path) {
+    const res = await fetch(path);
+    if (!res.ok) throw new Error(`API ${res.status}`);
+    return res.json();
+  },
+  async post(path, body) {
+    const res = await fetch(path, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+    if (!res.ok) throw new Error(`API ${res.status}`);
+    return res.json();
+  },
+  status: () => API.get('/api/status'),
+  config: () => API.get('/api/config'),
+  saveConfig: (data) => API.post('/api/config', data),
+  sync: () => API.post('/api/sync', {}),
+  dashboard: () => API.get('/api/dashboard'),
+  designers: () => API.get('/api/designers'),
+  designerPattern: (name) => API.get(`/api/designers/${encodeURIComponent(name)}/pattern`),
+  sessions: (params = {}) => {
+    const qs = new URLSearchParams(params).toString();
+    return API.get(`/api/sessions${qs ? '?' + qs : ''}`);
+  },
+  sessionsSummary: (period = 'week') => API.get(`/api/sessions/summary?period=${period}`),
+  projects: () => API.get('/api/projects'),
+  comments: (params = {}) => {
+    const qs = new URLSearchParams(params).toString();
+    return API.get(`/api/comments${qs ? '?' + qs : ''}`);
+  },
+  commentMetrics: () => API.get('/api/comments/metrics'),
+  components: () => API.get('/api/components'),
+};
+
+// ============================================================
+// DATA LOAD
+// ============================================================
+
+async function loadData() {
+  // Try live API first, fall back to static data.json
+  try {
+    const status = await API.status();
+    LIVE = true;
+    updateSyncStatus(status);
+
+    const dashboard = await API.dashboard();
+    DATA = {
+      summary: dashboard.summary,
+      monthly_timeline: (dashboard.timeline || []).map(t => ({
+        month: t.month,
+        files: t.sessions || 0,
+        minutes: t.minutes || 0,
+      })),
+      recent_feed: (dashboard.recent_sessions || []).map(s => ({
+        user: s.designer_name,
+        file: s.file_name || 'Unknown',
+        project: s.project_name || 'Unknown',
+        date: s.start_time,
+        duration_minutes: s.duration_minutes,
+        confidence: s.confidence,
+        label: null,
+      })),
+      // Placeholders — live tabs will fetch their own data
+      designers: [],
+      projects: [],
+      categories: [],
+      file_types: [],
+      components: [],
+    };
+
+    // Load enhanced data in parallel
+    const [designers, projects, components, commentMetrics] = await Promise.allSettled([
+      API.designers(),
+      API.projects(),
+      API.components(),
+      API.commentMetrics(),
+    ]);
+
+    LIVE_DATA.designers = designers.status === 'fulfilled' ? designers.value : [];
+    LIVE_DATA.projects = projects.status === 'fulfilled' ? projects.value : [];
+    LIVE_DATA.components = components.status === 'fulfilled' ? components.value : {};
+    LIVE_DATA.commentMetrics = commentMetrics.status === 'fulfilled' ? commentMetrics.value : {};
+
+  } catch (e) {
+    // Fall back to static data.json
+    console.log('[gravity] Live API unavailable, loading static data:', e.message);
+    LIVE = false;
+    try {
+      const resp = await fetch('data.json');
+      DATA = await resp.json();
+    } catch (e2) {
+      document.getElementById('loadingState').innerHTML =
+        '<div style="text-align:center;color:var(--text-muted)">Could not load dashboard data.<br>Start the server with <code style="font-family:var(--mono)">npm start</code> or ensure data.json exists.</div>';
+      return;
+    }
+    updateSyncStatus(null);
+  }
+
+  document.getElementById('loadingState').style.display = 'none';
+
+  const s = DATA.summary;
+  document.getElementById('headerMeta').textContent =
+    LIVE
+      ? `${s.total_projects || 0} projects · ${s.total_files || 0} files · ${s.total_designers || 0} designers`
+      : `Generated ${formatDate(s.generated_at)} · ${s.total_projects} projects · ${s.total_files} files`;
+
+  // Show last sync time in overview KPI area
+  if (LIVE) {
+    try {
+      const st = await API.status();
+      if (st.lastSync?.completedAt) {
+        window._lastSyncTime = st.lastSync.completedAt;
+        window._lastSyncDuration = st.lastSync.durationMs;
+      }
+    } catch(e) {}
+  }
+
+  renderAllTabs();
+  initTabNav();
+
+  // Poll sync status every 30s when live
+  if (LIVE) {
+    setInterval(async () => {
+      try {
+        const status = await API.status();
+        updateSyncStatus(status);
+      } catch (e) { /* ignore */ }
+    }, 30000);
+  }
+}
+
+// ============================================================
+// SYNC STATUS
+// ============================================================
+
+function updateSyncStatus(status) {
+  const dot = document.getElementById('syncDot');
+  const label = document.getElementById('syncLabel');
+  const btn = document.getElementById('syncBtn');
+
+  if (!status) {
+    dot.className = 'sync-dot offline';
+    label.textContent = 'Static mode';
+    btn.style.display = 'none';
+    return;
+  }
+
+  btn.style.display = '';
+  btn.disabled = status.syncing;
+
+  if (status.syncing) {
+    dot.className = 'sync-dot syncing';
+    label.textContent = 'Syncing…';
+    label.title = '';
+  } else if (status.lastSync) {
+    dot.className = 'sync-dot';
+    const ago = timeAgo(status.lastSync.completedAt);
+    const exact = new Date(status.lastSync.completedAt).toLocaleString();
+    label.textContent = `Synced ${ago}`;
+    label.title = `Last sync: ${exact}\nDuration: ${status.lastSync.durationMs ? Math.round(status.lastSync.durationMs / 1000) + 's' : '—'}`;
+  } else if (status.configured) {
+    dot.className = 'sync-dot';
+    label.textContent = 'Ready';
+  } else {
+    dot.className = 'sync-dot offline';
+    label.textContent = 'Not configured';
+  }
+}
+
+async function triggerSync() {
+  const btn = document.getElementById('syncBtn');
+  btn.disabled = true;
+  try {
+    await API.sync();
+    updateSyncStatus({ syncing: true });
+    // Poll until done
+    const poll = setInterval(async () => {
+      try {
+        const status = await API.status();
+        updateSyncStatus(status);
+        if (!status.syncing) {
+          clearInterval(poll);
+          loadData(); // Refresh dashboard
+        }
+      } catch (e) { clearInterval(poll); }
+    }, 3000);
+  } catch (e) {
+    btn.disabled = false;
+    console.error('[gravity] Sync failed:', e);
+  }
+}
+
+// ============================================================
+// SETTINGS
+// ============================================================
+
+async function openSettings() {
+  document.getElementById('settingsModal').classList.add('open');
+  document.getElementById('connectionResult').innerHTML = '';
+  if (LIVE) {
+    try {
+      const config = await API.config();
+      document.getElementById('settingsTeam').value = config.figma_team_id || '';
+      document.getElementById('settingsInterval').value = config.sync_interval || '15';
+      document.getElementById('settingsPat').value = '';
+      document.getElementById('settingsPat').placeholder = config.has_pat ? '••••••••••••' : 'figd_xxxxx…';
+    } catch (e) { /* ignore */ }
+  }
+}
+
+function closeSettings() {
+  document.getElementById('settingsModal').classList.remove('open');
+}
+
+function switchSettingsTab(tab, btn) {
+  document.querySelectorAll('.settings-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.settings-panel').forEach(p => p.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById(tab === 'config' ? 'settingsConfig' : 'settingsReleases').classList.add('active');
+}
+
+async function saveSettings() {
+  const pat = document.getElementById('settingsPat').value.trim();
+  const team = document.getElementById('settingsTeam').value.trim();
+  const interval = document.getElementById('settingsInterval').value.trim();
+  const result = document.getElementById('connectionResult');
+
+  if (!team) {
+    result.innerHTML = '<div class="connection-status error">Team ID is required</div>';
+    return;
+  }
+
+  const body = { figma_team_id: team, sync_interval: interval || '15' };
+  if (pat) body.figma_pat = pat;
+
+  try {
+    const res = await API.saveConfig(body);
+    if (res.connection?.ok) {
+      result.innerHTML = `<div class="connection-status ok">Connected — ${res.connection.projectCount} projects found</div>`;
+      setTimeout(() => { closeSettings(); loadData(); }, 1500);
+    } else if (res.connection?.error) {
+      result.innerHTML = `<div class="connection-status error">${res.connection.error}</div>`;
+    } else {
+      result.innerHTML = '<div class="connection-status ok">Settings saved</div>';
+      setTimeout(() => closeSettings(), 800);
+    }
+  } catch (e) {
+    result.innerHTML = `<div class="connection-status error">Failed to save: ${e.message}</div>`;
+  }
+}
+
+// Close modal on overlay click
+document.getElementById('settingsModal').addEventListener('click', function(e) {
+  if (e.target === this) closeSettings();
+});
+
+// ============================================================
+// TAB NAVIGATION
+// ============================================================
+
+function initTabNav() {
+  const btns = document.querySelectorAll('.tab-btn');
+  btns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      btns.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      const tab = btn.dataset.tab;
+      document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+      document.getElementById('tab-' + tab).classList.add('active');
+      window.dispatchEvent(new Event('resize'));
+    });
+  });
+}
+
+// ============================================================
+// RENDER ALL
+// ============================================================
+
+function renderAllTabs() {
+  const app = document.getElementById('app');
+  app.innerHTML = `
+    <div class="tab-content active" id="tab-overview">${renderOverview()}</div>
+    <div class="tab-content" id="tab-designers">${renderDesigners()}</div>
+    <div class="tab-content" id="tab-projects">${renderProjects()}</div>
+    <div class="tab-content" id="tab-assets">${renderAssets()}</div>
+    <div class="tab-content" id="tab-reviews">${renderReviews()}</div>
+    <div class="tab-content" id="tab-feed">${renderFeed()}</div>
+  `;
+  initOverviewCharts();
+  initOverviewSearch();
+  initDesignerTab();
+  initProjectsTab();
+  initAssetsTab();
+  initReviewsTab();
+  initFeedTab();
+}
+
+// ============================================================
+// TAB 1: OVERVIEW
+// ============================================================
+
+function renderOverview() {
+  const s = DATA.summary;
+
+  // Compute health (from static data or live)
+  let avgHealth = 0;
+  let alerts = [];
+  if (DATA.projects && DATA.projects.length) {
+    const scores = DATA.projects.map(p => p.health_score);
+    avgHealth = Math.round(scores.reduce((a,b) => a+b, 0) / scores.length);
+    alerts = DATA.projects.filter(p => p.health_score < 60)
+      .sort((a,b) => a.health_score - b.health_score).slice(0, 15);
+  } else if (LIVE_DATA.components?.summary) {
+    avgHealth = LIVE_DATA.components.summary.avgHealthScore || 0;
+  }
+
+  const designHoursWeek = s.design_hours_week || 0;
+  const activeToday = s.active_designers_today || 0;
+
+  return `
+    <!-- KPI ROW -->
+    <div class="kpi-row">
+      <div class="kpi-card">
+        <div class="kpi-header"><span class="kpi-label">Projects</span><div class="kpi-icon blue">&#9633;</div></div>
+        <div class="kpi-value">${s.total_projects || 0}</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-header"><span class="kpi-label">Total Files</span><div class="kpi-icon blue">&#9634;</div></div>
+        <div class="kpi-value">${s.total_files || 0}</div>
+        ${LIVE ? `<div class="kpi-sub">${s.active_files || 0} active · ${s.stale_files || 0} stale</div>` : ''}
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-header"><span class="kpi-label">Designers</span><div class="kpi-icon green">&#9673;</div></div>
+        <div class="kpi-value text-accent">${s.total_designers || 0}</div>
+        ${LIVE && activeToday ? `<div class="kpi-sub">${activeToday} active today</div>` : ''}
+      </div>
+      ${LIVE ? `
+      <div class="kpi-card">
+        <div class="kpi-header"><span class="kpi-label">Design Hours</span><div class="kpi-icon green">&#9201;</div></div>
+        <div class="kpi-value text-green">${designHoursWeek}</div>
+        <div class="kpi-sub">this week</div>
+      </div>
+      ` : `
+      <div class="kpi-card">
+        <div class="kpi-header"><span class="kpi-label">Active Files</span><div class="kpi-icon green">&#10003;</div></div>
+        <div class="kpi-value text-green">${s.active_files || 0}</div>
+      </div>
+      `}
+      ${LIVE && LIVE_DATA.commentMetrics?.unresolved !== undefined ? `
+      <div class="kpi-card">
+        <div class="kpi-header"><span class="kpi-label">Open Comments</span><div class="kpi-icon amber">&#9993;</div></div>
+        <div class="kpi-value text-amber">${LIVE_DATA.commentMetrics.unresolved}</div>
+        <div class="kpi-sub">${LIVE_DATA.commentMetrics.avgResolutionHours || 0}h avg resolution</div>
+      </div>
+      ` : `
+      <div class="kpi-card">
+        <div class="kpi-header"><span class="kpi-label">Stale Files</span><div class="kpi-icon amber">&#9201;</div></div>
+        <div class="kpi-value text-amber">${s.stale_files || 0}</div>
+      </div>
+      `}
+      <div class="kpi-card">
+        <div class="kpi-header"><span class="kpi-label">${LIVE ? 'System Health' : 'Health Score'}</span><div class="kpi-icon ${avgHealth >= 80 ? 'green' : avgHealth >= 50 ? 'amber' : 'red'}">&#9829;</div></div>
+        <div class="kpi-value" style="color:${healthColor(avgHealth)}">${avgHealth || '—'}</div>
+        ${LIVE && LIVE_DATA.components?.summary ? `<div class="kpi-sub">${LIVE_DATA.components.summary.total || 0} components</div>` : ''}
+      </div>
+      ${LIVE && window._lastSyncTime ? `
+      <div class="kpi-card">
+        <div class="kpi-header"><span class="kpi-label">Last Sync</span><div class="kpi-icon blue">&#8635;</div></div>
+        <div class="kpi-value" style="font-size:1.4rem">${timeAgo(window._lastSyncTime)}</div>
+        <div class="kpi-sub">${new Date(window._lastSyncTime).toLocaleString()}${window._lastSyncDuration ? ' · ' + Math.round(window._lastSyncDuration/1000) + 's' : ''}</div>
+      </div>
+      ` : ''}
+    </div>
+
+    <!-- ROW 2: CHARTS -->
+    <div class="row-2">
+      <div class="card">
+        <div class="card-head"><span class="card-title">${LIVE ? 'Design Activity Timeline' : 'Monthly Activity Timeline'}</span></div>
+        <div class="card-body"><canvas id="chartTimeline" height="240"></canvas></div>
+      </div>
+      <div class="card">
+        <div class="card-head"><span class="card-title">${LIVE ? 'Top Active Designers' : 'File Type Breakdown'}</span></div>
+        <div class="card-body">${LIVE ? '<canvas id="chartTopDesigners" height="240"></canvas>' : '<canvas id="chartFileTypes" height="240"></canvas>'}</div>
+      </div>
+    </div>
+
+    <!-- ROW 3 -->
+    <div class="row-2">
+      ${!LIVE && DATA.categories?.length ? `
+      <div class="card">
+        <div class="card-head"><span class="card-title">Category Breakdown</span></div>
+        <div class="card-body"><canvas id="chartCategories" height="220"></canvas></div>
+      </div>
+      ` : `
+      <div class="card">
+        <div class="card-head"><span class="card-title">Recent Sessions</span><span class="text-faint" style="font-size:0.75rem">Last 10</span></div>
+        <div class="card-body" style="max-height:300px;overflow-y:auto">
+          ${renderRecentSessions()}
+        </div>
+      </div>
+      `}
+      <div class="card">
+        <div class="card-head"><span class="card-title">Health Alerts</span><span class="text-faint" style="font-size:0.75rem">${alerts.length || '—'}</span></div>
+        <div class="card-body" style="max-height:300px;overflow-y:auto">
+          ${alerts.length === 0 ?
+            (LIVE ? renderLiveHealthAlerts() : '<div class="text-muted" style="padding:20px;text-align:center">All projects healthy!</div>') :
+            alerts.map(a => `
+              <div class="alert-item">
+                <span class="alert-name">${a.name}</span>
+                <span class="alert-score" style="color:${healthColor(a.health_score)}">${a.health_score}</span>
+                <span class="alert-issue">${a.stale_files} stale / ${a.file_count} files</span>
+              </div>
+            `).join('')}
+        </div>
+      </div>
+    </div>
+
+    <!-- SEARCH -->
+    <div class="row-full">
+      <div class="card">
+        <div class="card-head"><span class="card-title">Search Projects & Files</span></div>
+        <div class="card-body">
+          <div class="search-wrap">
+            <span class="search-icon">&#128269;</span>
+            <input type="text" class="search-input" id="overviewSearch" placeholder="Search by project name…">
+          </div>
+          <div id="overviewSearchResults" class="search-results">
+            <div class="table-wrap"><table id="overviewSearchTable">
+              <thead><tr>
+                <th>Project</th>${!LIVE ? '<th>Category</th>' : ''}<th>Files</th>${LIVE ? '<th>Hours/Week</th><th>Comments</th>' : '<th>Stale</th><th>Health</th>'}<th>Last Activity</th>
+              </tr></thead>
+              <tbody></tbody>
+            </table></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function renderRecentSessions() {
+  const sessions = (DATA.recent_feed || []).slice(0, 10);
+  if (!sessions.length) return '<div class="text-muted" style="padding:20px;text-align:center">No sessions yet — run a sync first</div>';
+  return sessions.map(s => `
+    <div class="alert-item">
+      <div class="feed-avatar" style="background:${avatarColor(s.user)};width:24px;height:24px;font-size:0.52rem;flex-shrink:0">${initials(s.user)}</div>
+      <span class="alert-name">${s.user} in ${s.file}</span>
+      <span class="alert-score" style="color:var(--accent)">${formatDuration(s.duration_minutes)}</span>
+      <span class="alert-issue">${timeAgo(s.date)}</span>
+    </div>
+  `).join('');
+}
+
+function renderLiveHealthAlerts() {
+  const comps = LIVE_DATA.components;
+  if (!comps?.components?.length) return '<div class="text-muted" style="padding:20px;text-align:center">No component data yet</div>';
+  const stale = comps.components.filter(c => c.health === 'stale').slice(0, 10);
+  if (!stale.length) return '<div class="text-muted" style="padding:20px;text-align:center">All components healthy!</div>';
+  return stale.map(c => `
+    <div class="alert-item">
+      <span class="alert-name">${c.name}</span>
+      <span class="comp-tag ${c.health}">${c.health}</span>
+      <span class="alert-issue">${c.days_since_update}d since update</span>
+    </div>
+  `).join('');
+}
+
+function initOverviewCharts() {
+  // Timeline
+  const tlLabels = DATA.monthly_timeline.map(t => formatMonth(t.month));
+  const tlCtx = document.getElementById('chartTimeline');
+  if (tlCtx && DATA.monthly_timeline.length) {
+    const ctx = tlCtx.getContext('2d');
+    const gradient = ctx.createLinearGradient(0, 0, 0, 240);
+    gradient.addColorStop(0, `rgba(${COLORS.accentRgb}, 0.3)`);
+    gradient.addColorStop(1, `rgba(${COLORS.accentRgb}, 0.02)`);
+
+    const datasets = LIVE
+      ? [{
+          label: 'Design Hours',
+          data: DATA.monthly_timeline.map(t => Math.round((t.minutes || 0) / 60)),
+          borderColor: COLORS.accent,
+          backgroundColor: gradient,
+          fill: true, tension: 0.4, pointRadius: 2, pointHoverRadius: 5,
+          pointBackgroundColor: COLORS.accent, borderWidth: 2
+        }]
+      : [{
+          label: 'Files Modified',
+          data: DATA.monthly_timeline.map(t => t.files),
+          borderColor: COLORS.accent,
+          backgroundColor: gradient,
+          fill: true, tension: 0.4, pointRadius: 2, pointHoverRadius: 5,
+          pointBackgroundColor: COLORS.accent, borderWidth: 2
+        }];
+
+    new Chart(tlCtx, {
+      type: 'line',
+      data: { labels: tlLabels, datasets },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: {
+          x: { ticks: { maxTicksAutoSkip: true, maxRotation: 45, font: { size: 10 } } },
+          y: { beginAtZero: true, ticks: { font: { family: "'DM Mono'" } } }
+        }
+      }
+    });
+  }
+
+  // Live: Top designers bar chart
+  if (LIVE && LIVE_DATA.designers?.length) {
+    const topCtx = document.getElementById('chartTopDesigners');
+    if (topCtx) {
+      const top = LIVE_DATA.designers.slice(0, 8);
+      new Chart(topCtx, {
+        type: 'bar',
+        data: {
+          labels: top.map(d => d.designer_name.split(' ')[0]),
+          datasets: [
+            { label: 'This Week', data: top.map(d => Math.round((d.week_minutes || 0) / 60)), backgroundColor: `rgba(${COLORS.greenRgb}, 0.7)`, borderRadius: 3 },
+            { label: 'This Month', data: top.map(d => Math.round((d.month_minutes || 0) / 60)), backgroundColor: `rgba(${COLORS.greenRgb}, 0.25)`, borderRadius: 3 }
+          ]
+        },
+        options: {
+          responsive: true, maintainAspectRatio: false,
+          plugins: { legend: { position: 'top' } },
+          scales: {
+            x: { stacked: false },
+            y: { beginAtZero: true, title: { display: true, text: 'Hours', font: { family: "'DM Mono'" } } }
+          }
+        }
+      });
+    }
+  }
+
+  // Static: File types doughnut
+  if (!LIVE && DATA.file_types?.length) {
+    const ftCtx = document.getElementById('chartFileTypes');
+    if (ftCtx) {
+      const doughnutColors = ['#2A7A5B','#5B8C7A','#B8860B','#2980B9','#8E44AD','#4A8B6F','#C0392B','#3D6B5E','#7A9E8D'];
+      new Chart(ftCtx, {
+        type: 'doughnut',
+        data: {
+          labels: DATA.file_types.map(f => f.type),
+          datasets: [{ data: DATA.file_types.map(f => f.count), backgroundColor: doughnutColors, borderColor: COLORS.card, borderWidth: 2 }]
+        },
+        options: { responsive: true, maintainAspectRatio: false, cutout: '55%', plugins: { legend: { position: 'right', labels: { padding: 10, font: { size: 11 } } } } }
+      });
+    }
+  }
+
+  // Static: Category bar
+  if (!LIVE && DATA.categories?.length) {
+    const catCtx = document.getElementById('chartCategories');
+    if (catCtx) {
+      new Chart(catCtx, {
+        type: 'bar',
+        data: {
+          labels: DATA.categories.map(c => c.category),
+          datasets: [
+            { label: 'Active', data: DATA.categories.map(c => c.files - c.stale), backgroundColor: `rgba(${COLORS.greenRgb}, 0.7)`, borderRadius: 3 },
+            { label: 'Stale', data: DATA.categories.map(c => c.stale), backgroundColor: `rgba(${COLORS.amberRgb}, 0.7)`, borderRadius: 3 }
+          ]
+        },
+        options: { responsive: true, maintainAspectRatio: false, indexAxis: 'y', plugins: { legend: { position: 'top' } }, scales: { x: { stacked: true }, y: { stacked: true } } }
+      });
+    }
+  }
+}
+
+function initOverviewSearch() {
+  const input = document.getElementById('overviewSearch');
+  const results = document.getElementById('overviewSearchResults');
+  const tbody = document.querySelector('#overviewSearchTable tbody');
+  if (!input) return;
+  input.addEventListener('input', () => {
+    const q = input.value.trim().toLowerCase();
+    if (q.length < 2) { results.classList.remove('has-results'); return; }
+
+    const source = LIVE ? LIVE_DATA.projects : DATA.projects;
+    if (!source?.length) { results.classList.remove('has-results'); return; }
+
+    const nameKey = LIVE ? 'project_name' : 'name';
+    const matched = source.filter(p => (p[nameKey] || '').toLowerCase().includes(q)).slice(0, 30);
+    if (!matched.length) { results.classList.remove('has-results'); return; }
+
+    results.classList.add('has-results');
+    tbody.innerHTML = matched.map(p => LIVE ? `
+      <tr>
+        <td style="font-weight:500">${p.project_name}</td>
+        <td class="mono">${p.file_count}</td>
+        <td class="mono">${formatHours(p.week_minutes)}</td>
+        <td class="mono">${p.unresolved_comments || 0}</td>
+        <td class="mono text-faint">${timeAgo(p.last_activity)}</td>
+      </tr>
+    ` : `
+      <tr>
+        <td style="font-weight:500">${p.name}</td>
+        <td class="text-muted">${p.category}</td>
+        <td class="mono">${p.file_count}</td>
+        <td class="mono">${p.stale_files}</td>
+        <td>${healthBadge(p.health_score)}</td>
+        <td class="mono text-faint">${formatDate(p.last_activity)}</td>
+      </tr>
+    `).join('');
+  });
+}
+
+// ============================================================
+// TAB 2: DESIGNERS
+// ============================================================
+
+function renderDesigners() {
+  if (LIVE && LIVE_DATA.designers?.length) return renderDesignersLive();
+  return renderDesignersStatic();
+}
+
+function renderDesignersLive() {
+  return `
+    <div class="card mb-20">
+      <div class="card-head"><span class="card-title">Designer Activity</span><span class="text-faint" style="font-size:0.75rem">${LIVE_DATA.designers.length} designers</span></div>
+      <div class="card-body" style="padding:0">
+        <div class="table-wrap">
+          <table id="designerTable">
+            <thead><tr>
+              <th data-sort="rank"># <span class="sort-arrow">&#9660;</span></th>
+              <th data-sort="name">Name <span class="sort-arrow">&#9660;</span></th>
+              <th data-sort="week">Week <span class="sort-arrow">&#9660;</span></th>
+              <th data-sort="month">Month <span class="sort-arrow">&#9660;</span></th>
+              <th data-sort="total">Total Hours <span class="sort-arrow">&#9660;</span></th>
+              <th data-sort="sessions">Sessions <span class="sort-arrow">&#9660;</span></th>
+              <th data-sort="files">Files <span class="sort-arrow">&#9660;</span></th>
+              <th data-sort="avgSession">Avg Session <span class="sort-arrow">&#9660;</span></th>
+              <th data-sort="active">Last Active <span class="sort-arrow">&#9660;</span></th>
+            </tr></thead>
+            <tbody id="designerTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head"><span class="card-title">Work Pattern</span><span class="text-faint" style="font-size:0.75rem">Click a designer row to view</span></div>
+      <div class="card-body">
+        <div id="patternContainer"><div class="text-muted" style="text-align:center;padding:20px">Select a designer above to view their work pattern heatmap</div></div>
+      </div>
+    </div>
+  `;
+}
+
+function renderDesignersStatic() {
+  const sorted = [...DATA.designers].sort((a,b) => b.total_edits - a.total_edits);
+  return `
+    <div class="card mb-20">
+      <div class="card-head"><span class="card-title">Designer Leaderboard</span><span class="text-faint" style="font-size:0.75rem">${sorted.length} designers</span></div>
+      <div class="card-body" style="padding:0">
+        <div class="table-wrap">
+          <table id="designerTable">
+            <thead><tr>
+              <th data-sort="rank"># <span class="sort-arrow">&#9660;</span></th>
+              <th data-sort="name">Name <span class="sort-arrow">&#9660;</span></th>
+              <th data-sort="edits">Total Edits <span class="sort-arrow">&#9660;</span></th>
+              <th data-sort="files">Files Touched <span class="sort-arrow">&#9660;</span></th>
+              <th data-sort="projects">Projects <span class="sort-arrow">&#9660;</span></th>
+              <th>Activity</th>
+            </tr></thead>
+            <tbody id="designerTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head"><span class="card-title">Designer × Month Activity Heatmap</span></div>
+      <div class="card-body">
+        <div id="heatmapContainer"></div>
+      </div>
+    </div>
+  `;
+}
+
+let designerSortCol = LIVE ? 'total' : 'edits';
+let designerSortAsc = false;
+let sparklineCharts = {};
+let expandCharts = {};
+
+function renderDesignerTable() {
+  if (LIVE && LIVE_DATA.designers?.length) return renderDesignerTableLive();
+  return renderDesignerTableStatic();
+}
+
+function renderDesignerTableLive() {
+  const sorted = [...LIVE_DATA.designers].sort((a,b) => {
+    let va, vb;
+    switch(designerSortCol) {
+      case 'name': va = a.designer_name; vb = b.designer_name; return designerSortAsc ? va.localeCompare(vb) : vb.localeCompare(va);
+      case 'week': va = a.week_minutes; vb = b.week_minutes; break;
+      case 'month': va = a.month_minutes; vb = b.month_minutes; break;
+      case 'total': va = a.total_minutes; vb = b.total_minutes; break;
+      case 'sessions': va = a.total_sessions; vb = b.total_sessions; break;
+      case 'files': va = a.total_files; vb = b.total_files; break;
+      case 'avgSession': va = a.avg_session_min; vb = b.avg_session_min; break;
+      case 'active': va = a.last_active || ''; vb = b.last_active || ''; return designerSortAsc ? va.localeCompare(vb) : vb.localeCompare(va);
+      default: va = a.total_minutes; vb = b.total_minutes;
+    }
+    return designerSortAsc ? (va||0) - (vb||0) : (vb||0) - (va||0);
+  });
+
+  const tbody = document.getElementById('designerTableBody');
+  if (!tbody) return;
+  tbody.innerHTML = '';
+
+  sorted.forEach((d, i) => {
+    const tr = document.createElement('tr');
+    tr.classList.add('expandable');
+    tr.innerHTML = `
+      <td class="mono text-faint">${i + 1}</td>
+      <td><div style="display:flex;align-items:center;gap:8px">
+        <div class="feed-avatar" style="background:${avatarColor(d.designer_name)};width:28px;height:28px;font-size:0.68rem">${initials(d.designer_name)}</div>
+        ${d.designer_name}
+      </div></td>
+      <td class="mono text-green">${formatHours(d.week_minutes)}</td>
+      <td class="mono">${formatHours(d.month_minutes)}</td>
+      <td class="mono">${formatHours(d.total_minutes)}</td>
+      <td class="mono">${d.total_sessions}</td>
+      <td class="mono">${d.total_files}</td>
+      <td class="mono text-faint">${formatDuration(d.avg_session_min)}</td>
+      <td class="mono text-faint">${timeAgo(d.last_active)}</td>
+    `;
+
+    tr.addEventListener('click', () => {
+      loadDesignerPattern(d.designer_name);
+    });
+
+    tbody.appendChild(tr);
+  });
+}
+
+async function loadDesignerPattern(name) {
+  const container = document.getElementById('patternContainer');
+  if (!container) return;
+  container.innerHTML = '<div class="loading-state"><div class="spinner"></div> Loading work pattern…</div>';
+
+  try {
+    const data = await API.designerPattern(name);
+    renderPatternHeatmap(container, name, data.grid);
+  } catch (e) {
+    container.innerHTML = '<div class="text-muted" style="text-align:center;padding:20px">Could not load pattern data</div>';
+  }
+}
+
+function renderPatternHeatmap(container, name, grid) {
+  const days = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  let maxVal = 0;
+  for (const row of grid) for (const v of row) if (v > maxVal) maxVal = v;
+
+  let html = `<div style="margin-bottom:8px;font-weight:500;font-size:0.88rem">${name} — 30 Day Work Pattern</div>`;
+  html += '<div class="pattern-grid">';
+
+  // Hour headers
+  html += '<div></div>';
+  for (let h = 0; h < 24; h++) html += `<div class="pattern-hour">${h}</div>`;
+
+  // Grid rows
+  for (let d = 0; d < 7; d++) {
+    html += `<div class="pattern-label">${days[d]}</div>`;
+    for (let h = 0; h < 24; h++) {
+      const val = grid[d][h];
+      const intensity = maxVal > 0 && val > 0 ? Math.max(0.15, val / maxVal) : 0;
+      const bg = val > 0 ? `rgba(${COLORS.accentRgb}, ${intensity})` : '';
+      html += `<div class="pattern-cell" style="${bg ? 'background:'+bg : ''}" title="${days[d]} ${h}:00 — ${formatDuration(val)}"></div>`;
+    }
+  }
+  html += '</div>';
+  container.innerHTML = html;
+}
+
+function renderDesignerTableStatic() {
+  const sorted = [...DATA.designers].sort((a,b) => {
+    let va, vb;
+    switch(designerSortCol) {
+      case 'name': va = a.name; vb = b.name; return designerSortAsc ? va.localeCompare(vb) : vb.localeCompare(va);
+      case 'edits': va = a.total_edits; vb = b.total_edits; break;
+      case 'files': va = a.files_touched; vb = b.files_touched; break;
+      case 'projects': va = a.projects_touched; vb = b.projects_touched; break;
+      default: va = a.total_edits; vb = b.total_edits;
+    }
+    return designerSortAsc ? va - vb : vb - va;
+  });
+
+  const tbody = document.getElementById('designerTableBody');
+  if (!tbody) return;
+  tbody.innerHTML = '';
+  Object.values(sparklineCharts).forEach(c => c.destroy());
+  sparklineCharts = {};
+
+  sorted.forEach((d, i) => {
+    const tr = document.createElement('tr');
+    tr.classList.add('expandable');
+    tr.innerHTML = `
+      <td class="mono text-faint">${i + 1}</td>
+      <td><div style="display:flex;align-items:center;gap:8px">
+        <div class="feed-avatar" style="background:${avatarColor(d.name)};width:28px;height:28px;font-size:0.68rem">${initials(d.name)}</div>
+        ${d.name}
+      </div></td>
+      <td class="mono">${d.total_edits}</td>
+      <td class="mono">${d.files_touched}</td>
+      <td class="mono">${d.projects_touched}</td>
+      <td><div class="sparkline-cell"><canvas id="spark-${i}"></canvas></div></td>
+    `;
+
+    const expandTr = document.createElement('tr');
+    expandTr.classList.add('expand-row');
+    expandTr.style.display = 'none';
+    expandTr.innerHTML = `<td colspan="6"><div class="expand-content"><div class="expand-chart-wrap"><canvas id="expandChart-${i}"></canvas></div></div></td>`;
+
+    tr.addEventListener('click', () => {
+      const isOpen = expandTr.style.display !== 'none';
+      tbody.querySelectorAll('.expand-row').forEach(er => er.style.display = 'none');
+      tbody.querySelectorAll('.expandable').forEach(er => er.classList.remove('expanded'));
+      if (!isOpen) {
+        expandTr.style.display = '';
+        tr.classList.add('expanded');
+        renderExpandChart(i, d);
+      }
+    });
+
+    tbody.appendChild(tr);
+    tbody.appendChild(expandTr);
+
+    setTimeout(() => {
+      const sparkEl = document.getElementById(`spark-${i}`);
+      if (!sparkEl) return;
+      const monthlyData = d.monthly.sort((a,b) => a.month.localeCompare(b.month));
+      sparklineCharts[`spark-${i}`] = new Chart(sparkEl, {
+        type: 'line',
+        data: {
+          labels: monthlyData.map(m => m.month),
+          datasets: [{ data: monthlyData.map(m => m.edits), borderColor: COLORS.accent, borderWidth: 1.5, pointRadius: 0, tension: 0.4, fill: false }]
+        },
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, tooltip: { enabled: false } }, scales: { x: { display: false }, y: { display: false } } }
+      });
+    }, 50);
+  });
+}
+
+function renderExpandChart(idx, designer) {
+  const canvasId = `expandChart-${idx}`;
+  if (expandCharts[canvasId]) expandCharts[canvasId].destroy();
+  const el = document.getElementById(canvasId);
+  if (!el) return;
+  const monthly = designer.monthly.sort((a,b) => a.month.localeCompare(b.month));
+  expandCharts[canvasId] = new Chart(el, {
+    type: 'bar',
+    data: {
+      labels: monthly.map(m => formatMonth(m.month)),
+      datasets: [{ label: 'Edits', data: monthly.map(m => m.edits), backgroundColor: `rgba(${COLORS.accentRgb}, 0.6)`, borderRadius: 4 }]
+    },
+    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } }
+  });
+}
+
+function initDesignerTab() {
+  renderDesignerTable();
+  if (!LIVE) renderHeatmap();
+
+  document.querySelectorAll('#designerTable th[data-sort]').forEach(th => {
+    th.addEventListener('click', () => {
+      const col = th.dataset.sort;
+      if (designerSortCol === col) designerSortAsc = !designerSortAsc;
+      else { designerSortCol = col; designerSortAsc = false; }
+      document.querySelectorAll('#designerTable th').forEach(h => h.classList.remove('sorted'));
+      th.classList.add('sorted');
+      renderDesignerTable();
+    });
+  });
+}
+
+function renderHeatmap() {
+  const container = document.getElementById('heatmapContainer');
+  if (!container || !DATA.designers?.length) return;
+
+  const allMonths = new Set();
+  DATA.designers.forEach(d => d.monthly.forEach(m => allMonths.add(m.month)));
+  const monthList = [...allMonths].sort();
+
+  let maxEdits = 0;
+  DATA.designers.forEach(d => d.monthly.forEach(m => { if (m.edits > maxEdits) maxEdits = m.edits; }));
+
+  const sorted = [...DATA.designers].sort((a,b) => b.total_edits - a.total_edits);
+
+  let html = `<div class="heatmap-grid" style="grid-template-columns: 120px repeat(${monthList.length}, 1fr);">`;
+  html += `<div></div>`;
+  monthList.forEach(m => { html += `<div class="heatmap-month-label">${formatMonth(m)}</div>`; });
+
+  sorted.forEach(d => {
+    const monthMap = {};
+    d.monthly.forEach(m => monthMap[m.month] = m.edits);
+    html += `<div class="heatmap-label">${d.name}</div>`;
+    monthList.forEach(m => {
+      const val = monthMap[m] || 0;
+      const intensity = val > 0 ? Math.max(0.15, val / maxEdits) : 0;
+      const bg = val > 0 ? `rgba(${COLORS.accentRgb}, ${intensity})` : 'var(--border)';
+      html += `<div class="heatmap-cell" style="background:${bg}" title="${d.name}: ${val} edits in ${formatMonth(m)}"></div>`;
+    });
+  });
+  html += '</div>';
+  container.innerHTML = html;
+}
+
+// ============================================================
+// TAB 3: PROJECTS
+// ============================================================
+
+let projectSortCol = LIVE ? 'activity' : 'health';
+let projectSortAsc = LIVE ? false : true;
+let projectFilterCat = 'All';
+let projectSearchQ = '';
+
+function renderProjects() {
+  if (LIVE && LIVE_DATA.projects?.length) return renderProjectsLive();
+  return renderProjectsStatic();
+}
+
+function renderProjectsLive() {
+  return `
+    <div class="card">
+      <div class="card-head"><span class="card-title">All Projects</span><span class="text-faint" style="font-size:0.75rem">${LIVE_DATA.projects.length} projects</span></div>
+      <div class="card-body">
+        <div class="filter-bar">
+          <div style="flex:1"></div>
+          <input type="text" class="search-input" id="projectSearch" placeholder="Filter projects…" style="width:260px;padding-left:14px">
+        </div>
+        <div class="table-wrap">
+          <table id="projectTable">
+            <thead><tr>
+              <th data-sort="pulse">Pulse</th>
+              <th data-sort="name">Project <span class="sort-arrow">&#9660;</span></th>
+              <th data-sort="files">Files <span class="sort-arrow">&#9660;</span></th>
+              <th data-sort="hours">Hours/Week <span class="sort-arrow">&#9660;</span></th>
+              <th data-sort="comments">Comments <span class="sort-arrow">&#9660;</span></th>
+              <th data-sort="activity" class="sorted">Last Activity <span class="sort-arrow">&#9660;</span></th>
+            </tr></thead>
+            <tbody id="projectTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function renderProjectsStatic() {
+  const categories = ['All', ...(DATA.categories || []).map(c => c.category)];
+  return `
+    <div class="card">
+      <div class="card-head"><span class="card-title">All Projects</span><span class="text-faint" style="font-size:0.75rem">${DATA.projects.length} projects</span></div>
+      <div class="card-body">
+        <div class="filter-bar">
+          ${categories.map(c => `<button class="filter-btn project-cat-btn ${c === 'All' ? 'active' : ''}" data-cat="${c}">${c}</button>`).join('')}
+          <div style="flex:1"></div>
+          <input type="text" class="search-input" id="projectSearch" placeholder="Filter projects…" style="width:260px;padding-left:14px">
+        </div>
+        <div class="table-wrap">
+          <table id="projectTable">
+            <thead><tr>
+              <th data-sort="name">Project <span class="sort-arrow">&#9660;</span></th>
+              <th data-sort="category">Category <span class="sort-arrow">&#9660;</span></th>
+              <th data-sort="files">Files <span class="sort-arrow">&#9660;</span></th>
+              <th data-sort="stale">Stale Files <span class="sort-arrow">&#9660;</span></th>
+              <th data-sort="activity">Last Activity <span class="sort-arrow">&#9660;</span></th>
+              <th data-sort="health" class="sorted">Health <span class="sort-arrow">&#9660;</span></th>
+            </tr></thead>
+            <tbody id="projectTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function renderProjectTable() {
+  if (LIVE && LIVE_DATA.projects?.length) return renderProjectTableLive();
+  return renderProjectTableStatic();
+}
+
+function renderProjectTableLive() {
+  let filtered = LIVE_DATA.projects.filter(p => {
+    if (projectSearchQ && !(p.project_name || '').toLowerCase().includes(projectSearchQ)) return false;
+    return true;
+  });
+
+  filtered.sort((a,b) => {
+    let va, vb;
+    switch(projectSortCol) {
+      case 'name': va = a.project_name; vb = b.project_name; return projectSortAsc ? va.localeCompare(vb) : vb.localeCompare(va);
+      case 'files': va = a.file_count; vb = b.file_count; break;
+      case 'hours': va = a.week_minutes; vb = b.week_minutes; break;
+      case 'comments': va = a.unresolved_comments; vb = b.unresolved_comments; break;
+      case 'activity': va = a.last_activity || ''; vb = b.last_activity || ''; return projectSortAsc ? va.localeCompare(vb) : vb.localeCompare(va);
+      default: va = a.last_activity || ''; vb = b.last_activity || ''; return projectSortAsc ? va.localeCompare(vb) : vb.localeCompare(va);
+    }
+    return projectSortAsc ? (va||0) - (vb||0) : (vb||0) - (va||0);
+  });
+
+  const tbody = document.getElementById('projectTableBody');
+  if (!tbody) return;
+  tbody.innerHTML = filtered.map(p => {
+    const daysAgo = p.last_activity ? Math.floor((Date.now() - new Date(p.last_activity).getTime()) / 86400000) : 999;
+    const pulseClass = daysAgo <= 1 ? 'active' : daysAgo <= 3 ? 'recent' : 'stale';
+    return `
+      <tr>
+        <td><span class="pulse-dot ${pulseClass}"></span></td>
+        <td style="font-weight:500">${p.project_name}</td>
+        <td class="mono">${p.file_count}</td>
+        <td class="mono ${p.week_minutes > 0 ? 'text-green' : 'text-faint'}">${formatHours(p.week_minutes)}</td>
+        <td class="mono ${p.unresolved_comments > 0 ? 'text-amber' : ''}">${p.unresolved_comments || 0}</td>
+        <td class="mono text-faint">${timeAgo(p.last_activity)}</td>
+      </tr>
+    `;
+  }).join('');
+}
+
+function renderProjectTableStatic() {
+  let filtered = DATA.projects.filter(p => {
+    if (projectFilterCat !== 'All' && p.category !== projectFilterCat) return false;
+    if (projectSearchQ && !p.name.toLowerCase().includes(projectSearchQ)) return false;
+    return true;
+  });
+
+  filtered.sort((a,b) => {
+    let va, vb;
+    switch(projectSortCol) {
+      case 'name': va = a.name; vb = b.name; return projectSortAsc ? va.localeCompare(vb) : vb.localeCompare(va);
+      case 'category': va = a.category; vb = b.category; return projectSortAsc ? va.localeCompare(vb) : vb.localeCompare(va);
+      case 'files': va = a.file_count; vb = b.file_count; break;
+      case 'stale': va = a.stale_files; vb = b.stale_files; break;
+      case 'activity': va = a.last_activity || ''; vb = b.last_activity || ''; return projectSortAsc ? va.localeCompare(vb) : vb.localeCompare(va);
+      case 'health': va = a.health_score; vb = b.health_score; break;
+      default: va = a.health_score; vb = b.health_score;
+    }
+    return projectSortAsc ? va - vb : vb - va;
+  });
+
+  const tbody = document.getElementById('projectTableBody');
+  if (!tbody) return;
+  tbody.innerHTML = filtered.map(p => `
+    <tr>
+      <td style="font-weight:500">${p.name}</td>
+      <td class="text-muted">${p.category}</td>
+      <td class="mono">${p.file_count}</td>
+      <td class="mono ${p.stale_files > 0 ? 'text-amber' : ''}">${p.stale_files}</td>
+      <td class="mono text-faint">${formatDate(p.last_activity)}</td>
+      <td>${healthBadge(p.health_score)}</td>
+    </tr>
+  `).join('');
+}
+
+function initProjectsTab() {
+  renderProjectTable();
+
+  document.querySelectorAll('.project-cat-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.project-cat-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      projectFilterCat = btn.dataset.cat;
+      renderProjectTable();
+    });
+  });
+
+  const searchInput = document.getElementById('projectSearch');
+  if (searchInput) {
+    searchInput.addEventListener('input', () => {
+      projectSearchQ = searchInput.value.trim().toLowerCase();
+      renderProjectTable();
+    });
+  }
+
+  document.querySelectorAll('#projectTable th[data-sort]').forEach(th => {
+    th.addEventListener('click', () => {
+      const col = th.dataset.sort;
+      if (projectSortCol === col) projectSortAsc = !projectSortAsc;
+      else { projectSortCol = col; projectSortAsc = col === 'name' || col === 'category'; }
+      document.querySelectorAll('#projectTable th').forEach(h => h.classList.remove('sorted'));
+      th.classList.add('sorted');
+      renderProjectTable();
+    });
+  });
+}
+
+// ============================================================
+// TAB 4: DESIGN SYSTEM (ASSETS)
+// ============================================================
+
+function renderAssets() {
+  if (LIVE && LIVE_DATA.components?.components?.length) return renderAssetsLive();
+  return renderAssetsStatic();
+}
+
+function renderAssetsLive() {
+  const { components, summary } = LIVE_DATA.components;
+
+  return `
+    <div class="ds-score-card">
+      <div class="ds-score-value">${summary.avgHealthScore}/100</div>
+      <div class="ds-score-label">Design System Health Score</div>
+      <div class="ds-score-sub">${summary.total} components · ${summary.healthy} healthy · ${summary.aging} aging · ${summary.stale} stale · ${summary.descriptionCoverage}% documented</div>
+    </div>
+
+    <div class="row-3 mb-20">
+      <div class="kpi-card">
+        <div class="kpi-header"><span class="kpi-label">Healthy</span><div class="kpi-icon green">&#10003;</div></div>
+        <div class="kpi-value text-green">${summary.healthy}</div>
+        <div class="kpi-sub">Updated within 30 days</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-header"><span class="kpi-label">Aging</span><div class="kpi-icon amber">&#9888;</div></div>
+        <div class="kpi-value text-amber">${summary.aging}</div>
+        <div class="kpi-sub">30-90 days since update</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-header"><span class="kpi-label">Stale</span><div class="kpi-icon red">&#9888;</div></div>
+        <div class="kpi-value text-red">${summary.stale}</div>
+        <div class="kpi-sub">90+ days since update</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head"><span class="card-title">All Components</span><span class="text-faint" style="font-size:0.75rem">${components.length} components</span></div>
+      <div class="card-body" style="padding:0">
+        <div class="table-wrap">
+          <table>
+            <thead><tr>
+              <th>Health</th><th>Component</th><th>Description</th><th>File</th><th>Days Since Update</th><th>Score</th>
+            </tr></thead>
+            <tbody>
+              ${components.map(c => `
+                <tr>
+                  <td><span class="comp-tag ${c.health}">${c.health}</span></td>
+                  <td style="font-weight:500">${c.name}</td>
+                  <td class="text-faint" style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${c.description || '<em>No description</em>'}</td>
+                  <td class="mono text-faint" style="font-size:0.72rem">${c.containing_frame || '—'}</td>
+                  <td class="mono">${c.days_since_update || '—'}</td>
+                  <td>${healthBadge(c.health_score)}</td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function renderAssetsStatic() {
+  const totalComponents = DATA.components.reduce((s,f) => s + f.component_count, 0);
+  const totalStyles = DATA.components.reduce((s,f) => s + f.style_count, 0);
+  const filesWithComponents = DATA.components.filter(f => f.component_count > 0).length;
+  const dsScore = Math.min(100, Math.round(
+    (filesWithComponents / Math.max(DATA.components.length, 1)) * 40 +
+    Math.min(totalComponents, 100) / 100 * 30 +
+    Math.min(totalStyles, 80) / 80 * 30
+  ));
+
+  const styleGroups = { TEXT: [], FILL: [], EFFECT: [], GRID: [] };
+  DATA.components.forEach(f => {
+    (f.styles || []).forEach(s => {
+      if (styleGroups[s.style_type]) styleGroups[s.style_type].push({ ...s, file: f.file });
+    });
+  });
+
+  return `
+    <div class="ds-score-card">
+      <div class="ds-score-value">${dsScore}/100</div>
+      <div class="ds-score-label">Design System Score</div>
+      <div class="ds-score-sub">${totalComponents} components · ${totalStyles} styles · ${filesWithComponents} files with published components</div>
+    </div>
+
+    <div class="row-2">
+      <div>
+        <h3 style="font-size:0.95rem;font-weight:600;margin-bottom:12px">Component Library</h3>
+        <div id="componentGroups">
+          ${DATA.components.map((f, fi) => `
+            <div class="component-group">
+              <div class="component-group-head" data-group="${fi}">
+                <span class="component-group-title">${f.file}</span>
+                <span class="component-group-count">${f.component_count} components · ${f.style_count} styles</span>
+              </div>
+              <div class="component-list" id="compList-${fi}">
+                ${f.components.map(c => {
+                  let tag = 'misc';
+                  const name = (c.name + ' ' + (c.containing_frame || '')).toLowerCase();
+                  if (name.includes('button') || name.includes('btn') || name.includes('cta')) tag = 'button';
+                  else if (name.includes('card')) tag = 'card';
+                  else if (name.includes('input') || name.includes('field') || name.includes('form')) tag = 'input';
+                  else if (name.includes('icon') || name.includes('service icon')) tag = 'icon';
+                  else if (name.includes('state') || name.includes('variant') || name.includes('property') || name.includes('default') || name.includes('hover') || name.includes('open')) tag = 'state';
+                  return `<div class="component-item">
+                    <span class="comp-tag ${tag}">${tag}</span>
+                    <span style="font-size:0.82rem">${c.name}</span>
+                    ${c.containing_frame ? `<span class="text-faint" style="font-size:0.72rem">in ${c.containing_frame}</span>` : ''}
+                  </div>`;
+                }).join('')}
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+
+      <div>
+        <h3 style="font-size:0.95rem;font-weight:600;margin-bottom:12px">Style Tokens</h3>
+        ${Object.entries(styleGroups).map(([type, styles]) => {
+          if (styles.length === 0) return '';
+          return `
+            <h4 style="font-size:0.82rem;font-weight:600;color:var(--text-muted);margin:16px 0 8px;text-transform:uppercase;letter-spacing:0.05em">${type} (${styles.length})</h4>
+            <div class="style-tokens">
+              ${styles.map(s => `
+                <div class="style-token">
+                  <div class="style-token-type ${type.toLowerCase()}">${type}</div>
+                  <div class="style-token-name">${s.name}</div>
+                  ${s.description ? `<div class="style-token-desc">${s.description}</div>` : ''}
+                  <div class="style-token-desc">from ${s.file}</div>
+                </div>
+              `).join('')}
+            </div>
+          `;
+        }).join('')}
+      </div>
+    </div>
+  `;
+}
+
+function initAssetsTab() {
+  document.querySelectorAll('.component-group-head').forEach(head => {
+    head.addEventListener('click', () => {
+      const idx = head.dataset.group;
+      const list = document.getElementById(`compList-${idx}`);
+      if (list) list.classList.toggle('open');
+    });
+  });
+}
+
+// ============================================================
+// TAB 5: REVIEWS (Comments)
+// ============================================================
+
+function renderReviews() {
+  if (!LIVE) {
+    return `
+      <div class="card">
+        <div class="card-body" style="text-align:center;padding:60px 20px;color:var(--text-muted)">
+          Reviews tab requires a live Figma connection.<br>
+          Configure your Figma PAT and Team ID in Settings to enable.
+        </div>
+      </div>
+    `;
+  }
+
+  const metrics = LIVE_DATA.commentMetrics || {};
+  return `
+    <div class="kpi-row" style="grid-template-columns: repeat(4, 1fr)">
+      <div class="kpi-card">
+        <div class="kpi-header"><span class="kpi-label">Total Comments</span></div>
+        <div class="kpi-value">${metrics.total || 0}</div>
+        <div class="kpi-sub">last 30 days</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-header"><span class="kpi-label">Unresolved</span></div>
+        <div class="kpi-value text-amber">${metrics.unresolved || 0}</div>
+        <div class="kpi-sub">needs response</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-header"><span class="kpi-label">Avg Resolution</span></div>
+        <div class="kpi-value">${metrics.avgResolutionHours || 0}h</div>
+        <div class="kpi-sub">time to resolve</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-header"><span class="kpi-label">Weekly Trend</span></div>
+        <div class="kpi-value">${(metrics.byWeek || []).length > 0 ? metrics.byWeek[metrics.byWeek.length-1]?.comments : 0}</div>
+        <div class="kpi-sub">comments this week</div>
+      </div>
+    </div>
+
+    <div class="row-2">
+      <div class="card">
+        <div class="card-head"><span class="card-title">Comment Velocity</span></div>
+        <div class="card-body"><canvas id="chartCommentVelocity" height="200"></canvas></div>
+      </div>
+      <div class="card">
+        <div class="card-head">
+          <span class="card-title">Unresolved Comments</span>
+          <span class="text-faint" style="font-size:0.75rem">Needs attention</span>
+        </div>
+        <div class="card-body" style="max-height:300px;overflow-y:auto">
+          <div id="unresolvedList"><div class="loading-state"><div class="spinner"></div> Loading…</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head"><span class="card-title">Recent Comments</span></div>
+      <div class="card-body" style="max-height:500px;overflow-y:auto">
+        <div id="commentList"><div class="loading-state"><div class="spinner"></div> Loading…</div></div>
+      </div>
+    </div>
+  `;
+}
+
+async function initReviewsTab() {
+  if (!LIVE) return;
+
+  // Comment velocity chart
+  const metrics = LIVE_DATA.commentMetrics || {};
+  const chartEl = document.getElementById('chartCommentVelocity');
+  if (chartEl && metrics.byWeek?.length) {
+    new Chart(chartEl, {
+      type: 'bar',
+      data: {
+        labels: metrics.byWeek.map(w => w.week),
+        datasets: [{
+          label: 'Comments',
+          data: metrics.byWeek.map(w => w.comments),
+          backgroundColor: `rgba(${COLORS.accentRgb}, 0.6)`,
+          borderRadius: 3,
+        }]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: { y: { beginAtZero: true } }
+      }
+    });
+  }
+
+  // Load comments
+  try {
+    const [unresolved, recent] = await Promise.all([
+      API.comments({ unresolved: 'true', limit: '20' }),
+      API.comments({ limit: '30' }),
+    ]);
+
+    const unresolvedList = document.getElementById('unresolvedList');
+    if (unresolvedList) {
+      unresolvedList.innerHTML = unresolved.length === 0
+        ? '<div class="text-muted" style="padding:20px;text-align:center">No unresolved comments!</div>'
+        : unresolved.map(renderCommentItem).join('');
+    }
+
+    const commentList = document.getElementById('commentList');
+    if (commentList) {
+      commentList.innerHTML = recent.length === 0
+        ? '<div class="text-muted" style="padding:20px;text-align:center">No comments yet</div>'
+        : recent.map(renderCommentItem).join('');
+    }
+  } catch (e) {
+    console.error('[gravity] Failed to load comments:', e);
+  }
+}
+
+function renderCommentItem(c) {
+  return `
+    <div class="comment-item">
+      <div class="comment-header">
+        <div class="feed-avatar" style="background:${avatarColor(c.user_name)};width:28px;height:28px;font-size:0.58rem">${initials(c.user_name)}</div>
+        <span class="comment-user">${c.user_name}</span>
+        <span class="comment-file text-faint">in ${c.file_name || c.file_key}</span>
+        ${!c.resolved_at ? '<span class="badge badge-amber">Open</span>' : '<span class="badge badge-green">Resolved</span>'}
+      </div>
+      <div class="comment-message">${(c.message || '').substring(0, 200)}${(c.message || '').length > 200 ? '…' : ''}</div>
+      <div class="comment-meta">${timeAgo(c.created_at)}${c.project_name ? ` · ${c.project_name}` : ''}</div>
+    </div>
+  `;
+}
+
+// ============================================================
+// TAB 6: ACTIVITY FEED
+// ============================================================
+
+function renderFeed() {
+  return `
+    <div class="card">
+      <div class="card-head">
+        <span class="card-title">${LIVE ? 'Design Sessions' : 'Recent Activity'}</span>
+        <span class="text-faint" style="font-size:0.75rem">${DATA.recent_feed?.length || 0} recent entries</span>
+      </div>
+      <div class="card-body">
+        <div class="search-wrap" style="margin-bottom:16px">
+          <span class="search-icon">&#128269;</span>
+          <input type="text" class="search-input" id="feedSearch" placeholder="Filter by designer name…">
+        </div>
+        <div class="feed-list" id="feedList"></div>
+      </div>
+    </div>
+  `;
+}
+
+function renderFeedItems(filter = '') {
+  const list = document.getElementById('feedList');
+  if (!list) return;
+  const feed = (DATA.recent_feed || []).filter(f => {
+    if (filter && !f.user.toLowerCase().includes(filter)) return false;
+    return true;
+  });
+
+  if (LIVE) {
+    list.innerHTML = feed.map(f => `
+      <div class="feed-item">
+        <div class="feed-avatar" style="background:${avatarColor(f.user)}">${initials(f.user)}</div>
+        <div class="feed-body">
+          <div class="feed-title"><strong>${f.user}</strong> worked on <strong>${f.file}</strong> in ${f.project}
+            ${f.confidence ? `<span class="confidence ${f.confidence}">${f.confidence}</span>` : ''}
+          </div>
+          <div class="feed-meta">${timeAgo(f.date)}</div>
+        </div>
+        <div class="feed-duration">${formatDuration(f.duration_minutes)}</div>
+      </div>
+    `).join('');
+  } else {
+    list.innerHTML = feed.map(f => `
+      <div class="feed-item">
+        <div class="feed-avatar" style="background:${avatarColor(f.user)}">${initials(f.user)}</div>
+        <div class="feed-body">
+          <div class="feed-title"><strong>${f.user}</strong> modified <strong>${f.file}</strong> in ${f.project}${f.label ? `<span class="feed-label">${f.label}</span>` : ''}</div>
+          <div class="feed-meta">${formatDate(f.date)}</div>
+        </div>
+      </div>
+    `).join('');
+  }
+}
+
+function initFeedTab() {
+  renderFeedItems();
+  const searchInput = document.getElementById('feedSearch');
+  if (searchInput) {
+    searchInput.addEventListener('input', () => {
+      renderFeedItems(searchInput.value.trim().toLowerCase());
+    });
+  }
+}
+
+// ============================================================
+// INIT
+// ============================================================
+loadData();
+</script>
+</body>
+</html>
