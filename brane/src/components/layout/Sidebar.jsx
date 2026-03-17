@@ -1,12 +1,14 @@
 import { useUI } from "../../contexts/UIContext";
 import { useData } from "../../contexts/DataContext";
-import { Rss, Link2, FolderOpen, Bot, Settings } from "lucide-react";
+import { LayoutDashboard, Bot, ListTodo, Rss, BookOpen, MessageSquare, Settings } from "lucide-react";
 
 const TAB_CONFIG = [
-  { id: "feed", label: "Feed", icon: Rss },
-  { id: "sources", label: "Sources", icon: Link2 },
-  { id: "projects", label: "Projects", icon: FolderOpen },
+  { id: "dashboard", label: "Dashboard", icon: LayoutDashboard },
   { id: "agents", label: "Agents", icon: Bot },
+  { id: "tasks", label: "Tasks", icon: ListTodo },
+  { id: "feed", label: "Feed", icon: Rss },
+  { id: "knowledge", label: "Knowledge", icon: BookOpen },
+  { id: "messages", label: "Messages", icon: MessageSquare },
   { id: "settings", label: "Settings", icon: Settings },
 ];
 
@@ -23,7 +25,7 @@ export function Sidebar() {
         <h1 className="font-serif text-xl font-semibold tracking-tight-editorial text-stone-900">
           Brane
         </h1>
-        <p className="text-eyebrow mt-1">feedback → agent instructions</p>
+        <p className="text-eyebrow mt-1">agent control plane</p>
       </div>
 
       {/* Nav */}

@@ -12,6 +12,12 @@ export function DataProvider({ children }) {
   const [loading, setLoading] = useState(true);
   const [jobs, setJobs] = useState([]);
   const pollRef = useRef(null);
+  const indexRef = useRef(index);
+
+  // Keep indexRef in sync
+  useEffect(() => {
+    indexRef.current = index;
+  }, [index]);
 
   // Load index
   const loadIndex = useCallback(async () => {
@@ -50,7 +56,7 @@ export function DataProvider({ children }) {
     return null;
   }, [instructionCache]);
 
-  // Poll jobs when there are active ones
+  // Poll jobs — uses ref to avoid stale closures
   const pollJobs = useCallback(async () => {
     if (!USE_API) return;
     try {
@@ -60,8 +66,9 @@ export function DataProvider({ children }) {
         setJobs(data.jobs || []);
 
         // If any jobs just completed, refresh the index
+        const currentIndex = indexRef.current;
         const hasNewComplete = data.jobs?.some(
-          (j) => j.status === "complete" && !index.instructions.some((i) => i.id === j.resultId)
+          (j) => j.status === "complete" && !currentIndex.instructions.some((i) => i.id === j.resultId)
         );
         if (hasNewComplete) {
           await loadIndex();
@@ -70,21 +77,44 @@ export function DataProvider({ children }) {
     } catch {
       // skip
     }
-  }, [loadIndex, index.instructions]);
+  }, [loadIndex]);
 
-  // Start/stop polling based on active jobs
+  // Store latest pollJobs in a ref so intervals always call current version
+  const pollJobsRef = useRef(pollJobs);
+  useEffect(() => {
+    pollJobsRef.current = pollJobs;
+  }, [pollJobs]);
+
+  // Stable wrapper that always calls latest pollJobs
+  const doPoll = useCallback(() => {
+    pollJobsRef.current();
+  }, []);
+
+  // Start polling helper
+  const startPolling = useCallback(() => {
+    if (!pollRef.current) {
+      // Poll immediately first, then every 1.5s
+      doPoll();
+      pollRef.current = setInterval(doPoll, 1500);
+    }
+  }, [doPoll]);
+
+  // Stop polling when no active jobs
   useEffect(() => {
     const hasActive = jobs.some((j) => j.status === "pending" || j.status === "processing");
-    if (hasActive && !pollRef.current) {
-      pollRef.current = setInterval(pollJobs, 2000);
-    } else if (!hasActive && pollRef.current) {
+    if (hasActive) {
+      startPolling();
+    } else if (pollRef.current) {
       clearInterval(pollRef.current);
       pollRef.current = null;
     }
     return () => {
-      if (pollRef.current) clearInterval(pollRef.current);
+      if (pollRef.current) {
+        clearInterval(pollRef.current);
+        pollRef.current = null;
+      }
     };
-  }, [jobs, pollJobs]);
+  }, [jobs, startPolling]);
 
   // Dispatch a scrape job via API
   const dispatchScrape = useCallback(async (url, project, source) => {
@@ -98,10 +128,7 @@ export function DataProvider({ children }) {
         if (res.ok) {
           const data = await res.json();
           setJobs((prev) => [data.job, ...prev.filter((j) => j.id !== data.job.id)]);
-          // Start polling
-          if (!pollRef.current) {
-            pollRef.current = setInterval(pollJobs, 2000);
-          }
+          startPolling();
           return data.job;
         }
       } catch (err) {
@@ -122,7 +149,7 @@ export function DataProvider({ children }) {
     };
     setJobs((prev) => [job, ...prev]);
     return job;
-  }, [pollJobs]);
+  }, [startPolling]);
 
   // Dispatch batch
   const dispatchBatch = useCallback(async (urls, project) => {
@@ -136,9 +163,7 @@ export function DataProvider({ children }) {
         if (res.ok) {
           const data = await res.json();
           setJobs((prev) => [...(data.jobs || []), ...prev]);
-          if (!pollRef.current) {
-            pollRef.current = setInterval(pollJobs, 2000);
-          }
+          startPolling();
           return data.jobs;
         }
       } catch (err) {
@@ -146,7 +171,7 @@ export function DataProvider({ children }) {
       }
     }
     return [];
-  }, [pollJobs]);
+  }, [startPolling]);
 
   // Get unique projects
   const projects = useMemo(() => {
@@ -178,7 +203,6 @@ export function DataProvider({ children }) {
 
   useEffect(() => {
     checkHealth();
-    // Re-check every 10s
     const interval = setInterval(checkHealth, 10000);
     return () => clearInterval(interval);
   }, [checkHealth]);

@@ -2,10 +2,10 @@ import { createContext, useContext, useState, useCallback } from "react";
 
 const UIContext = createContext();
 
-const TABS = ["feed", "sources", "projects", "agents", "settings"];
+const TABS = ["dashboard", "agents", "tasks", "feed", "knowledge", "messages", "settings"];
 
 export function UIProvider({ children }) {
-  const [activeTab, setActiveTab] = useState("feed");
+  const [activeTab, setActiveTab] = useState("dashboard");
   const [searchQuery, setSearchQuery] = useState("");
   const [filterSource, setFilterSource] = useState("all");
   const [filterCategory, setFilterCategory] = useState("all");

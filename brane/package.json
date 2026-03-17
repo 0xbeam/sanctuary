@@ -17,6 +17,7 @@
     "server": "node server/index.js"
   },
   "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.27.1",
     "@slack/web-api": "^7.9.1",
     "commander": "^13.1.0",
     "dotenv": "^16.5.0",
