@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>sanctuary-parc — Architecture Map</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=DM+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap');
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: 'DM Sans', system-ui, sans-serif; background: #FAFAF8; color: #111114; }
+.page { max-width: 1400px; margin: 0 auto; padding: 48px 40px; }
+
+h1 { font-family: 'Cormorant Garamond', serif; font-size: 2.6rem; font-weight: 700; margin-bottom: 4px; }
+.subtitle { font-family: 'DM Mono', monospace; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.12em; color: #888; }
+
+.header-row { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px; }
+.stats-row { display: flex; gap: 16px; }
+.stat { text-align: center; }
+.stat-num { display: block; font-family: 'Cormorant Garamond', serif; font-size: 1.4rem; font-weight: 700; color: #2A7A5B; }
+.stat-label { font-family: 'DM Mono', monospace; font-size: 0.58rem; text-transform: uppercase; letter-spacing: 0.1em; color: #aaa; }
+
+.meta-row { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 32px; }
+.meta-tag { font-family: 'DM Mono', monospace; font-size: 0.62rem; background: #F6F5F2; border: 1px solid #E8E5E0; border-radius: 4px; padding: 3px 8px; color: #555; }
+.meta-tag.g { background: #E8F5EE; border-color: #2A7A5B33; color: #2A7A5B; }
+
+.tabs { display: flex; gap: 0; margin-bottom: 32px; border-bottom: 1px solid #E8E5E0; }
+.tab { padding: 10px 20px; font-family: 'DM Mono', monospace; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.1em; color: #888; cursor: pointer; border-bottom: 2px solid transparent; transition: all 200ms; }
+.tab:hover { color: #111114; }
+.tab.active { color: #2A7A5B; border-bottom-color: #2A7A5B; }
+.tab-content { display: none; }
+.tab-content.active { display: block; }
+
+.section { margin-bottom: 48px; }
+.section-title { font-family: 'Cormorant Garamond', serif; font-size: 1.4rem; font-weight: 600; margin-bottom: 6px; }
+.section-sub { font-family: 'DM Mono', monospace; font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.12em; color: #aaa; margin-bottom: 20px; }
+
+.arch-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 16px; }
+.arch-box { background: #fff; border: 1px solid #E8E5E0; border-radius: 8px; padding: 20px; position: relative; overflow: hidden; }
+.arch-box::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: var(--bar, #E8E5E0); }
+.arch-box.green::before { --bar: #2A7A5B; }
+.arch-box.amber::before { --bar: #B8860B; }
+.arch-box.blue::before { --bar: #2980B9; }
+.arch-box.gray::before { --bar: #888; }
+
+.arch-label { font-family: 'DM Mono', monospace; font-size: 0.6rem; text-transform: uppercase; letter-spacing: 0.14em; color: #aaa; margin-bottom: 8px; }
+.arch-title { font-family: 'Cormorant Garamond', serif; font-size: 1.15rem; font-weight: 600; margin-bottom: 10px; }
+.arch-desc { font-size: 0.78rem; color: #666; line-height: 1.5; margin-bottom: 10px; }
+.arch-items { display: flex; flex-wrap: wrap; gap: 5px; }
+
+.tag { display: inline-block; font-family: 'DM Mono', monospace; font-size: 0.62rem; background: #F6F5F2; border: 1px solid #E8E5E0; border-radius: 4px; padding: 2px 8px; color: #555; }
+.tag.g { background: #E8F5EE; border-color: #2A7A5B33; color: #2A7A5B; }
+.tag.b { background: #EBF0FF; border-color: #2980B933; color: #2980B9; }
+.tag.a { background: #FFF3E0; border-color: #B8860B33; color: #B8860B; }
+.tag.r { background: #FDEDEC; border-color: #C0392B33; color: #C0392B; }
+.tag.d { background: #111114; border-color: #111114; color: #fff; }
+.tag small { opacity: 0.6; }
+
+.agent-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px; margin-top: 12px; }
+.agent-card { background: #FFFDF8; border: 1px solid #E8E5E0; border-radius: 6px; padding: 12px; }
+.agent-name { font-family: 'DM Sans', sans-serif; font-size: 0.82rem; font-weight: 600; margin-bottom: 2px; }
+.agent-file { font-family: 'DM Mono', monospace; font-size: 0.6rem; color: #aaa; margin-bottom: 4px; }
+.agent-desc { font-size: 0.72rem; color: #666; }
+
+.route-table { width: 100%; border-collapse: collapse; font-size: 0.78rem; }
+.route-table th { font-family: 'DM Mono', monospace; font-size: 0.62rem; text-transform: uppercase; letter-spacing: 0.1em; color: #aaa; text-align: left; padding: 8px 12px; border-bottom: 1px solid #E8E5E0; }
+.route-table td { padding: 8px 12px; border-bottom: 1px solid #F6F5F2; color: #444; }
+.route-table tr:hover td { background: #F6F5F2; }
+.file-path { font-family: 'DM Mono', monospace; font-size: 0.65rem; color: #aaa; }
+
+.flow-row { display: flex; align-items: center; gap: 0; flex-wrap: wrap; margin-bottom: 16px; }
+.flow-node { background: #fff; border: 1px solid #E8E5E0; border-radius: 8px; padding: 10px 16px; font-size: 0.78rem; font-weight: 500; white-space: nowrap; }
+.flow-node.green { background: #2A7A5B; color: #fff; border-color: #2A7A5B; }
+.flow-node.amber { background: #FFF3E0; color: #B8860B; border-color: #B8860B44; }
+.flow-node.blue { background: #EBF0FF; color: #2980B9; border-color: #2980B944; }
+.flow-arrow { width: 36px; height: 2px; background: #ccc; position: relative; flex-shrink: 0; }
+.flow-arrow::after { content: ''; position: absolute; right: 0; top: -4px; border: 5px solid transparent; border-left: 6px solid #ccc; }
+.arrow-wrap { position: relative; display: flex; align-items: center; flex-shrink: 0; }
+
+.footer { margin-top: 64px; padding-top: 16px; border-top: 1px solid #E8E5E0; font-family: 'DM Mono', monospace; font-size: 0.62rem; color: #aaa; }
+</style>
+</head>
+<body>
+<div class="page">
+
+<div class="header-row">
+  <div>
+    <h1>sanctuary-parc</h1>
+    <p class="subtitle">Architecture Map &mdash; generated by parc</p>
+  </div>
+  <div class="stats-row">
+    <div class="stat"><span class="stat-num">135</span><span class="stat-label">files</span></div>
+    <div class="stat"><span class="stat-num">0</span><span class="stat-label">routes</span></div>
+    <div class="stat"><span class="stat-num">46</span><span class="stat-label">API endpoints</span></div>
+    <div class="stat"><span class="stat-num">0</span><span class="stat-label">agents</span></div>
+    <div class="stat"><span class="stat-num">72</span><span class="stat-label">components</span></div>
+    
+  </div>
+</div>
+
+<div class="meta-row">
+  <span class="meta-tag">feature/feedback-hub</span>
+  <span class="meta-tag">Unknown</span>
+  <span class="meta-tag">TypeScript</span><span class="meta-tag">JavaScript</span>
+  
+</div>
+
+<div class="tabs">
+  <div class="tab active" onclick="switchTab('overview')">Overview</div>
+  
+  <div class="tab" onclick="switchTab('api')">API</div>
+  
+  <div class="tab" onclick="switchTab('components')">Components</div>
+  
+  <div class="tab" onclick="switchTab('git')">Git</div>
+</div>
+
+<!-- OVERVIEW TAB -->
+<div id="tab-overview" class="tab-content active">
+  <div class="arch-grid">
+    
+
+    
+    <div class="arch-box amber">
+      <div class="arch-label">API Layer</div>
+      <div class="arch-title">46 Endpoints</div>
+      <div class="arch-items">
+        <span class="tag a">) || content.includes( (2)</span><span class="tag a">);
+  });
+
+  for (const f of expressFiles) {
+    const content = readFileSafe(f.path);
+    const routeMatches = content.matchAll( (1)</span><span class="tag a">alerts (1)</span><span class="tag a">auth (6)</span><span class="tag a">collaboration (2)</span><span class="tag a">comments (6)</span><span class="tag a">components (4)</span><span class="tag a">config (2)</span><span class="tag a">dashboard (1)</span><span class="tag a">designers (4)</span><span class="tag a">digest (2)</span><span class="tag a">files (1)</span><span class="tag a">gallery (1)</span><span class="tag a">milestones (1)</span><span class="tag a">projects (2)</span><span class="tag a">reports (2)</span><span class="tag a">sessions (2)</span><span class="tag a">status (1)</span><span class="tag a">sync (1)</span><span class="tag a">webhook (1)</span><span class="tag a">workload (3)</span>
+      </div>
+    </div>
+
+    
+
+    
+    <div class="arch-box blue">
+      <div class="arch-label">Components</div>
+      <div class="arch-title">72 Components</div>
+      <div class="arch-items">
+        <span class="tag b">feature (52)</span><span class="tag b">ui (20)</span>
+      </div>
+    </div>
+
+    
+
+    
+  </div>
+
+  
+</div>
+
+<!-- ROUTES TAB -->
+
+
+<!-- API TAB -->
+
+<div id="tab-api" class="tab-content">
+  <table class="route-table">
+    <thead><tr><th>Method</th><th>Path</th><th>Auth</th><th>File</th></tr></thead>
+    <tbody>
+      
+        <tr>
+          <td><span class="tag ">GET</span></td>
+          <td>) || content.includes(</td>
+          <td><span class="tag g">yes</span></td>
+          <td class="file-path">miniverse/parc/core/analyzers/repo.js</td>
+        </tr>
+      
+        <tr>
+          <td><span class="tag g">POST</span></td>
+          <td>) || content.includes(</td>
+          <td><span class="tag g">yes</span></td>
+          <td class="file-path">miniverse/parc/core/analyzers/repo.js</td>
+        </tr>
+      
+        <tr>
+          <td><span class="tag ">GET</span></td>
+          <td>);
+  });
+
+  for (const f of expressFiles) {
+    const content = readFileSafe(f.path);
+    const routeMatches = content.matchAll(/(app|router)\.(get|post|put|patch|delete)\s*\(\s*[</td>
+          <td><span class="tag g">yes</span></td>
+          <td class="file-path">miniverse/parc/core/analyzers/repo.js</td>
+        </tr>
+      
+        <tr>
+          <td><span class="tag ">GET</span></td>
+          <td>/api/alerts/stale</td>
+          <td><span class="tag g">yes</span></td>
+          <td class="file-path">miniverse/gravity/server/index.js</td>
+        </tr>
+      
+        <tr>
+          <td><span class="tag ">GET</span></td>
+          <td>/api/auth/figma</td>
+          <td><span class="tag g">yes</span></td>
+          <td class="file-path">miniverse/gravity/server/index.js</td>
+        </tr>
+      
+        <tr>
+          <td><span class="tag ">GET</span></td>
+          <td>/api/auth/figma/callback</td>
+          <td><span class="tag g">yes</span></td>
+          <td class="file-path">miniverse/gravity/server/index.js</td>
+        </tr>
+      
+        <tr>
+          <td><span class="tag ">GET</span></td>
+          <td>/api/auth/google</td>
+          <td><span class="tag g">yes</span></td>
+          <td class="file-path">miniverse/gravity/server/index.js</td>
+        </tr>
+      
+        <tr>
+          <td><span class="tag ">GET</span></td>
+          <td>/api/auth/google/callback</td>
+          <td><span class="tag g">yes</span></td>
+          <td class="file-path">miniverse/gravity/server/index.js</td>
+        </tr>
+      
+        <tr>
+          <td><span class="tag g">POST</span></td>
+          <td>/api/auth/logout</td>
+          <td><span class="tag g">yes</span></td>
+          <td class="file-path">miniverse/gravity/server/index.js</td>
+        </tr>
+      
+        <tr>
+          <td><span class="tag ">GET</span></td>
+          <td>/api/auth/status</td>
+          <td><span class="tag g">yes</span></td>
+          <td class="file-path">miniverse/gravity/server/index.js</td>
+        </tr>
+      
+        <tr>
+          <td><span class="tag ">GET</span></td>
+          <td>/api/collaboration/isolation</td>
+          <td><span class="tag g">yes</span></td>
+          <td class="file-path">miniverse/gravity/server/index.js</td>
+        </tr>
+      
+        <tr>
+          <td><span class="tag ">GET</span></td>
+          <td>/api/collaboration/network</td>
+          <td><span class="tag g">yes</span></td>
+          <td class="file-path">miniverse/gravity/server/index.js</td>
+        </tr>
+      
+        <tr>
+          <td><span class="tag ">GET</span></td>
+          <td>/api/comments</td>
+          <td><span class="tag g">yes</span></td>
+          <td class="file-path">miniverse/gravity/server/index.js</td>
+        </tr>
+      
+        <tr>
+          <td><span class="tag ">GET</span></td>
+          <td>/api/comments/metrics</td>
+          <td><span class="tag g">yes</span></td>
+          <td class="file-path">miniverse/gravity/server/index.js</td>
+        </tr>
+      
+        <tr>
+          <td><span class="tag ">GET</span></td>
+          <td>/api/comments/response-times</td>
+          <td><span class="tag g">yes</span></td>
+          <td class="file-path">miniverse/gravity/server/index.js</td>
+        </tr>
+      
+        <tr>
+          <td><span class="tag ">GET</span></td>
+          <td>/api/comments/review-status</td>
+          <td><span class="tag g">yes</span></td>
+          <td class="file-path">miniverse/gravity/server/index.js</td>
+        </tr>
+      
+        <tr>
+          <td><span class="tag ">GET</span></td>
+          <td>/api/comments/threads</td>
+          <td><span class="tag g">yes</span></td>
+          <td class="file-path">miniverse/gravity/server/index.js</td>
+        </tr>
+      
+        <tr>
+          <td><span class="tag ">GET</span></td>
+          <td>/api/comments/threads/open</td>
+          <td><span class="tag g">yes</span></td>
+          <td class="file-path">miniverse/gravity/server/index.js</td>
+        </tr>
+      
+        <tr>
+          <td><span class="tag ">GET</span></td>
+          <td>/api/components</td>
+          <td><span class="tag g">yes</span></td>
+          <td class="file-path">miniverse/gravity/server/index.js</td>
+        </tr>
+      
+        <tr>
+          <td><span class="tag ">GET</span></td>
+          <td>/api/components/changelog</td>
+          <td><span class="tag g">yes</span></td>
+          <td class="file-path">miniverse/gravity/server/index.js</td>
+        </tr>
+      
+        <tr>
+          <td><span class="tag ">GET</span></td>
+          <td>/api/components/coverage-trend</td>
+          <td><span class="tag g">yes</span></td>
+          <td class="file-path">miniverse/gravity/server/index.js</td>
+        </tr>
+      
+        <tr>
+          <td><span class="tag ">GET</span></td>
+          <td>/api/components/governance</td>
+          <td><span class="tag g">yes</span></td>
+          <td class="file-path">miniverse/gravity/server/index.js</td>
+        </tr>
+      
+        <tr>
+          <td><span class="tag ">GET</span></td>
+          <td>/api/config</td>
+          <td><span class="tag g">yes</span></td>
+          <td class="file-path">miniverse/gravity/server/index.js</td>
+        </tr>
+      
+        <tr>
+          <td><span class="tag g">POST</span></td>
+          <td>/api/config</td>
+          <td><span class="tag g">yes</span></td>
+          <td class="file-path">miniverse/gravity/server/index.js</td>
+        </tr>
+      
+        <tr>
+          <td><span class="tag ">GET</span></td>
+          <td>/api/dashboard</td>
+          <td><span class="tag g">yes</span></td>
+          <td class="file-path">miniverse/gravity/server/index.js</td>
+        </tr>
+      
+        <tr>
+          <td><span class="tag ">GET</span></td>
+          <td>/api/designers</td>
+          <td><span class="tag g">yes</span></td>
+          <td class="file-path">miniverse/gravity/server/index.js</td>
+        </tr>
+      
+        <tr>
+          <td><span class="tag ">GET</span></td>
+          <td>/api/designers/:name/collaborators</td>
+          <td><span class="tag g">yes</span></td>
+          <td class="file-path">miniverse/gravity/server/index.js</td>
+        </tr>
+      
+        <tr>
+          <td><span class="tag ">GET</span></td>
+          <td>/api/designers/:name/pattern</td>
+          <td><span class="tag g">yes</span></td>
+          <td class="file-path">miniverse/gravity/server/index.js</td>
+        </tr>
+      
+        <tr>
+          <td><span class="tag ">GET</span></td>
+          <td>/api/designers/:name/profile</td>
+          <td><span class="tag g">yes</span></td>
+          <td class="file-path">miniverse/gravity/server/index.js</td>
+        </tr>
+      
+        <tr>
+          <td><span class="tag ">GET</span></td>
+          <td>/api/digest/history</td>
+          <td><span class="tag g">yes</span></td>
+          <td class="file-path">miniverse/gravity/server/index.js</td>
+        </tr>
+      
+        <tr>
+          <td><span class="tag ">GET</span></td>
+          <td>/api/digest/weekly</td>
+          <td><span class="tag g">yes</span></td>
+          <td class="file-path">miniverse/gravity/server/index.js</td>
+        </tr>
+      
+        <tr>
+          <td><span class="tag ">GET</span></td>
+          <td>/api/files/:key/timeline</td>
+          <td><span class="tag g">yes</span></td>
+          <td class="file-path">miniverse/gravity/server/index.js</td>
+        </tr>
+      
+        <tr>
+          <td><span class="tag ">GET</span></td>
+          <td>/api/gallery</td>
+          <td><span class="tag g">yes</span></td>
+          <td class="file-path">miniverse/gravity/server/index.js</td>
+        </tr>
+      
+        <tr>
+          <td><span class="tag ">GET</span></td>
+          <td>/api/milestones</td>
+          <td><span class="tag g">yes</span></td>
+          <td class="file-path">miniverse/gravity/server/index.js</td>
+        </tr>
+      
+        <tr>
+          <td><span class="tag ">GET</span></td>
+          <td>/api/projects</td>
+          <td><span class="tag g">yes</span></td>
+          <td class="file-path">miniverse/gravity/server/index.js</td>
+        </tr>
+      
+        <tr>
+          <td><span class="tag ">GET</span></td>
+          <td>/api/projects/:name/velocity</td>
+          <td><span class="tag g">yes</span></td>
+          <td class="file-path">miniverse/gravity/server/index.js</td>
+        </tr>
+      
+        <tr>
+          <td><span class="tag ">GET</span></td>
+          <td>/api/reports/multi</td>
+          <td><span class="tag g">yes</span></td>
+          <td class="file-path">miniverse/gravity/server/index.js</td>
+        </tr>
+      
+        <tr>
+          <td><span class="tag ">GET</span></td>
+          <td>/api/reports/project</td>
+          <td><span class="tag g">yes</span></td>
+          <td class="file-path">miniverse/gravity/server/index.js</td>
+        </tr>
+      
+        <tr>
+          <td><span class="tag ">GET</span></td>
+          <td>/api/sessions</td>
+          <td><span class="tag g">yes</span></td>
+          <td class="file-path">miniverse/gravity/server/index.js</td>
+        </tr>
+      
+        <tr>
+          <td><span class="tag ">GET</span></td>
+          <td>/api/sessions/summary</td>
+          <td><span class="tag g">yes</span></td>
+          <td class="file-path">miniverse/gravity/server/index.js</td>
+        </tr>
+      
+        <tr>
+          <td><span class="tag ">GET</span></td>
+          <td>/api/status</td>
+          <td><span class="tag g">yes</span></td>
+          <td class="file-path">miniverse/gravity/server/index.js</td>
+        </tr>
+      
+        <tr>
+          <td><span class="tag g">POST</span></td>
+          <td>/api/sync</td>
+          <td><span class="tag g">yes</span></td>
+          <td class="file-path">miniverse/gravity/server/index.js</td>
+        </tr>
+      
+        <tr>
+          <td><span class="tag g">POST</span></td>
+          <td>/api/webhook</td>
+          <td><span class="tag g">yes</span></td>
+          <td class="file-path">miniverse/gravity/server/index.js</td>
+        </tr>
+      
+        <tr>
+          <td><span class="tag ">GET</span></td>
+          <td>/api/workload/balance</td>
+          <td><span class="tag g">yes</span></td>
+          <td class="file-path">miniverse/gravity/server/index.js</td>
+        </tr>
+      
+        <tr>
+          <td><span class="tag ">GET</span></td>
+          <td>/api/workload/current</td>
+          <td><span class="tag g">yes</span></td>
+          <td class="file-path">miniverse/gravity/server/index.js</td>
+        </tr>
+      
+        <tr>
+          <td><span class="tag ">GET</span></td>
+          <td>/api/workload/history</td>
+          <td><span class="tag g">yes</span></td>
+          <td class="file-path">miniverse/gravity/server/index.js</td>
+        </tr>
+      
+    </tbody>
+  </table>
+</div>
+
+<!-- AGENTS TAB -->
+
+
+<!-- COMPONENTS TAB -->
+
+<div id="tab-components" class="tab-content">
+  <div class="arch-grid">
+    
+      <div class="arch-box blue">
+        <div class="arch-label">feature</div>
+        <div class="arch-title">52 Components</div>
+        <div class="arch-items">
+          <span class="tag b">AgentDispatchView</span><span class="tag b">CategoryBadge</span><span class="tag b">FeedView</span><span class="tag b">InstructionCard</span><span class="tag b">InstructionDetail</span><span class="tag b">SourceIcon</span><span class="tag b">AppShell</span><span class="tag b">Header</span><span class="tag b">Sidebar</span><span class="tag b">ProjectsView</span><span class="tag b">SettingsView</span><span class="tag b">ScrapeModal</span><span class="tag b">SourcesView</span><span class="tag b">MagneticButton</span><span class="tag b">Reveal</span><span class="tag b">StaggerGroup</span><span class="tag b">Footer</span><span class="tag b">LenisProvider</span><span class="tag b">Navigation</span><span class="tag b">AttnCo</span><span class="tag b">CloseCTA</span><span class="tag b">Deployment</span><span class="tag b">Founder</span><span class="tag b">FounderRadar</span><span class="tag b">Fund</span><span class="tag b">Hero</span><span class="tag b">HonestRisks</span><span class="tag b">Renaissance</span><span class="tag b">ReturnModel</span><span class="tag b">Sanctuary</span><span class="tag b">TheSystem</span><span class="tag b">Vision</span><span class="tag b">MagneticButton</span><span class="tag b">Reveal</span><span class="tag b">StaggerGroup</span><span class="tag b">Footer</span><span class="tag b">LenisProvider</span><span class="tag b">Navigation</span><span class="tag b">AttnCo</span><span class="tag b">CloseCTA</span><span class="tag b">Deployment</span><span class="tag b">Founder</span><span class="tag b">FounderRadar</span><span class="tag b">Fund</span><span class="tag b">Hero</span><span class="tag b">HonestRisks</span><span class="tag b">Renaissance</span><span class="tag b">ReturnModel</span><span class="tag b">Sanctuary</span><span class="tag b">TheSystem</span><span class="tag b">Vision</span><span class="tag b">Globe</span>
+        </div>
+      </div>
+    
+      <div class="arch-box blue">
+        <div class="arch-label">ui</div>
+        <div class="arch-title">20 Components</div>
+        <div class="arch-items">
+          <span class="tag b">Badge</span><span class="tag b">Card</span><span class="tag b">EmptyState</span><span class="tag b">Modal</span><span class="tag b">BattleCardProvider</span><span class="tag b">CiteMark</span><span class="tag b">ContourLines</span><span class="tag b">GreenRule</span><span class="tag b">MagneticButton</span><span class="tag b">SectionEyebrow</span><span class="tag b">StatCounter</span><span class="tag b">BattleCardProvider</span><span class="tag b">CiteMark</span><span class="tag b">ContourLines</span><span class="tag b">DataViz</span><span class="tag b">GreenRule</span><span class="tag b">MagneticButton</span><span class="tag b">SectionEyebrow</span><span class="tag b">StatCounter</span><span class="tag b">WireframeShapes</span>
+        </div>
+      </div>
+    
+  </div>
+</div>
+
+<!-- DATA TAB -->
+
+
+<!-- GIT TAB -->
+<div id="tab-git" class="tab-content">
+  <div class="arch-grid">
+    <div class="arch-box gray" style="grid-column: 1 / -1;">
+      <div class="arch-label">Repository</div>
+      <div class="arch-title">sanctuary-parc</div>
+      <div class="arch-desc">
+        <strong>Branch:</strong> feature/feedback-hub<br>
+        <strong>Last commit:</strong> chore: add Vercel deployment config for feedback-hub<br>
+        <strong>Author:</strong> 0xbeam<br>
+        <strong>Commits:</strong> 17<br>
+        <strong>Remote:</strong> https://github.com/0xbeam/sanctuary-parc.git
+      </div>
+    </div>
+    <div class="arch-box gray">
+      <div class="arch-label">File Breakdown</div>
+      <div class="arch-title">135 Files</div>
+      <div class="arch-items">
+        <span class="tag">.tsx (59)</span><span class="tag">.js (35)</span><span class="tag">.jsx (21)</span><span class="tag">.ts (12)</span><span class="tag">.json (7)</span><span class="tag">.mjs (1)</span>
+      </div>
+    </div>
+    <div class="arch-box gray">
+      <div class="arch-label">Configs</div>
+      <div class="arch-title">0 Config Files</div>
+      <div class="arch-items">
+        
+      </div>
+    </div>
+    <div class="arch-box gray">
+      <div class="arch-label">Dependencies</div>
+      <div class="arch-title">0 packages</div>
+      <div class="arch-items">
+        
+        
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="footer">Generated by <strong>parc</strong> &mdash; 2026-03-17</div>
+
+</div>
+<script>
+function switchTab(id) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+  document.getElementById('tab-' + id).classList.add('active');
+  document.querySelector('[onclick="switchTab(\'' + id + '\')"]').classList.add('active');
+}
+</script>
+</body>
+</html>
