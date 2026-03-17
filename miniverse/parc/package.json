@@ -1,0 +1,17 @@
+{
+  "name": "parc",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "bin": {
+    "parc": "./bin/cli.js"
+  },
+  "scripts": {
+    "map": "node bin/cli.js map",
+    "serve": "node bin/cli.js serve"
+  },
+  "dependencies": {
+    "commander": "^13.1.0",
+    "glob": "^11.0.0"
+  }
+}
