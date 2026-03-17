@@ -1,66 +1,52 @@
-# Sanctuary Parc
+# 🏔️ Sanctuary
 
-Sanctuary Parc is the main monorepo for your active projects. The goal is simple: one home base, clean folders, predictable branch names, and fewer accidental commits from the wrong tool or IDE.
+The Sanctuary Parc venture studio game — one monorepo, all the plays.
 
-## Local git identity
+## What's inside
 
-This repo is set up to use:
+### `miniverse/proposal-builder`
+Client-facing proposal engine. Scoped quotes, deal rooms, the works.
 
-- `user.name = 0xbeam`
-- `user.email = p@spacekayak.xyz`
+### `miniverse/andromeda`
+Personal CRM for tracking people, intros, and relationship context across deals.
 
-## Project layout
+### `miniverse/design-plus`
+Design builds, experiments, and Figma plugin work. The creative lab.
 
-- `dashboard/`
-  Shared notes for the separate Saakets' Sanctuary Parc dashboard fork.
-- `miniverse/`
-  Home for core product projects: Proposal Builder, Andromeda, and Design+.
-- `bangalore/`
-  Smaller Bangalore-focused projects and experiments.
-- `data/`
-  Debug assets, data utilities, and smaller research-heavy work.
+### `miniverse/gravity`
+Gravity engine — the connective tissue between projects.
 
-## Preferred branches
+### `miniverse/parc`
+Core Parc workspace and shared tooling.
 
-- `main`
-  Shared repo structure, docs, scripts, and multi-project changes.
-- `project/proposal-builder`
-  `miniverse/proposal-builder`
-- `project/andromeda`
-  `miniverse/andromeda`
-- `project/design-plus`
-  `miniverse/design-plus`
-- `project/bangalore`
-  `bangalore`
-- `project/data`
-  `data`
-- `project/dashboard-fork`
-  `dashboard`
+### `brane/`
+Full-stack app runtime — Vite + Express, deployed on Vercel.
 
-## Daily workflow
+### `bangalore/`
+Bangalore-focused projects and experiments (including attnc-preview).
 
-1. Run `git workon <project>` before starting.
-2. Work inside that project's folder.
-3. Run `git context` any time you want a quick branch/path sanity check.
-4. Commit normally. The pre-commit hook will stop obvious branch/path mismatches.
+### `dashboard/`
+Shared notes and docs for the Sanctuary dashboard.
 
-Examples:
+### `data/`
+Debug assets, data utilities, and research-heavy work.
+
+## Branches
+
+| Branch | Maps to |
+|---|---|
+| `main` | Repo structure, docs, multi-project changes |
+| `project/proposal-builder` | `miniverse/proposal-builder` |
+| `project/andromeda` | `miniverse/andromeda` |
+| `project/design-plus` | `miniverse/design-plus` |
+| `project/bangalore` | `bangalore` |
+| `project/data` | `data` |
+
+## Workflow
 
 ```bash
-git workon proposal-builder
-git workon andromeda
-git context
+git workon proposal-builder   # switch context
+git context                    # sanity check branch vs. path
 ```
 
-## Remote layout
-
-- `origin`
-  Sanctuary Parc master repo.
-- `dashboard-fork`
-  Separate dashboard fork remote.
-
-## Notes
-
-- `dashboard/` is intentionally documentation-only inside this monorepo. Keep the actual dashboard fork as its own repo and use the `dashboard-fork` remote when you need it.
-- `miniverse/andromeda` is ready as the personal CRM workspace, with `project/andromeda` reserved for Claude or any other agent.
-- `miniverse/design-plus` is the umbrella for design builds, experiments, and Figma plugin work.
+Pre-commit hooks catch branch/path mismatches before they happen.
