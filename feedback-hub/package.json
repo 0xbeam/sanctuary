@@ -1,0 +1,34 @@
+{
+  "name": "feedback-hub",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "bin": {
+    "feedhub": "./bin/cli.js"
+  },
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "scrape": "node bin/cli.js scrape",
+    "seed": "node bin/seed.js"
+  },
+  "dependencies": {
+    "@slack/web-api": "^7.9.1",
+    "commander": "^13.1.0",
+    "dotenv": "^16.5.0",
+    "lucide-react": "^0.577.0",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0"
+  },
+  "devDependencies": {
+    "@tailwindcss/vite": "^4.2.1",
+    "@types/react": "^19.2.7",
+    "@types/react-dom": "^19.2.3",
+    "@vitejs/plugin-react": "^5.1.1",
+    "autoprefixer": "^10.4.27",
+    "postcss": "^8.5.8",
+    "tailwindcss": "^4.2.1",
+    "vite": "^7.3.1"
+  }
+}

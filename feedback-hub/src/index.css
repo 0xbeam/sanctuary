@@ -1,0 +1,198 @@
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=DM+Mono:wght@400;500&display=swap');
+@import "tailwindcss";
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Feedback Hub — Gravity Design System
+   Editorial minimal aesthetic · Forest green accent · Warm neutrals
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+@theme {
+  --color-bg: #FFFFFF;
+  --color-surface: #F6F5F2;
+  --color-card: #F6F5F2;
+  --color-card-hover: #EFEDE8;
+  --color-text: #111114;
+  --color-text-secondary: #888;
+  --color-text-faint: #aaa;
+  --color-accent: #2A7A5B;
+  --color-accent-light: #E8F5EE;
+  --color-accent-dim: #E8F5EE;
+  --color-border: #E8E5E0;
+  --color-border-light: #D8D5D0;
+
+  --color-indigo-50: #E8F5EE;
+  --color-indigo-100: #D1EBE0;
+  --color-indigo-200: #A3D7C1;
+  --color-indigo-300: #75C3A2;
+  --color-indigo-400: #3DA87A;
+  --color-indigo-500: #2A7A5B;
+  --color-indigo-600: #2A7A5B;
+  --color-indigo-700: #1F5F46;
+  --color-indigo-800: #164536;
+  --color-indigo-900: #0D2B22;
+  --color-indigo-950: #071A14;
+
+  --color-teal-50: #E8F5EE;
+  --color-teal-100: #D1EBE0;
+  --color-teal-200: #A3D7C1;
+  --color-teal-300: #75C3A2;
+  --color-teal-400: #3DA87A;
+  --color-teal-500: #2A7A5B;
+  --color-teal-600: #2A7A5B;
+  --color-teal-700: #1F5F46;
+  --color-teal-800: #164536;
+  --color-teal-900: #0D2B22;
+
+  --color-gray-50: #FAFAF8;
+  --color-gray-100: #F6F5F2;
+  --color-gray-200: #E8E5E0;
+  --color-gray-300: #D8D5D0;
+  --color-gray-400: #A3A39D;
+  --color-gray-500: #888;
+  --color-gray-600: #525250;
+  --color-gray-700: #40403D;
+  --color-gray-800: #262624;
+  --color-gray-900: #111114;
+  --color-gray-950: #0A0A09;
+
+  --color-stone-50: #FAFAF8;
+  --color-stone-100: #F6F5F2;
+  --color-stone-200: #E8E5E0;
+  --color-stone-300: #D8D5D0;
+  --color-stone-400: #A3A39D;
+  --color-stone-500: #888;
+  --color-stone-600: #525250;
+  --color-stone-700: #40403D;
+  --color-stone-800: #262624;
+  --color-stone-900: #111114;
+  --color-stone-950: #0A0A09;
+
+  --text-xs: clamp(0.56rem, 0.56rem + 0.1vw, 0.66rem);
+  --text-sm: clamp(0.72rem, 0.72rem + 0.1vw, 0.82rem);
+  --text-base: clamp(0.85rem, 0.85rem + 0.2vw, 1rem);
+  --text-lg: clamp(1.1rem, 1.1rem + 0.3vw, 1.3rem);
+  --text-xl: clamp(1.3rem, 1.3rem + 0.4vw, 1.6rem);
+  --text-2xl: clamp(1.6rem, 1.5rem + 0.8vw, 2rem);
+  --text-3xl: clamp(2rem, 1.8rem + 1.2vw, 2.6rem);
+
+  --font-serif: "Cormorant Garamond", Georgia, serif;
+  --font-display: "Cormorant Garamond", Georgia, serif;
+  --font-body: "DM Sans", -apple-system, system-ui, sans-serif;
+  --font-mono: "DM Mono", monospace;
+  --font-sans: "DM Sans", -apple-system, system-ui, sans-serif;
+
+  --ease-smooth: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-snappy: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+::selection { background: var(--color-accent); color: #fff; }
+
+html { font-size: 14px; scroll-padding-top: 72px; }
+
+body {
+  font-family: var(--font-body);
+  color: var(--color-text);
+  background: var(--color-bg);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
+  font-weight: 400;
+}
+
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(17, 17, 20, 0.15); border-radius: 2px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(17, 17, 20, 0.3); }
+
+.text-eyebrow {
+  font-family: var(--font-mono);
+  font-size: 0.56rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-weight: 500;
+  color: var(--color-text-secondary);
+}
+
+.font-serif { font-family: var(--font-serif); }
+.tracking-tight-editorial { letter-spacing: -0.02em; }
+
+.hairline-b { border-bottom: 1px solid var(--color-border); }
+.hairline-t { border-top: 1px solid var(--color-border); }
+
+.noise-overlay::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  pointer-events: none;
+  opacity: 0.018;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+  background-repeat: repeat;
+  background-size: 256px 256px;
+}
+
+.row-hover {
+  transition: padding-left 0.2s var(--ease-smooth), background-color 0.2s ease;
+}
+.row-hover:hover {
+  padding-left: 4px;
+  background-color: rgba(42, 122, 91, 0.03);
+}
+
+@keyframes pulse-dot {
+  0%, 100% { opacity: 0.3; }
+  50% { opacity: 1; }
+}
+.pulse-dot { animation: pulse-dot 2s ease-in-out infinite; }
+
+button, a, [role="button"] { transition: all 0.2s ease; }
+
+:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 2px; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+.gravity-label {
+  font-family: var(--font-mono);
+  font-size: 0.6rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--color-text-secondary);
+}
+
+@media (max-width: 900px) { html { font-size: 13px; } }
+
+@keyframes slide-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.animate-in { animation: slide-in 0.25s var(--ease-smooth) forwards; }
+
+.card-hover {
+  transition: transform 0.2s var(--ease-smooth), box-shadow 0.2s ease;
+}
+.card-hover:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+}
+
+@keyframes view-fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+.view-enter { animation: view-fade 0.2s ease forwards; }
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+.skeleton-shimmer {
+  background: linear-gradient(90deg, var(--color-stone-200) 25%, var(--color-stone-100) 50%, var(--color-stone-200) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
