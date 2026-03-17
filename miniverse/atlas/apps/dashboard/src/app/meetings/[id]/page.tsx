@@ -67,7 +67,7 @@ export default function MeetingDetailPage({ params }: { params: Promise<{ id: st
           {json?.executiveSummary && (
             <section>
               <h2 className="text-sm font-medium text-text-muted mb-2">Executive Summary</h2>
-              <p className="text-sm leading-relaxed bg-bg-card border border-border rounded-xl p-4">{json.executiveSummary}</p>
+              <p className="text-sm leading-relaxed bg-bg-card border border-border rounded-[var(--radius-lg)] p-4">{json.executiveSummary}</p>
             </section>
           )}
           {json?.topics && json.topics.length > 0 && (
@@ -151,7 +151,7 @@ function ActionItemsList({ items }: { items: Meeting["actionItems"] }) {
       {items.map((item) => {
         const status = statuses[item.id] || item.status;
         return (
-          <div key={item.id} className="flex items-start gap-3 bg-bg-card border border-border rounded-lg p-3">
+          <div key={item.id} className="flex items-start gap-3 bg-bg-card border border-border rounded-[var(--radius)] p-3">
             <button onClick={() => toggle(item.id, status)} className={`mt-0.5 w-4 h-4 rounded border shrink-0 flex items-center justify-center ${status === "done" ? "bg-success border-success" : "border-text-muted"}`}>
               {status === "done" && <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" strokeWidth={3} stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" /></svg>}
             </button>
@@ -184,7 +184,7 @@ function DraftButton({ meetingId, type, label }: { meetingId: string; type: stri
   };
 
   return (
-    <button onClick={generate} disabled={loading} className="text-xs bg-bg-hover border border-border px-3 py-1.5 rounded-lg hover:border-accent/40 disabled:opacity-50 transition-colors">
+    <button onClick={generate} disabled={loading} className="text-xs bg-bg-hover border border-border px-3 py-1.5 rounded-[var(--radius)] hover:border-accent/40 disabled:opacity-50 transition-colors">
       {loading ? "Generating..." : label}
     </button>
   );

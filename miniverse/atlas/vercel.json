@@ -1,0 +1,6 @@
+{
+  "installCommand": "npm install --workspace=packages/shared --workspace=apps/dashboard --ignore-scripts",
+  "buildCommand": "npm run build --workspace=packages/shared && npm run build --workspace=apps/dashboard",
+  "outputDirectory": "apps/dashboard/.next",
+  "framework": "nextjs"
+}

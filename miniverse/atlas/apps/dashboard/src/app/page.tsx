@@ -8,9 +8,13 @@ import { api } from "@/lib/api";
 export default function MeetingsPage() {
   const [meetings, setMeetings] = useState<Meeting[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    api.getMeetings().then(setMeetings).catch(console.error).finally(() => setLoading(false));
+    api.getMeetings()
+      .then(setMeetings)
+      .catch(() => setError("Could not connect to backend"))
+      .finally(() => setLoading(false));
   }, []);
 
   const completed = meetings.filter((m) => m.status === "complete").length;
@@ -26,6 +30,16 @@ export default function MeetingsPage() {
 
   if (loading) return <LoadingSkeleton />;
 
+  if (error) return (
+    <div className="p-8 max-w-5xl">
+      <div className="bg-warning-dim border border-warning/20 rounded-[var(--radius-lg)] p-6 text-center">
+        <p className="text-sm font-medium mb-1">{error}</p>
+        <p className="text-xs text-text-muted">Make sure the backend is running: <code className="font-[family-name:var(--font-mono)]">docker compose up -d</code></p>
+        <button onClick={() => window.location.reload()} className="mt-3 text-xs text-accent hover:text-accent-hover">Retry</button>
+      </div>
+    </div>
+  );
+
   return (
     <div className="p-8 max-w-5xl">
       <div className="flex items-center justify-between mb-8">
@@ -39,8 +53,8 @@ export default function MeetingsPage() {
       {/* Stats */}
       <div className="grid grid-cols-4 gap-4 mb-8">
         {stats.map((s) => (
-          <div key={s.label} className="bg-bg-card border border-border rounded-xl p-4">
-            <p className="text-2xl font-semibold">{s.value}</p>
+          <div key={s.label} className="bg-bg-card border border-border rounded-[var(--radius-lg)] p-4 hover:shadow-sm transition-shadow">
+            <p className="text-2xl font-semibold font-[family-name:var(--font-display)]">{s.value}</p>
             <p className="text-xs text-text-muted mt-1">{s.label}</p>
           </div>
         ))}
@@ -55,7 +69,7 @@ export default function MeetingsPage() {
             <Link
               key={m.id}
               href={`/meetings/${m.id}`}
-              className="block bg-bg-card border border-border rounded-xl p-5 hover:border-accent/40 transition-colors"
+              className="block bg-bg-card border border-border rounded-[var(--radius-lg)] p-5 hover:border-accent/40 hover:shadow-sm transition-all"
             >
               <div className="flex items-start justify-between">
                 <div className="flex-1 min-w-0">
@@ -90,12 +104,12 @@ export default function MeetingsPage() {
 
 function StatusBadge({ status }: { status: string }) {
   const colors: Record<string, string> = {
-    complete: "bg-success/10 text-success",
-    recording: "bg-danger/10 text-danger",
-    processing: "bg-warning/10 text-warning",
-    scheduled: "bg-accent/10 text-accent",
-    joining: "bg-warning/10 text-warning",
-    failed: "bg-danger/10 text-danger",
+    complete: "bg-success-dim text-success",
+    recording: "bg-danger-dim text-danger",
+    processing: "bg-warning-dim text-warning",
+    scheduled: "bg-accent-dim text-accent",
+    joining: "bg-warning-dim text-warning",
+    failed: "bg-danger-dim text-danger",
   };
   return (
     <span className={`text-xs px-2 py-0.5 rounded-full ${colors[status] || "bg-bg-hover text-text-muted"}`}>
@@ -118,7 +132,7 @@ function SubmitLinkButton() {
 
   if (!open) {
     return (
-      <button onClick={() => setOpen(true)} className="bg-accent hover:bg-accent-hover text-white text-sm px-4 py-2 rounded-lg transition-colors">
+      <button onClick={() => setOpen(true)} className="bg-accent hover:bg-accent-hover text-white text-sm px-4 py-2 rounded-[var(--radius)] transition-colors">
         + Add Meeting
       </button>
     );
@@ -130,9 +144,9 @@ function SubmitLinkButton() {
         value={url}
         onChange={(e) => setUrl(e.target.value)}
         placeholder="meet.google.com/xxx-xxxx-xxx"
-        className="bg-bg-input border border-border rounded-lg px-3 py-2 text-sm w-72 outline-none focus:border-accent"
+        className="bg-bg-input border border-border rounded-[var(--radius)] px-3 py-2 text-sm w-72 outline-none focus:border-accent"
       />
-      <button onClick={submit} className="bg-accent hover:bg-accent-hover text-white text-sm px-4 py-2 rounded-lg transition-colors">Go</button>
+      <button onClick={submit} className="bg-accent hover:bg-accent-hover text-white text-sm px-4 py-2 rounded-[var(--radius)] transition-colors">Go</button>
       <button onClick={() => setOpen(false)} className="text-text-muted hover:text-text text-sm px-2">Cancel</button>
     </div>
   );
@@ -154,9 +168,9 @@ function LoadingSkeleton() {
     <div className="p-8 max-w-5xl">
       <div className="h-8 w-40 bg-bg-card rounded animate-pulse mb-8" />
       <div className="grid grid-cols-4 gap-4 mb-8">
-        {[1, 2, 3, 4].map((i) => <div key={i} className="h-20 bg-bg-card rounded-xl animate-pulse" />)}
+        {[1, 2, 3, 4].map((i) => <div key={i} className="h-20 bg-bg-card rounded-[var(--radius-lg)] animate-pulse" />)}
       </div>
-      {[1, 2, 3].map((i) => <div key={i} className="h-24 bg-bg-card rounded-xl animate-pulse mb-3" />)}
+      {[1, 2, 3].map((i) => <div key={i} className="h-24 bg-bg-card rounded-[var(--radius-lg)] animate-pulse mb-3" />)}
     </div>
   );
 }

@@ -22,11 +22,38 @@ export default function SettingsPage() {
     }
   }, []);
 
+  const backendDown = !health;
+  const steps = [
+    { label: "Start backend", done: health?.status === "ok", hint: "docker compose up -d" },
+    { label: "Set OpenAI key", done: !!process.env.NEXT_PUBLIC_API_URL, hint: "OPENAI_API_KEY in .env" },
+    { label: "Connect Google Calendar", done: false, hint: "GOOGLE_CLIENT_ID in .env" },
+  ];
+  const setupDone = health?.status === "ok";
+
   return (
     <div className="p-8 max-w-3xl">
       <h1 className="text-2xl font-semibold mb-6">Settings</h1>
 
       <div className="space-y-6">
+        {/* Onboarding */}
+        {backendDown && (
+          <div className="bg-warning-dim border border-warning/20 rounded-[var(--radius-lg)] p-5">
+            <h2 className="text-sm font-medium mb-3">Getting Started</h2>
+            <p className="text-sm text-text-muted mb-4">Atlas needs a running backend to function. Follow these steps:</p>
+            <ol className="space-y-2">
+              {steps.map((s, i) => (
+                <li key={i} className="flex items-center gap-2 text-sm">
+                  <span className={`w-4 h-4 rounded-full flex items-center justify-center text-[10px] ${s.done ? "bg-success text-white" : "bg-bg-hover text-text-muted"}`}>
+                    {s.done ? "✓" : i + 1}
+                  </span>
+                  <span className={s.done ? "line-through text-text-muted" : ""}>{s.label}</span>
+                  {!s.done && <span className="text-text-faint font-[family-name:var(--font-mono)] text-xs ml-auto">{s.hint}</span>}
+                </li>
+              ))}
+            </ol>
+          </div>
+        )}
+
         {/* Backend Status */}
         <Section title="Backend Status">
           <div className="flex items-center gap-2">
@@ -120,7 +147,7 @@ export default function SettingsPage() {
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <div className="bg-bg-card border border-border rounded-xl p-5">
+    <div className="bg-bg-card border border-border rounded-[var(--radius-lg)] p-5">
       <h2 className="text-sm font-medium mb-4">{title}</h2>
       <div className="space-y-3">{children}</div>
     </div>

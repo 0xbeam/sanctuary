@@ -85,7 +85,7 @@ export default function ChatPage() {
         <div className="p-4 border-b border-border">
           <button
             onClick={() => { setActiveSession(null); setMessages([]); }}
-            className="w-full bg-accent hover:bg-accent-hover text-white text-sm py-2 rounded-lg transition-colors"
+            className="w-full bg-accent hover:bg-accent-hover text-white text-sm py-2 rounded-[var(--radius)] transition-colors"
           >
             New Chat
           </button>
@@ -95,7 +95,7 @@ export default function ChatPage() {
             <button
               key={s.id}
               onClick={() => setActiveSession(s.id)}
-              className={`w-full text-left text-sm px-3 py-2 rounded-lg truncate transition-colors ${activeSession === s.id ? "bg-bg-hover text-text" : "text-text-muted hover:text-text hover:bg-bg-hover"}`}
+              className={`w-full text-left text-sm px-3 py-2 rounded-[var(--radius)] truncate transition-colors ${activeSession === s.id ? "bg-bg-hover text-text" : "text-text-muted hover:text-text hover:bg-bg-hover"}`}
             >
               {s.title || "Untitled chat"}
             </button>
@@ -114,7 +114,7 @@ export default function ChatPage() {
               </p>
               <div className="mt-6 flex flex-wrap gap-2 justify-center max-w-lg">
                 {["What decisions were made this week?", "Summarize my last meeting", "What action items are overdue?", "What did we discuss about the redesign?"].map((q) => (
-                  <button key={q} onClick={() => { setInput(q); }} className="text-xs bg-bg-card border border-border px-3 py-2 rounded-lg hover:border-accent/40 transition-colors">
+                  <button key={q} onClick={() => { setInput(q); }} className="text-xs bg-bg-card border border-border px-3 py-2 rounded-[var(--radius)] hover:border-accent/40 transition-colors">
                     {q}
                   </button>
                 ))}
@@ -125,7 +125,7 @@ export default function ChatPage() {
           <div className="flex-1 overflow-y-auto p-6 space-y-4">
             {messages.map((m) => (
               <div key={m.id} className={`flex ${m.role === "user" ? "justify-end" : "justify-start"}`}>
-                <div className={`max-w-2xl text-sm leading-relaxed rounded-xl px-4 py-3 ${m.role === "user" ? "bg-accent text-white" : "bg-bg-card border border-border"}`}>
+                <div className={`max-w-2xl text-sm leading-relaxed rounded-[var(--radius-lg)] px-4 py-3 ${m.role === "user" ? "bg-accent text-white" : "bg-bg-card border border-border"}`}>
                   <p className="whitespace-pre-wrap">{m.content || <span className="animate-pulse">Thinking...</span>}</p>
                 </div>
               </div>
@@ -143,9 +143,9 @@ export default function ChatPage() {
               onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && send()}
               placeholder="Ask about your meetings..."
               disabled={streaming}
-              className="flex-1 bg-bg-input border border-border rounded-xl px-4 py-3 text-sm outline-none focus:border-accent disabled:opacity-50"
+              className="flex-1 bg-bg-input border border-border rounded-[var(--radius-lg)] px-4 py-3 text-sm outline-none focus:border-accent disabled:opacity-50"
             />
-            <button onClick={send} disabled={streaming || !input.trim()} className="bg-accent hover:bg-accent-hover disabled:opacity-50 text-white px-4 py-3 rounded-xl transition-colors">
+            <button onClick={send} disabled={streaming || !input.trim()} className="bg-accent hover:bg-accent-hover disabled:opacity-50 text-white px-4 py-3 rounded-[var(--radius-lg)] transition-colors">
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5" />
               </svg>

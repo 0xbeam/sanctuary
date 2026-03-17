@@ -42,16 +42,16 @@ export default function SearchPage() {
           onChange={(e) => setQuery(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && search()}
           placeholder="Search meetings, transcripts, action items..."
-          className="flex-1 bg-bg-input border border-border rounded-xl px-4 py-3 text-sm outline-none focus:border-accent"
+          className="flex-1 bg-bg-input border border-border rounded-[var(--radius-lg)] px-4 py-3 text-sm outline-none focus:border-accent"
         />
-        <button onClick={search} disabled={loading} className="bg-accent hover:bg-accent-hover disabled:opacity-50 text-white px-6 py-3 rounded-xl text-sm transition-colors">
+        <button onClick={search} disabled={loading} className="bg-accent hover:bg-accent-hover disabled:opacity-50 text-white px-6 py-3 rounded-[var(--radius-lg)] text-sm transition-colors">
           {loading ? "Searching..." : "Search"}
         </button>
       </div>
 
       {/* Results */}
       {loading ? (
-        <div className="space-y-3">{[1, 2, 3].map((i) => <div key={i} className="h-20 bg-bg-card rounded-xl animate-pulse" />)}</div>
+        <div className="space-y-3">{[1, 2, 3].map((i) => <div key={i} className="h-20 bg-bg-card rounded-[var(--radius-lg)] animate-pulse" />)}</div>
       ) : results.length > 0 ? (
         <div className="space-y-3">
           <p className="text-sm text-text-muted mb-4">{results.length} results for &quot;{query}&quot;</p>
@@ -59,7 +59,7 @@ export default function SearchPage() {
             <Link
               key={`${r.id}-${i}`}
               href={r.meetingId ? `/meetings/${r.meetingId}` : "#"}
-              className="block bg-bg-card border border-border rounded-xl p-4 hover:border-accent/40 transition-colors"
+              className="block bg-bg-card border border-border rounded-[var(--radius-lg)] p-4 hover:border-accent/40 transition-colors"
             >
               <div className="flex items-center gap-2 mb-1">
                 <span className={`text-xs uppercase font-medium ${typeColors[r.type] || "text-text-muted"}`}>{r.type.replace("_", " ")}</span>

@@ -2,6 +2,7 @@ import { Router } from "express";
 import { prisma } from "../server";
 import { summarizeMeeting } from "@atlas/ai";
 import { embeddingQueue } from "../ai/embedding-worker";
+import { notify } from "../notify";
 
 export const botRoutes = Router();
 
@@ -85,9 +86,11 @@ botRoutes.post("/bot-done", async (req, res) => {
       }).catch(() => {});
     }
 
+    await notify("meeting.summary_ready", { meetingId, title: parsed.title, actionItems: aiActions.length });
     res.json({ status: "summarized", summaryId: summary.id });
   } catch (error) {
     console.error("Summarization failed:", error);
+    await notify("meeting.failed", { meetingId, error: String(error) });
 
     await prisma.meeting.update({
       where: { id: meetingId },

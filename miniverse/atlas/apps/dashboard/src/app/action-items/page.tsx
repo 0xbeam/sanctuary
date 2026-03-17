@@ -11,9 +11,13 @@ export default function ActionItemsPage() {
   const [items, setItems] = useState<ActionItem[]>([]);
   const [filter, setFilter] = useState<Filter>("all");
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    api.getActionItems().then(setItems).catch(console.error).finally(() => setLoading(false));
+    api.getActionItems()
+      .then(setItems)
+      .catch(() => setError("Could not connect to backend"))
+      .finally(() => setLoading(false));
   }, []);
 
   const filtered = filter === "all" ? items : items.filter((i) => i.status === filter);
@@ -36,6 +40,16 @@ export default function ActionItemsPage() {
 
   if (loading) return <div className="p-8"><div className="h-8 w-40 bg-bg-card rounded animate-pulse" /></div>;
 
+  if (error) return (
+    <div className="p-8 max-w-4xl">
+      <div className="bg-warning-dim border border-warning/20 rounded-[var(--radius-lg)] p-6 text-center">
+        <p className="text-sm font-medium mb-1">{error}</p>
+        <p className="text-xs text-text-muted">Make sure the backend is running: <code className="font-[family-name:var(--font-mono)]">docker compose up -d</code></p>
+        <button onClick={() => window.location.reload()} className="mt-3 text-xs text-accent hover:text-accent-hover">Retry</button>
+      </div>
+    </div>
+  );
+
   return (
     <div className="p-8 max-w-4xl">
       <h1 className="text-2xl font-semibold mb-6">Action Items</h1>
@@ -46,7 +60,7 @@ export default function ActionItemsPage() {
           <button
             key={f}
             onClick={() => setFilter(f)}
-            className={`text-sm px-3 py-1.5 rounded-lg capitalize transition-colors ${filter === f ? "bg-accent text-white" : "text-text-muted hover:text-text hover:bg-bg-hover"}`}
+            className={`text-sm px-3 py-1.5 rounded-[var(--radius)] capitalize transition-colors ${filter === f ? "bg-accent text-white" : "text-text-muted hover:text-text hover:bg-bg-hover"}`}
           >
             {f} ({counts[f]})
           </button>
@@ -63,7 +77,7 @@ export default function ActionItemsPage() {
               <h2 className="text-sm font-medium text-text-muted mb-2">{assignee}</h2>
               <div className="space-y-2">
                 {assigneeItems.map((item) => (
-                  <div key={item.id} className="flex items-start gap-3 bg-bg-card border border-border rounded-lg p-3">
+                  <div key={item.id} className="flex items-start gap-3 bg-bg-card border border-border rounded-[var(--radius)] p-3">
                     <button onClick={() => toggle(item.id, item.status)} className={`mt-0.5 w-4 h-4 rounded border shrink-0 flex items-center justify-center ${item.status === "done" ? "bg-success border-success" : "border-text-muted"}`}>
                       {item.status === "done" && <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" strokeWidth={3} stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" /></svg>}
                     </button>

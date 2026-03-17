@@ -12,6 +12,7 @@ import { contextRoutes } from "./routes/context";
 import { botRoutes } from "./routes/bot";
 import { setupEmbeddingWorker } from "./ai/embedding-worker";
 import { startCalendarPoller } from "./calendar/scheduler";
+import { notify } from "./notify";
 
 export const prisma = new PrismaClient();
 
@@ -33,6 +34,13 @@ app.use(routineRoutes);
 app.use(draftRoutes);
 app.use(contextRoutes);
 app.use(botRoutes);
+
+// Global error handler
+app.use((err: Error, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
+  console.error("Unhandled error:", err);
+  notify("bot.error", { error: err.message });
+  res.status(500).json({ error: "Internal server error" });
+});
 
 const PORT = process.env.PORT || 3001;
 
@@ -57,7 +65,12 @@ async function main() {
 
   app.listen(PORT, () => {
     console.log(`Atlas backend running on :${PORT}`);
+    notify("system.startup", { port: PORT });
   });
 }
 
-main().catch(console.error);
+main().catch((err) => {
+  console.error("Fatal startup error:", err);
+  notify("bot.error", { error: `Startup failed: ${err.message}` });
+  process.exit(1);
+});
