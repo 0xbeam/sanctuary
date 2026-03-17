@@ -1,0 +1,42 @@
+{
+  "audience": "Technical founders launching new products",
+  "pagePromise": "Turn a rough launch into a sharp story and visible release",
+  "tone": [
+    "direct",
+    "high-conviction",
+    "clean"
+  ],
+  "ctaStrategy": "Invite the user into a product walkthrough request",
+  "sections": [
+    {
+      "sectionId": "section_hero",
+      "intent": "State the promise quickly and create momentum",
+      "message": "Launch pages should feel inevitable, not assembled",
+      "ctaRole": "primary"
+    },
+    {
+      "sectionId": "section_proof",
+      "intent": "Back the promise with compact proof",
+      "message": "Show evidence without slowing the narrative",
+      "proofType": "stats"
+    },
+    {
+      "sectionId": "section_proof_94y9z2",
+      "intent": "Support the narrative with more evidence",
+      "message": "New proof sections should slot into the existing story rhythm.",
+      "proofType": "stats"
+    },
+    {
+      "sectionId": "section_dc182959",
+      "intent": "Back the promise with compact proof",
+      "message": "Show evidence without slowing the narrative",
+      "proofType": "stats"
+    },
+    {
+      "sectionId": "section_5d95883f",
+      "intent": "Support the narrative with more evidence",
+      "message": "New proof sections should slot into the existing story rhythm.",
+      "proofType": "stats"
+    }
+  ]
+}

@@ -1,0 +1,68 @@
+{
+  "slots": [
+    {
+      "slotId": "slot_hero_eyebrow",
+      "value": "POLARIS"
+    },
+    {
+      "slotId": "slot_hero_headline",
+      "value": "Compose launch pages as layered systems"
+    },
+    {
+      "slotId": "slot_hero_subcopy",
+      "value": "Polaris lets designers and agents compose structure, story, copy, assets, and motion as separate layers, then preview the real page instantly."
+    },
+    {
+      "slotId": "slot_hero_cta",
+      "value": "Start the prototype"
+    },
+    {
+      "slotId": "slot_proof_claim",
+      "value": "The workflow is faster because every layer stays editable."
+    },
+    {
+      "slotId": "slot_proof_stat_1",
+      "value": "6 editable layers"
+    },
+    {
+      "slotId": "slot_proof_stat_2",
+      "value": "1 live runtime preview"
+    },
+    {
+      "slotId": "slot_proof_claim_nuh1bp",
+      "value": "Add new proof without rebuilding the page."
+    },
+    {
+      "slotId": "slot_proof_stat_1_x4qw6m",
+      "value": "Fast duplication"
+    },
+    {
+      "slotId": "slot_proof_stat_2_29sj6j",
+      "value": "Structured layers"
+    },
+    {
+      "slotId": "slot_ff7d0143",
+      "value": "The workflow is faster because every layer stays editable."
+    },
+    {
+      "slotId": "slot_0ec9c4dd",
+      "value": "6 editable layers"
+    },
+    {
+      "slotId": "slot_32a00e52",
+      "value": "1 live runtime preview"
+    },
+    {
+      "slotId": "slot_24cedfe2",
+      "value": "Add new proof without rebuilding the page."
+    },
+    {
+      "slotId": "slot_a5ea210f",
+      "value": "Fast duplication"
+    },
+    {
+      "slotId": "slot_6e41948b",
+      "value": "Structured layers"
+    }
+  ]
+}

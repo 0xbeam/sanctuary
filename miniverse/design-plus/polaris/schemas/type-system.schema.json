@@ -1,0 +1,88 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "type-system.schema.json",
+  "title": "Type System Layer",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "roles"
+  ],
+  "properties": {
+    "roles": {
+      "type": "array",
+      "items": {
+        "$ref": "#/defs/role"
+      }
+    },
+    "transformRules": {
+      "type": "array",
+      "items": {
+        "$ref": "#/defs/transformRule"
+      }
+    }
+  },
+  "defs": {
+    "role": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "name"
+      ],
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "maxWords": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "tone": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "mobileCompression": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        }
+      }
+    },
+    "transformRule": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "targetRole",
+        "operation"
+      ],
+      "properties": {
+        "targetRole": {
+          "type": "string"
+        },
+        "operation": {
+          "type": "string",
+          "enum": [
+            "shorten",
+            "sharpen",
+            "soften",
+            "compress-mobile",
+            "increase-conviction"
+          ]
+        },
+        "value": {
+          "type": [
+            "string",
+            "number",
+            "boolean"
+          ]
+        }
+      }
+    }
+  }
+}
+

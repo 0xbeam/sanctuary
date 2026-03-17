@@ -1,0 +1,22 @@
+{
+  "name": "@miniverse/polaris",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Designer-first layered landing page composer built on top of OpenPencil",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "bootstrap:editor": "node --import tsx/esm scripts/bootstrap-editor.mjs",
+    "dev:editor": "npm run dev --workspace @polaris/editor",
+    "dev:preview": "npm run dev --workspace @polaris/preview",
+    "build:editor": "npm run build --workspace @polaris/editor",
+    "build:preview": "npm run build --workspace @polaris/preview",
+    "spec": "printf 'See docs/PRODUCT_SPEC.md\\n'",
+    "plan": "printf 'See docs/EXECUTION_PLAN.md\\n'"
+  },
+  "devDependencies": {
+    "tsx": "^4.21.0"
+  }
+}

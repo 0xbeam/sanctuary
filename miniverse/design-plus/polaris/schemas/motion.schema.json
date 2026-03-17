@@ -1,0 +1,60 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "motion.schema.json",
+  "title": "Motion Layer",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "bindings"
+  ],
+  "properties": {
+    "bindings": {
+      "type": "array",
+      "items": {
+        "$ref": "#/defs/binding"
+      }
+    }
+  },
+  "defs": {
+    "binding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "targetId",
+        "preset"
+      ],
+      "properties": {
+        "targetId": {
+          "type": "string"
+        },
+        "preset": {
+          "type": "string",
+          "enum": [
+            "reveal",
+            "stagger",
+            "parallax",
+            "sticky",
+            "marquee",
+            "hover-lift",
+            "section-pin",
+            "scrub-timeline"
+          ]
+        },
+        "trigger": {
+          "type": "string",
+          "enum": [
+            "load",
+            "enter-viewport",
+            "hover",
+            "scroll",
+            "click"
+          ]
+        },
+        "config": {
+          "type": "object"
+        }
+      }
+    }
+  }
+}
+

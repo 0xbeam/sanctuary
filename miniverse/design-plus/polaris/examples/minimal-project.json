@@ -1,0 +1,333 @@
+{
+  "id": "project_launchkit",
+  "name": "Launch Kit",
+  "pages": [
+    {
+      "id": "home",
+      "name": "Home",
+      "route": "/",
+      "structure": [
+        {
+          "id": "section_hero",
+          "type": "hero",
+          "componentKey": "marketing.hero.centered",
+          "variant": "editorial",
+          "slots": [
+            {
+              "id": "slot_hero_eyebrow",
+              "name": "Eyebrow",
+              "kind": "text",
+              "semanticRole": "hero_eyebrow",
+              "required": true
+            },
+            {
+              "id": "slot_hero_headline",
+              "name": "Headline",
+              "kind": "text",
+              "semanticRole": "hero_headline",
+              "required": true
+            },
+            {
+              "id": "slot_hero_subcopy",
+              "name": "Subcopy",
+              "kind": "rich-text",
+              "semanticRole": "hero_subcopy",
+              "required": true
+            },
+            {
+              "id": "slot_hero_media",
+              "name": "Hero Media",
+              "kind": "image",
+              "required": true
+            },
+            {
+              "id": "slot_hero_cta",
+              "name": "Primary CTA",
+              "kind": "button",
+              "semanticRole": "cta_label",
+              "required": true
+            }
+          ],
+          "layout": {
+            "widthMode": "container",
+            "columns": 12,
+            "gap": 24
+          }
+        },
+        {
+          "id": "section_proof",
+          "type": "proof-grid",
+          "componentKey": "marketing.proof.stats",
+          "slots": [
+            {
+              "id": "slot_proof_claim",
+              "name": "Proof Claim",
+              "kind": "text",
+              "semanticRole": "section_claim",
+              "required": true
+            },
+            {
+              "id": "slot_proof_stat_1",
+              "name": "Proof Stat 1",
+              "kind": "text",
+              "semanticRole": "proof_stat",
+              "required": true
+            },
+            {
+              "id": "slot_proof_stat_2",
+              "name": "Proof Stat 2",
+              "kind": "text",
+              "semanticRole": "proof_stat",
+              "required": true
+            }
+          ],
+          "layout": {
+            "widthMode": "container",
+            "columns": 12,
+            "gap": 20
+          }
+        }
+      ],
+      "copy": {
+        "slots": [
+          {
+            "slotId": "slot_hero_eyebrow",
+            "value": "POLARIS"
+          },
+          {
+            "slotId": "slot_hero_headline",
+            "value": "Design landing pages as living systems"
+          },
+          {
+            "slotId": "slot_hero_subcopy",
+            "value": "Polaris lets designers and agents compose structure, story, copy, assets, and motion as separate layers, then preview the real page instantly."
+          },
+          {
+            "slotId": "slot_hero_cta",
+            "value": "Start the prototype"
+          },
+          {
+            "slotId": "slot_proof_claim",
+            "value": "The workflow is faster because every layer stays editable."
+          },
+          {
+            "slotId": "slot_proof_stat_1",
+            "value": "6 editable layers"
+          },
+          {
+            "slotId": "slot_proof_stat_2",
+            "value": "1 live runtime preview"
+          }
+        ]
+      },
+      "story": {
+        "audience": "Technical founders launching new products",
+        "pagePromise": "Turn a rough launch into a sharp story and visible release",
+        "tone": [
+          "direct",
+          "high-conviction",
+          "clean"
+        ],
+        "ctaStrategy": "Invite the user into a product walkthrough request",
+        "sections": [
+          {
+            "sectionId": "section_hero",
+            "intent": "State the promise quickly and create momentum",
+            "message": "Launch pages should feel inevitable, not assembled",
+            "ctaRole": "primary"
+          },
+          {
+            "sectionId": "section_proof",
+            "intent": "Back the promise with compact proof",
+            "message": "Show evidence without slowing the narrative",
+            "proofType": "stats"
+          }
+        ]
+      },
+      "typeSystem": {
+        "roles": [
+          {
+            "id": "hero_headline",
+            "name": "Hero Headline",
+            "maxWords": 8,
+            "tone": [
+              "declarative",
+              "high-conviction"
+            ],
+            "mobileCompression": 0.2
+          },
+          {
+            "id": "hero_subcopy",
+            "name": "Hero Subcopy",
+            "maxWords": 24,
+            "tone": [
+              "clear",
+              "confident"
+            ],
+            "mobileCompression": 0.3
+          },
+          {
+            "id": "proof_stat",
+            "name": "Proof Stat",
+            "maxWords": 5,
+            "tone": [
+              "sharp",
+              "factual"
+            ],
+            "mobileCompression": 0.1
+          },
+          {
+            "id": "cta_label",
+            "name": "CTA Label",
+            "maxWords": 3,
+            "tone": [
+              "actionable"
+            ],
+            "mobileCompression": 0
+          }
+        ],
+        "transformRules": [
+          {
+            "targetRole": "hero_headline",
+            "operation": "increase-conviction",
+            "value": true
+          },
+          {
+            "targetRole": "hero_subcopy",
+            "operation": "compress-mobile",
+            "value": 0.3
+          }
+        ]
+      },
+      "style": {
+        "themeId": "theme_editorial_launch",
+        "sectionModes": [
+          {
+            "sectionId": "section_hero",
+            "mode": "spotlight"
+          },
+          {
+            "sectionId": "section_proof",
+            "mode": "quiet-proof"
+          }
+        ]
+      }
+    }
+  ],
+  "themes": [
+    {
+      "id": "theme_editorial_launch",
+      "name": "Editorial Launch",
+      "tokens": {
+        "colors": {
+          "background": "#f5f1e8",
+          "foreground": "#151515",
+          "accent": "#b8432f"
+        },
+        "spacing": {
+          "section": 96,
+          "container": 24
+        },
+        "radius": {
+          "card": 20
+        },
+        "typography": {
+          "display": "Iowan Old Style",
+          "body": "Helvetica Neue"
+        }
+      }
+    }
+  ],
+  "assets": {
+    "library": [
+      {
+        "id": "asset_hero",
+        "kind": "image",
+        "src": "/assets/launch-hero.svg",
+        "sourceKind": "local",
+        "alt": "Product launch scene with editorial lighting",
+        "focalPoint": {
+          "x": 0.5,
+          "y": 0.35
+        }
+      }
+    ],
+    "bindings": [
+      {
+        "slotId": "slot_hero_media",
+        "assetId": "asset_hero",
+        "cropMode": "cover"
+      }
+    ]
+  },
+  "registry": {
+    "components": [
+      {
+        "key": "marketing.hero.centered",
+        "source": "src/components/marketing/HeroCentered.tsx",
+        "slots": [
+          {
+            "name": "headline",
+            "kind": "text",
+            "semanticRole": "hero_headline"
+          },
+          {
+            "name": "subcopy",
+            "kind": "rich-text",
+            "semanticRole": "hero_subcopy"
+          },
+          {
+            "name": "media",
+            "kind": "image"
+          }
+        ]
+      },
+      {
+        "key": "marketing.proof.stats",
+        "source": "src/components/marketing/ProofStats.tsx",
+        "slots": [
+          {
+            "name": "claim",
+            "kind": "text",
+            "semanticRole": "section_claim"
+          },
+          {
+            "name": "statItems",
+            "kind": "list",
+            "semanticRole": "proof_stat"
+          }
+        ]
+      }
+    ]
+  },
+  "motions": {
+    "bindings": [
+      {
+        "targetId": "section_hero",
+        "preset": "reveal",
+        "trigger": "load",
+        "config": {
+          "durationMs": 700,
+          "distance": 24
+        }
+      },
+      {
+        "targetId": "section_proof",
+        "preset": "stagger",
+        "trigger": "enter-viewport",
+        "config": {
+          "itemDelayMs": 120
+        }
+      }
+    ]
+  },
+  "remixSources": [
+    {
+      "id": "remix_ref_001",
+      "kind": "website",
+      "source": "https://example.com",
+      "capturedAt": "2026-03-16T10:00:00Z",
+      "notes": "Reference only for section rhythm and editorial tone"
+    }
+  ]
+}

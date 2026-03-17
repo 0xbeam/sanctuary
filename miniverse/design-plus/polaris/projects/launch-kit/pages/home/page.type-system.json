@@ -1,0 +1,55 @@
+{
+  "roles": [
+    {
+      "id": "hero_headline",
+      "name": "Hero Headline",
+      "maxWords": 8,
+      "tone": [
+        "declarative",
+        "high-conviction"
+      ],
+      "mobileCompression": 0.2
+    },
+    {
+      "id": "hero_subcopy",
+      "name": "Hero Subcopy",
+      "maxWords": 24,
+      "tone": [
+        "clear",
+        "confident"
+      ],
+      "mobileCompression": 0.3
+    },
+    {
+      "id": "proof_stat",
+      "name": "Proof Stat",
+      "maxWords": 5,
+      "tone": [
+        "sharp",
+        "factual"
+      ],
+      "mobileCompression": 0.1
+    },
+    {
+      "id": "cta_label",
+      "name": "CTA Label",
+      "maxWords": 3,
+      "tone": [
+        "actionable"
+      ],
+      "mobileCompression": 0
+    }
+  ],
+  "transformRules": [
+    {
+      "targetRole": "hero_headline",
+      "operation": "increase-conviction",
+      "value": true
+    },
+    {
+      "targetRole": "hero_subcopy",
+      "operation": "compress-mobile",
+      "value": 0.3
+    }
+  ]
+}

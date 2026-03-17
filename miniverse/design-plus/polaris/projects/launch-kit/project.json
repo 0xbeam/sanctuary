@@ -1,0 +1,122 @@
+{
+  "id": "project_launchkit",
+  "name": "Launch Kit",
+  "editor": {
+    "documentPath": "editor/polaris.fig"
+  },
+  "pages": [
+    {
+      "id": "home",
+      "name": "Home",
+      "route": "/",
+      "canvasPageName": "Home"
+    }
+  ],
+  "themes": [
+    {
+      "id": "theme_editorial_launch",
+      "name": "Editorial Launch",
+      "tokens": {
+        "colors": {
+          "background": "#f5f1e8",
+          "foreground": "#151515",
+          "accent": "#b8432f"
+        },
+        "spacing": {
+          "section": 96,
+          "container": 24
+        },
+        "radius": {
+          "card": 20
+        },
+        "typography": {
+          "display": "Iowan Old Style",
+          "body": "Helvetica Neue"
+        }
+      }
+    }
+  ],
+  "assets": {
+    "library": [
+      {
+        "id": "asset_hero",
+        "kind": "image",
+        "src": "/assets/launch-hero.svg",
+        "sourceKind": "local",
+        "alt": "Polaris hero artwork",
+        "focalPoint": {
+          "x": 0.5,
+          "y": 0.35
+        }
+      }
+    ],
+    "bindings": [
+      {
+        "slotId": "slot_hero_media",
+        "assetId": "asset_hero",
+        "cropMode": "cover"
+      }
+    ]
+  },
+  "registry": {
+    "components": [
+      {
+        "key": "marketing.hero.centered",
+        "source": "src/components/marketing/HeroCentered.tsx",
+        "slots": [
+          {
+            "name": "headline",
+            "kind": "text",
+            "semanticRole": "hero_headline"
+          },
+          {
+            "name": "subcopy",
+            "kind": "rich-text",
+            "semanticRole": "hero_subcopy"
+          },
+          {
+            "name": "media",
+            "kind": "image"
+          }
+        ]
+      },
+      {
+        "key": "marketing.proof.stats",
+        "source": "src/components/marketing/ProofStats.tsx",
+        "slots": [
+          {
+            "name": "claim",
+            "kind": "text",
+            "semanticRole": "section_claim"
+          },
+          {
+            "name": "statItems",
+            "kind": "list",
+            "semanticRole": "proof_stat"
+          }
+        ]
+      }
+    ]
+  },
+  "motions": {
+    "bindings": [
+      {
+        "targetId": "section_hero",
+        "preset": "reveal",
+        "trigger": "load",
+        "config": {
+          "durationMs": 700,
+          "distance": 24
+        }
+      },
+      {
+        "targetId": "section_proof",
+        "preset": "stagger",
+        "trigger": "enter-viewport",
+        "config": {
+          "itemDelayMs": 120
+        }
+      }
+    ]
+  }
+}

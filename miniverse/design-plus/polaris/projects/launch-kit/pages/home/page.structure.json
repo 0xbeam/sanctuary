@@ -1,0 +1,162 @@
+[
+  {
+    "id": "section_hero",
+    "type": "hero",
+    "componentKey": "marketing.hero.centered",
+    "variant": "editorial",
+    "slots": [
+      {
+        "id": "slot_hero_eyebrow",
+        "name": "Eyebrow",
+        "kind": "text",
+        "semanticRole": "hero_eyebrow",
+        "required": true
+      },
+      {
+        "id": "slot_hero_headline",
+        "name": "Headline",
+        "kind": "text",
+        "semanticRole": "hero_headline",
+        "required": true
+      },
+      {
+        "id": "slot_hero_subcopy",
+        "name": "Subcopy",
+        "kind": "rich-text",
+        "semanticRole": "hero_subcopy",
+        "required": true
+      },
+      {
+        "id": "slot_hero_media",
+        "name": "Hero Media",
+        "kind": "image",
+        "required": true
+      },
+      {
+        "id": "slot_hero_cta",
+        "name": "Primary CTA",
+        "kind": "button",
+        "semanticRole": "cta_label",
+        "required": true
+      }
+    ],
+    "layout": {
+      "widthMode": "container",
+      "columns": 12,
+      "gap": 24
+    }
+  },
+  {
+    "id": "section_proof",
+    "type": "proof-grid",
+    "componentKey": "marketing.proof.stats",
+    "slots": [
+      {
+        "id": "slot_proof_claim",
+        "name": "Proof Claim",
+        "kind": "text",
+        "semanticRole": "section_claim",
+        "required": true
+      },
+      {
+        "id": "slot_proof_stat_1",
+        "name": "Proof Stat 1",
+        "kind": "text",
+        "semanticRole": "proof_stat",
+        "required": true
+      },
+      {
+        "id": "slot_proof_stat_2",
+        "name": "Proof Stat 2",
+        "kind": "text",
+        "semanticRole": "proof_stat",
+        "required": true
+      }
+    ],
+    "layout": {
+      "widthMode": "container",
+      "columns": 12,
+      "gap": 20
+    }
+  },
+  {
+    "id": "section_dc182959",
+    "type": "proof-grid",
+    "componentKey": "marketing.proof.stats",
+    "slots": [
+      {
+        "id": "slot_ff7d0143",
+        "name": "Proof Claim",
+        "kind": "text",
+        "semanticRole": "section_claim"
+      },
+      {
+        "id": "slot_0ec9c4dd",
+        "name": "Proof Stat 1",
+        "kind": "text",
+        "semanticRole": "proof_stat"
+      },
+      {
+        "id": "slot_32a00e52",
+        "name": "Proof Stat 2",
+        "kind": "text",
+        "semanticRole": "proof_stat"
+      }
+    ]
+  },
+  {
+    "id": "section_proof_94y9z2",
+    "type": "proof-grid",
+    "componentKey": "marketing.proof.stats",
+    "slots": [
+      {
+        "id": "slot_proof_claim_nuh1bp",
+        "name": "Proof Claim",
+        "kind": "text",
+        "semanticRole": "section_claim"
+      },
+      {
+        "id": "slot_proof_stat_1_x4qw6m",
+        "name": "Proof Stat 1",
+        "kind": "text",
+        "semanticRole": "proof_stat"
+      },
+      {
+        "id": "slot_proof_stat_2_29sj6j",
+        "name": "Proof Stat 2",
+        "kind": "text",
+        "semanticRole": "proof_stat"
+      }
+    ],
+    "layout": {
+      "widthMode": "container",
+      "columns": 12,
+      "gap": 20
+    }
+  },
+  {
+    "id": "section_5d95883f",
+    "type": "proof-grid",
+    "componentKey": "marketing.proof.stats",
+    "slots": [
+      {
+        "id": "slot_24cedfe2",
+        "name": "Proof Claim",
+        "kind": "text",
+        "semanticRole": "section_claim"
+      },
+      {
+        "id": "slot_a5ea210f",
+        "name": "Proof Stat 1",
+        "kind": "text",
+        "semanticRole": "proof_stat"
+      },
+      {
+        "id": "slot_6e41948b",
+        "name": "Proof Stat 2",
+        "kind": "text",
+        "semanticRole": "proof_stat"
+      }
+    ]
+  }
+]

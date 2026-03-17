@@ -1,0 +1,58 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "story.schema.json",
+  "title": "Story Layer",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "audience",
+    "pagePromise",
+    "sections"
+  ],
+  "properties": {
+    "audience": {
+      "type": "string"
+    },
+    "pagePromise": {
+      "type": "string"
+    },
+    "tone": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "ctaStrategy": {
+      "type": "string"
+    },
+    "sections": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "sectionId",
+          "intent"
+        ],
+        "properties": {
+          "sectionId": {
+            "type": "string"
+          },
+          "intent": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          },
+          "proofType": {
+            "type": "string"
+          },
+          "ctaRole": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  }
+}
+

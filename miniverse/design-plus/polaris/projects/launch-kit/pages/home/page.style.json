@@ -1,0 +1,25 @@
+{
+  "themeId": "theme_editorial_launch",
+  "sectionModes": [
+    {
+      "sectionId": "section_hero",
+      "mode": "spotlight"
+    },
+    {
+      "sectionId": "section_proof",
+      "mode": "quiet-proof"
+    },
+    {
+      "sectionId": "section_proof_94y9z2",
+      "mode": "quiet-proof"
+    },
+    {
+      "sectionId": "section_dc182959",
+      "mode": "quiet-proof"
+    },
+    {
+      "sectionId": "section_5d95883f",
+      "mode": "quiet-proof"
+    }
+  ]
+}

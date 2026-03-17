@@ -1,0 +1,79 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "project.schema.json",
+  "title": "Polaris Project",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "id",
+    "name",
+    "pages",
+    "themes",
+    "assets",
+    "registry"
+  ],
+  "properties": {
+    "id": {
+      "type": "string"
+    },
+    "name": {
+      "type": "string"
+    },
+    "pages": {
+      "type": "array",
+      "items": {
+        "$ref": "./page.schema.json"
+      }
+    },
+    "themes": {
+      "type": "array",
+      "items": {
+        "$ref": "./style.schema.json#/defs/theme"
+      }
+    },
+    "assets": {
+      "$ref": "./assets.schema.json"
+    },
+    "registry": {
+      "$ref": "./registry.schema.json"
+    },
+    "motions": {
+      "$ref": "./motion.schema.json"
+    },
+    "remixSources": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "kind",
+          "source"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "website",
+              "figma",
+              "image-board"
+            ]
+          },
+          "source": {
+            "type": "string"
+          },
+          "capturedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "notes": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  }
+}

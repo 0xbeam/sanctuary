@@ -1,0 +1,12 @@
+import { createHead } from '@unhead/vue/client'
+import { createApp } from 'vue'
+
+import './app.css'
+import { preloadFonts } from '@/engine/fonts'
+
+import App from './App.vue'
+import router from './router'
+
+preloadFonts()
+const head = createHead()
+createApp(App).use(router).use(head).mount('#app')

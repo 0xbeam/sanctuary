@@ -1,0 +1,46 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "copy.schema.json",
+  "title": "Copy Layer",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "slots"
+  ],
+  "properties": {
+    "slots": {
+      "type": "array",
+      "items": {
+        "$ref": "#/defs/slotContent"
+      }
+    }
+  },
+  "defs": {
+    "slotContent": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "slotId",
+        "value"
+      ],
+      "properties": {
+        "slotId": {
+          "type": "string"
+        },
+        "value": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        }
+      }
+    }
+  }
+}

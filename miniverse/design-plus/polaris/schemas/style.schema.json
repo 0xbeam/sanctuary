@@ -1,0 +1,94 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "style.schema.json",
+  "title": "Style System Layer",
+  "type": "object",
+  "additionalProperties": false,
+  "defs": {
+    "theme": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "name",
+        "tokens"
+      ],
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "tokens": {
+          "$ref": "#/defs/tokens"
+        }
+      }
+    },
+    "tokens": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "colors": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "spacing": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "number"
+          }
+        },
+        "radius": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "number"
+          }
+        },
+        "typography": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "pageStyle": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "themeId"
+      ],
+      "properties": {
+        "themeId": {
+          "type": "string"
+        },
+        "sectionModes": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "sectionId",
+              "mode"
+            ],
+            "properties": {
+              "sectionId": {
+                "type": "string"
+              },
+              "mode": {
+                "type": "string"
+              },
+              "overrides": {
+                "$ref": "#/defs/tokens"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+

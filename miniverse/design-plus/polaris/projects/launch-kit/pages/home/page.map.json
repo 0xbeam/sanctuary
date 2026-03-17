@@ -1,0 +1,169 @@
+{
+  "entries": [
+    {
+      "nodeId": "0:6",
+      "kind": "section",
+      "sectionId": "section_hero",
+      "componentKey": "marketing.hero.centered"
+    },
+    {
+      "nodeId": "0:7",
+      "kind": "slot",
+      "sectionId": "section_hero",
+      "slotId": "slot_hero_eyebrow",
+      "semanticRole": "hero_eyebrow",
+      "slotKind": "text"
+    },
+    {
+      "nodeId": "0:8",
+      "kind": "slot",
+      "sectionId": "section_hero",
+      "slotId": "slot_hero_headline",
+      "semanticRole": "hero_headline",
+      "slotKind": "text"
+    },
+    {
+      "nodeId": "0:9",
+      "kind": "slot",
+      "sectionId": "section_hero",
+      "slotId": "slot_hero_subcopy",
+      "semanticRole": "hero_subcopy",
+      "slotKind": "rich-text"
+    },
+    {
+      "nodeId": "0:10",
+      "kind": "slot",
+      "sectionId": "section_hero",
+      "slotId": "slot_hero_media",
+      "slotKind": "image"
+    },
+    {
+      "nodeId": "0:11",
+      "kind": "slot",
+      "sectionId": "section_hero",
+      "slotId": "slot_hero_cta",
+      "semanticRole": "cta_label",
+      "slotKind": "button"
+    },
+    {
+      "nodeId": "0:12",
+      "kind": "section",
+      "sectionId": "section_proof",
+      "componentKey": "marketing.proof.stats"
+    },
+    {
+      "nodeId": "0:13",
+      "kind": "slot",
+      "sectionId": "section_proof",
+      "slotId": "slot_proof_claim",
+      "semanticRole": "section_claim",
+      "slotKind": "text"
+    },
+    {
+      "nodeId": "0:14",
+      "kind": "slot",
+      "sectionId": "section_proof",
+      "slotId": "slot_proof_stat_1",
+      "semanticRole": "proof_stat",
+      "slotKind": "text"
+    },
+    {
+      "nodeId": "0:15",
+      "kind": "slot",
+      "sectionId": "section_proof",
+      "slotId": "slot_proof_stat_2",
+      "semanticRole": "proof_stat",
+      "slotKind": "text"
+    },
+    {
+      "nodeId": "0:16",
+      "kind": "section",
+      "sectionId": "section_dc182959",
+      "componentKey": "marketing.proof.stats"
+    },
+    {
+      "nodeId": "0:17",
+      "kind": "slot",
+      "sectionId": "section_dc182959",
+      "slotId": "slot_ff7d0143",
+      "semanticRole": "section_claim",
+      "slotKind": "text"
+    },
+    {
+      "nodeId": "0:18",
+      "kind": "slot",
+      "sectionId": "section_dc182959",
+      "slotId": "slot_0ec9c4dd",
+      "semanticRole": "proof_stat",
+      "slotKind": "text"
+    },
+    {
+      "nodeId": "0:19",
+      "kind": "slot",
+      "sectionId": "section_dc182959",
+      "slotId": "slot_32a00e52",
+      "semanticRole": "proof_stat",
+      "slotKind": "text"
+    },
+    {
+      "nodeId": "0:20",
+      "kind": "section",
+      "sectionId": "section_proof_94y9z2",
+      "componentKey": "marketing.proof.stats"
+    },
+    {
+      "nodeId": "0:21",
+      "kind": "slot",
+      "sectionId": "section_proof_94y9z2",
+      "slotId": "slot_proof_claim_nuh1bp",
+      "semanticRole": "section_claim",
+      "slotKind": "text"
+    },
+    {
+      "nodeId": "0:22",
+      "kind": "slot",
+      "sectionId": "section_proof_94y9z2",
+      "slotId": "slot_proof_stat_1_x4qw6m",
+      "semanticRole": "proof_stat",
+      "slotKind": "text"
+    },
+    {
+      "nodeId": "0:23",
+      "kind": "slot",
+      "sectionId": "section_proof_94y9z2",
+      "slotId": "slot_proof_stat_2_29sj6j",
+      "semanticRole": "proof_stat",
+      "slotKind": "text"
+    },
+    {
+      "nodeId": "0:24",
+      "kind": "section",
+      "sectionId": "section_5d95883f",
+      "componentKey": "marketing.proof.stats"
+    },
+    {
+      "nodeId": "0:25",
+      "kind": "slot",
+      "sectionId": "section_5d95883f",
+      "slotId": "slot_24cedfe2",
+      "semanticRole": "section_claim",
+      "slotKind": "text"
+    },
+    {
+      "nodeId": "0:26",
+      "kind": "slot",
+      "sectionId": "section_5d95883f",
+      "slotId": "slot_a5ea210f",
+      "semanticRole": "proof_stat",
+      "slotKind": "text"
+    },
+    {
+      "nodeId": "0:27",
+      "kind": "slot",
+      "sectionId": "section_5d95883f",
+      "slotId": "slot_6e41948b",
+      "semanticRole": "proof_stat",
+      "slotKind": "text"
+    }
+  ]
+}

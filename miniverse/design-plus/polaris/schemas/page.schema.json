@@ -1,0 +1,141 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "page.schema.json",
+  "title": "Polaris Page",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "id",
+    "name",
+    "route",
+    "structure",
+    "copy",
+    "story",
+    "typeSystem",
+    "style"
+  ],
+  "properties": {
+    "id": {
+      "type": "string"
+    },
+    "name": {
+      "type": "string"
+    },
+    "route": {
+      "type": "string"
+    },
+    "structure": {
+      "type": "array",
+      "items": {
+        "$ref": "#/defs/sectionNode"
+      }
+    },
+    "copy": {
+      "$ref": "./copy.schema.json"
+    },
+    "story": {
+      "$ref": "./story.schema.json"
+    },
+    "typeSystem": {
+      "$ref": "./type-system.schema.json"
+    },
+    "style": {
+      "$ref": "./style.schema.json#/defs/pageStyle"
+    }
+  },
+  "defs": {
+    "slot": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "name",
+        "kind"
+      ],
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "kind": {
+          "type": "string",
+          "enum": [
+            "text",
+            "rich-text",
+            "image",
+            "video",
+            "logo",
+            "button",
+            "list"
+          ]
+        },
+        "semanticRole": {
+          "type": "string"
+        },
+        "required": {
+          "type": "boolean"
+        }
+      }
+    },
+    "sectionNode": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "type",
+        "componentKey",
+        "slots"
+      ],
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string"
+        },
+        "componentKey": {
+          "type": "string"
+        },
+        "variant": {
+          "type": "string"
+        },
+        "slots": {
+          "type": "array",
+          "items": {
+            "$ref": "#/defs/slot"
+          }
+        },
+        "children": {
+          "type": "array",
+          "items": {
+            "$ref": "#/defs/sectionNode"
+          }
+        },
+        "layout": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "widthMode": {
+              "type": "string",
+              "enum": [
+                "full",
+                "container",
+                "custom"
+              ]
+            },
+            "columns": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "gap": {
+              "type": "number",
+              "minimum": 0
+            }
+          }
+        }
+      }
+    }
+  }
+}

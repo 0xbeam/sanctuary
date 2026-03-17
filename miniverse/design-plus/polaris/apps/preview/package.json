@@ -1,0 +1,24 @@
+{
+  "name": "@polaris/preview",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "__NEXT_DEVTOOL_SEGMENT_EXPLORER= __NEXT_DEV_INDICATOR= next dev --hostname 127.0.0.1 --port 3200",
+    "build": "next build",
+    "start": "next start --hostname 127.0.0.1 --port 3200"
+  },
+  "dependencies": {
+    "@polaris/compiler": "0.1.0",
+    "@polaris/layer-store": "0.1.0",
+    "next": "^15.0.0",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0"
+  },
+  "devDependencies": {
+    "@types/node": "^24.7.2",
+    "@types/react": "^19.2.2",
+    "@types/react-dom": "^19.2.2",
+    "typescript": "^5.9.3"
+  }
+}
