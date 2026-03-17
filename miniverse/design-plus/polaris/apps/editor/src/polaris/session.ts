@@ -85,6 +85,25 @@ function attachStoreSync(store: EditorStore) {
   )
 }
 
+function preserveSelectionAfterSync(
+  store: EditorStore,
+  entry: PageMapEntry,
+  delayMs = 450
+) {
+  const applySelection = () => {
+    if (!store.graph.getNode(entry.nodeId)) {
+      return
+    }
+
+    store.select([entry.nodeId])
+    selectionOverride.value = entry
+    usePolarisSession.syncSelection(store)
+  }
+
+  applySelection()
+  window.setTimeout(applySelection, delayMs)
+}
+
 function findPageByCanvasId(store: EditorStore): PageDocument | undefined {
   if (!project.value) {
     return undefined
@@ -890,14 +909,13 @@ export const usePolarisSession = {
       }
     }))
 
-    store.select([clone.id])
-    selectionOverride.value = {
+    const nextSelection: PageMapEntry = {
       nodeId: clone.id,
       kind: "section",
       sectionId: nextSectionId,
       componentKey: section.componentKey
     }
-    usePolarisSession.syncSelection(store)
+    preserveSelectionAfterSync(store, nextSelection)
     store.requestRender()
     requestPreviewSync({ includeManifest: true, persistDocument: true })
     statusMessage.value = `Duplicated ${section.type}.`
@@ -957,9 +975,7 @@ export const usePolarisSession = {
     }))
 
     if (fallbackEntry) {
-      store.select([fallbackEntry.nodeId])
-      selectionOverride.value = fallbackEntry
-      usePolarisSession.syncSelection(store)
+      preserveSelectionAfterSync(store, fallbackEntry)
     } else {
       store.clearSelection()
       selectedNodeId.value = null

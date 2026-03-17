@@ -3,7 +3,7 @@ const nextConfig = {
   experimental: {
     externalDir: true
   },
-  transpilePackages: ["@open-pencil/core", "@polaris/compiler", "@polaris/layer-store"]
+  transpilePackages: ["@polaris/compiler", "@polaris/layer-store"]
 }
 
 export default nextConfig
