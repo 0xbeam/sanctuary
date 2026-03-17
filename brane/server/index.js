@@ -4,6 +4,7 @@ import { join, dirname } from "path";
 import { fileURLToPath } from "url";
 import { Dispatcher } from "../core/dispatch.js";
 import { loadIndex, loadInstruction } from "../core/store.js";
+import { getBrowserManager } from "../core/browser/index.js";
 
 config();
 
@@ -91,18 +92,22 @@ app.get("/api/jobs/:id", (req, res) => {
 // Serve output files statically
 app.use("/output", express.static(OUTPUT_DIR));
 
-// Health check
+// Health check — includes browser engine status
 app.get("/api/health", (req, res) => {
+  const browserManager = getBrowserManager();
   res.json({
     status: "ok",
     name: "brane",
-    version: "1.0.0",
+    version: "1.1.0",
     uptime: process.uptime(),
     env: {
       slack: !!process.env.SLACK_BOT_TOKEN,
       figma: !!process.env.FIGMA_TOKEN,
+      cloudflare: !!(process.env.CF_API_TOKEN && process.env.CF_ACCOUNT_ID),
+      lightpanda: !!process.env.LIGHTPANDA_URL,
       output: OUTPUT_DIR,
     },
+    browser: browserManager.getStatus(),
     jobs: {
       total: dispatcher.getJobs().length,
       active: dispatcher.getJobs().filter((j) => j.status === "processing" || j.status === "pending").length,
@@ -112,11 +117,25 @@ app.get("/api/health", (req, res) => {
   });
 });
 
-app.listen(PORT, () => {
-  console.log(`\n  ⚡ Brane API server running on http://localhost:${PORT}`);
-  console.log(`     Output: ${OUTPUT_DIR}`);
-  console.log(`     Slack:  ${process.env.SLACK_BOT_TOKEN ? "✓ connected" : "✗ no token"}`);
-  console.log(`     Figma:  ${process.env.FIGMA_TOKEN ? "✓ connected" : "✗ no token"}\n`);
-});
+// ─── Startup ───
+async function start() {
+  // Initialize browser manager (non-blocking, graceful if none available)
+  const browserManager = getBrowserManager();
+  await browserManager.init().catch((err) => {
+    console.warn(`  ⚠ Browser engine init failed: ${err.message}`);
+  });
+
+  app.listen(PORT, () => {
+    console.log(`\n  ⚡ Brane API server running on http://localhost:${PORT}`);
+    console.log(`     Output:     ${OUTPUT_DIR}`);
+    console.log(`     Slack:      ${process.env.SLACK_BOT_TOKEN ? "✓ connected" : "✗ no token"}`);
+    console.log(`     Figma:      ${process.env.FIGMA_TOKEN ? "✓ connected" : "✗ no token"}`);
+    console.log(`     Cloudflare: ${process.env.CF_API_TOKEN ? "✓ configured" : "✗ no token"}`);
+    console.log(`     Lightpanda: ${process.env.LIGHTPANDA_URL || "✗ not configured"}`);
+    console.log(`     Browser:    ${browserManager.activeEngine?.name || "none (fetch-only mode)"}\n`);
+  });
+}
+
+start();
 
 export default app;

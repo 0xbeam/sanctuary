@@ -2,6 +2,7 @@ import { detectAdapter } from "./adapters/index.js";
 import { generateInstructionMd } from "./markdown-generator.js";
 import { saveInstruction } from "./store.js";
 import { generateId } from "./types.js";
+import { getBrowserManager, needsBrowser } from "./browser/index.js";
 
 /**
  * Pipeline stages for activity tracking.
@@ -18,6 +19,9 @@ const STAGES = [
   { id: "done", label: "Complete", icon: "✓" },
 ];
 
+/** Max concurrent dispatch jobs */
+const MAX_CONCURRENT = 5;
+
 function log(job, stageId, message) {
   const stage = STAGES.find((s) => s.id === stageId);
   const entry = {
@@ -33,18 +37,24 @@ function log(job, stageId, message) {
 
 /**
  * Dispatcher — auto-detects adapters and processes URLs in parallel.
- * Now tracks pipeline activity per job for live visualization.
+ * Tracks pipeline activity per job for live visualization.
+ * Supports browser engine fallback chain.
  */
 export class Dispatcher {
   constructor(outputDir) {
     this.outputDir = outputDir;
     this.jobs = [];
+    this._activeCount = 0;
+    this._queue = [];
   }
 
   createPendingJob(url, project = "") {
     const AdapterClass = detectAdapter(url);
     const existing = this.jobs.find((j) => j.url === url && j.status === "pending");
     if (existing) return existing;
+
+    const browserManager = getBrowserManager();
+    const willUseBrowser = needsBrowser(url) && browserManager.isAvailable();
 
     const job = {
       id: generateId(),
@@ -62,14 +72,21 @@ export class Dispatcher {
       stageIndex: -1,
       totalStages: STAGES.length,
       stats: null,
+      // Engine info
+      engine: willUseBrowser ? browserManager.activeEngine?.name : "fetch",
     };
     this.jobs.push(job);
     return job;
   }
 
   async dispatch(url, project = "") {
-    const AdapterClass = detectAdapter(url);
+    // Concurrency gate
+    if (this._activeCount >= MAX_CONCURRENT) {
+      await new Promise((resolve) => this._queue.push(resolve));
+    }
+    this._activeCount++;
 
+    const AdapterClass = detectAdapter(url);
     let job = this.jobs.find((j) => j.url === url && j.status === "pending");
     if (!job) {
       job = this.createPendingJob(url, project);
@@ -80,7 +97,13 @@ export class Dispatcher {
 
     try {
       // Stage 1: Detect
-      log(job, "detect", `Source identified as ${AdapterClass.sourceType}`);
+      const browserManager = getBrowserManager();
+      const engineName = (needsBrowser(url) && browserManager.isAvailable())
+        ? browserManager.activeEngine?.name
+        : "fetch";
+      job.engine = engineName;
+
+      log(job, "detect", `Source: ${AdapterClass.sourceType} · Engine: ${engineName}`);
       await tick();
 
       // Stage 2: Connect
@@ -88,11 +111,14 @@ export class Dispatcher {
       const adapter = new AdapterClass();
       await tick();
 
-      // Stage 3-5: Fetch, Parse, Categorize (handled inside adapter.scrape)
+      // Stage 3-5: Fetch, Parse, Categorize
       log(job, "fetch", `Requesting content from ${truncateUrl(url)}`);
       const instructionSet = await adapter.scrape(url, { project });
 
-      log(job, "parse", `Found ${instructionSet.stats.totalEntries} entries`);
+      const actualEngine = instructionSet.meta?.engine || engineName;
+      job.engine = actualEngine;
+
+      log(job, "parse", `Found ${instructionSet.stats.totalEntries} entries via ${actualEngine}`);
       await tick();
 
       log(job, "categorize", `${instructionSet.stats.blockerCount || 0} blockers, ${instructionSet.stats.revisionCount || 0} changes, ${instructionSet.stats.imageCount || 0} images`);
@@ -131,6 +157,14 @@ export class Dispatcher {
     }
 
     job.completedAt = new Date().toISOString();
+
+    // Release concurrency slot
+    this._activeCount--;
+    if (this._queue.length > 0) {
+      const next = this._queue.shift();
+      next();
+    }
+
     return job;
   }
 

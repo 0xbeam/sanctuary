@@ -105,11 +105,18 @@ export class FigmaAdapter extends BaseAdapter {
 }
 
 async function figmaApi(path, token) {
-  const res = await fetch(`https://api.figma.com${path}`, {
-    headers: { "X-FIGMA-TOKEN": token },
-  });
-  if (!res.ok) throw new Error(`Figma API error: ${res.status} ${res.statusText}`);
-  return res.json();
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 15000);
+  try {
+    const res = await fetch(`https://api.figma.com${path}`, {
+      headers: { "X-FIGMA-TOKEN": token },
+      signal: controller.signal,
+    });
+    if (!res.ok) throw new Error(`Figma API error: ${res.status} ${res.statusText}`);
+    return res.json();
+  } finally {
+    clearTimeout(timeout);
+  }
 }
 
 function categorizeComment(text) {
