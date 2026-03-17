@@ -12,6 +12,11 @@ if [ -z "$staged_files" ]; then
   exit 0
 fi
 
+# Allow merge commits on main — project branches merge into main
+if git rev-parse MERGE_HEAD >/dev/null 2>&1; then
+  exit 0
+fi
+
 projects=""
 has_shared="0"
 
