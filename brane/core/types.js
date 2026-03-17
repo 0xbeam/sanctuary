@@ -1,5 +1,5 @@
 /**
- * Unified data model for the Feedback Hub platform.
+ * Unified data model for the Brane platform.
  * All source adapters produce InstructionSet objects conforming to this shape.
  */
 

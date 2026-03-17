@@ -21,9 +21,9 @@ export function Sidebar() {
       {/* Brand */}
       <div className="p-5 pb-4">
         <h1 className="font-serif text-xl font-semibold tracking-tight-editorial text-stone-900">
-          Feedback Hub
+          Brane
         </h1>
-        <p className="text-eyebrow mt-1">instructions engine</p>
+        <p className="text-eyebrow mt-1">feedback → agent instructions</p>
       </div>
 
       {/* Nav */}

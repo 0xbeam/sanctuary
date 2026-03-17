@@ -11,7 +11,7 @@ config();
 const OUTPUT_DIR = process.env.OUTPUT_DIR || "./output";
 
 program
-  .name("feedhub")
+  .name("brane")
   .description("Multi-source feedback → agent instruction markdown")
   .version("1.0.0");
 
@@ -30,11 +30,8 @@ program
 
     if (job.status === "complete") {
       console.log(`\nDone!`);
-      console.log(`  Title: ${job.result.title}`);
-      console.log(`  Entries: ${job.result.stats.totalEntries}`);
-      console.log(`  Categories: ${JSON.stringify(job.result.stats.categories)}`);
-      console.log(`  Images: ${job.result.stats.imageCount}`);
-      console.log(`  Output: ${opts.output}/${job.result.id}/`);
+      console.log(`  ID: ${job.resultId}`);
+      console.log(`  Output: ${opts.output}/${job.resultId}/`);
     } else {
       console.error(`\nFailed: ${job.error}`);
       process.exit(1);
@@ -58,7 +55,7 @@ program
 
     console.log(`\nComplete: ${complete.length}/${jobs.length}`);
     for (const j of complete) {
-      console.log(`  [OK] ${j.result.title} (${j.detectedSource})`);
+      console.log(`  [OK] ${j.resultId} (${j.detectedSource})`);
     }
     for (const j of errors) {
       console.log(`  [ERR] ${j.url}: ${j.error}`);
@@ -74,7 +71,7 @@ program
     const index = await loadIndex(opts.output);
 
     if (index.instructions.length === 0) {
-      console.log("No instructions scraped yet. Run: feedhub scrape <url>");
+      console.log("No instructions scraped yet. Run: brane scrape <url>");
       return;
     }
 

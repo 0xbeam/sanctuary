@@ -23,12 +23,16 @@ export function ScrapeModal() {
   const urlList = urls.split("\n").map((u) => u.trim()).filter(Boolean);
   const detected = urlList.map((u) => ({ url: u, source: detectSource(u) }));
 
-  const handleSubmit = (e) => {
+  const [dispatching, setDispatching] = useState(false);
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    setDispatching(true);
     const proj = newProject || project;
     for (const { url, source } of detected) {
-      dispatchScrape(url, proj, source);
+      await dispatchScrape(url, proj, source);
     }
+    setDispatching(false);
     closeScrapeModal();
   };
 
@@ -106,11 +110,11 @@ export function ScrapeModal() {
           </button>
           <button
             type="submit"
-            disabled={detected.length === 0}
+            disabled={detected.length === 0 || dispatching}
             className="flex items-center gap-1.5 px-4 py-2 bg-accent text-white rounded-lg text-sm font-medium hover:bg-indigo-700 disabled:opacity-40 disabled:cursor-not-allowed"
           >
-            <Zap className="w-3.5 h-3.5" />
-            Dispatch {detected.length > 1 ? `${detected.length} URLs` : "Scrape"}
+            <Zap className={`w-3.5 h-3.5 ${dispatching ? "animate-pulse" : ""}`} />
+            {dispatching ? "Dispatching…" : detected.length > 1 ? `Dispatch ${detected.length} URLs` : "Scrape"}
           </button>
         </div>
       </form>

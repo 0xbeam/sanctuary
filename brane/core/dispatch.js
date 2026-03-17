@@ -14,25 +14,52 @@ export class Dispatcher {
   }
 
   /**
-   * Dispatch a single URL for processing.
-   * @param {string} url
-   * @param {string} project
-   * @returns {Promise<import('./types.js').DispatchJob>}
+   * Create a pending job stub (returned to client immediately).
    */
-  async dispatch(url, project = "") {
+  createPendingJob(url, project = "") {
     const AdapterClass = detectAdapter(url);
+    const existing = this.jobs.find((j) => j.url === url && j.status === "pending");
+    if (existing) return existing;
+
     const job = {
       id: generateId(),
       url,
       detectedSource: AdapterClass.sourceType,
-      status: "processing",
+      status: "pending",
       project,
-      result: null,
+      resultId: null,
       error: null,
       createdAt: new Date().toISOString(),
       completedAt: null,
     };
     this.jobs.push(job);
+    return job;
+  }
+
+  /**
+   * Dispatch a single URL for processing.
+   */
+  async dispatch(url, project = "") {
+    const AdapterClass = detectAdapter(url);
+
+    // Find existing pending job or create new one
+    let job = this.jobs.find((j) => j.url === url && j.status === "pending");
+    if (!job) {
+      job = {
+        id: generateId(),
+        url,
+        detectedSource: AdapterClass.sourceType,
+        status: "processing",
+        project,
+        resultId: null,
+        error: null,
+        createdAt: new Date().toISOString(),
+        completedAt: null,
+      };
+      this.jobs.push(job);
+    }
+
+    job.status = "processing";
 
     try {
       const adapter = new AdapterClass();
@@ -47,7 +74,7 @@ export class Dispatcher {
       // Download assets
       await adapter.downloadAssets(instructionSet, `${this.outputDir}/${instructionSet.id}`);
 
-      job.result = instructionSet;
+      job.resultId = instructionSet.id;
       job.status = "complete";
     } catch (err) {
       job.error = err.message;
@@ -60,9 +87,6 @@ export class Dispatcher {
 
   /**
    * Dispatch multiple URLs in parallel.
-   * @param {string[]} urls
-   * @param {string} project
-   * @returns {Promise<import('./types.js').DispatchJob[]>}
    */
   async dispatchBatch(urls, project = "") {
     const results = await Promise.allSettled(
