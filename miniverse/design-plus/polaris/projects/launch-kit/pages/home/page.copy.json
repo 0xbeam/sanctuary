@@ -63,6 +63,18 @@
     {
       "slotId": "slot_6e41948b",
       "value": "Structured layers"
+    },
+    {
+      "slotId": "slot_310b44d7",
+      "value": "Add new proof without rebuilding the page."
+    },
+    {
+      "slotId": "slot_e07ea104",
+      "value": "Fast duplication"
+    },
+    {
+      "slotId": "slot_8f92911a",
+      "value": "Structured layers"
     }
   ]
 }

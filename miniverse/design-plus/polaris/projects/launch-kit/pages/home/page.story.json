@@ -37,6 +37,12 @@
       "intent": "Support the narrative with more evidence",
       "message": "New proof sections should slot into the existing story rhythm.",
       "proofType": "stats"
+    },
+    {
+      "sectionId": "section_aaaa5fb3",
+      "intent": "Support the narrative with more evidence",
+      "message": "New proof sections should slot into the existing story rhythm.",
+      "proofType": "stats"
     }
   ]
 }

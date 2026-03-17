@@ -158,5 +158,30 @@
         "semanticRole": "proof_stat"
       }
     ]
+  },
+  {
+    "id": "section_aaaa5fb3",
+    "type": "proof-grid",
+    "componentKey": "marketing.proof.stats",
+    "slots": [
+      {
+        "id": "slot_310b44d7",
+        "name": "Proof Claim",
+        "kind": "text",
+        "semanticRole": "section_claim"
+      },
+      {
+        "id": "slot_e07ea104",
+        "name": "Proof Stat 1",
+        "kind": "text",
+        "semanticRole": "proof_stat"
+      },
+      {
+        "id": "slot_8f92911a",
+        "name": "Proof Stat 2",
+        "kind": "text",
+        "semanticRole": "proof_stat"
+      }
+    ]
   }
 ]

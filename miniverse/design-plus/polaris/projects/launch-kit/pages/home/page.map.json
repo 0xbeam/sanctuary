@@ -164,6 +164,36 @@
       "slotId": "slot_6e41948b",
       "semanticRole": "proof_stat",
       "slotKind": "text"
+    },
+    {
+      "nodeId": "0:28",
+      "kind": "section",
+      "sectionId": "section_aaaa5fb3",
+      "componentKey": "marketing.proof.stats"
+    },
+    {
+      "nodeId": "0:29",
+      "kind": "slot",
+      "sectionId": "section_aaaa5fb3",
+      "slotId": "slot_310b44d7",
+      "semanticRole": "section_claim",
+      "slotKind": "text"
+    },
+    {
+      "nodeId": "0:30",
+      "kind": "slot",
+      "sectionId": "section_aaaa5fb3",
+      "slotId": "slot_e07ea104",
+      "semanticRole": "proof_stat",
+      "slotKind": "text"
+    },
+    {
+      "nodeId": "0:31",
+      "kind": "slot",
+      "sectionId": "section_aaaa5fb3",
+      "slotId": "slot_8f92911a",
+      "semanticRole": "proof_stat",
+      "slotKind": "text"
     }
   ]
 }

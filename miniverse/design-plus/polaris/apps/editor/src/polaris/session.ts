@@ -21,6 +21,7 @@ const projectId = ref("launch-kit")
 const project = ref<ProjectDocument | null>(null)
 const activePageId = ref<string | null>(null)
 const selectedNodeId = ref<string | null>(null)
+const selectionOverride = ref<PageMapEntry | null>(null)
 const saveState = ref<SaveState>("idle")
 const statusMessage = ref("Loading Polaris project…")
 const loading = ref(false)
@@ -333,17 +334,17 @@ const selectedMapEntry = computed(() => {
     return null
   }
 
-  return page.map.entries.find((entry) => entry.nodeId === selectedNodeId.value) ?? null
+  return page.map.entries.find((entry) => entry.nodeId === selectedNodeId.value) ?? selectionOverride.value ?? null
 })
 
 const resolvedSelection = computed(() => {
   const page = activePage.value
   const store = usePolarisSession.editorStore.value
   if (!page || !selectedNodeId.value || !store) {
-    return null
+    return selectionOverride.value ?? null
   }
 
-  return getSelectedEntry(page, store) ?? null
+  return getSelectedEntry(page, store) ?? selectionOverride.value ?? null
 })
 
 const selectedSection = computed(() => {
@@ -600,6 +601,7 @@ export const usePolarisSession = {
   previewRevision,
   activePage,
   selectedNodeId,
+  selectionOverride,
   selectedMapEntry,
   resolvedSelection,
   selectedSection,
@@ -661,6 +663,15 @@ export const usePolarisSession = {
         ...currentPage,
         structure: deriveStructureForPage(currentPage, store)
       }))
+    }
+
+    const actualSelection = nextPage ? getSelectedEntry(nextPage, store) : null
+    if (actualSelection) {
+      selectionOverride.value = null
+    } else if (!selectedNodeId.value) {
+      selectionOverride.value = null
+    } else if (selectionOverride.value?.nodeId !== selectedNodeId.value) {
+      selectionOverride.value = null
     }
 
     if (project.value && saveState.value === "idle" && statusMessage.value === "Loading Polaris project…") {
@@ -880,6 +891,12 @@ export const usePolarisSession = {
     }))
 
     store.select([clone.id])
+    selectionOverride.value = {
+      nodeId: clone.id,
+      kind: "section",
+      sectionId: nextSectionId,
+      componentKey: section.componentKey
+    }
     usePolarisSession.syncSelection(store)
     store.requestRender()
     requestPreviewSync({ includeManifest: true, persistDocument: true })
@@ -941,10 +958,12 @@ export const usePolarisSession = {
 
     if (fallbackEntry) {
       store.select([fallbackEntry.nodeId])
+      selectionOverride.value = fallbackEntry
       usePolarisSession.syncSelection(store)
     } else {
       store.clearSelection()
       selectedNodeId.value = null
+      selectionOverride.value = null
     }
 
     requestPreviewSync({ includeManifest: true, persistDocument: true })

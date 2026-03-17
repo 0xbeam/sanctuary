@@ -125,6 +125,20 @@ function onSelect(ev: CustomEvent) {
   usePolarisSession.syncSelection(store)
 }
 
+function onLayerClick(event: MouseEvent, nodeId: string) {
+  if ((event.target as HTMLElement).closest('[data-layer-toggle]')) {
+    return
+  }
+
+  if (event.shiftKey) {
+    store.select([nodeId], true)
+  } else {
+    store.select([nodeId])
+  }
+
+  usePolarisSession.syncSelection(store)
+}
+
 function onLayerRightClick(e: MouseEvent) {
   const row = (e.target as HTMLElement).closest<HTMLElement>('[data-node-id]')
   if (!row) return
@@ -344,6 +358,7 @@ function updateDropTarget(ev: PointerEvent) {
               >
                 <span
                   v-if="item.hasChildren"
+                  data-layer-toggle
                   class="flex w-4 shrink-0 cursor-pointer items-center justify-center text-muted transition-transform hover:text-surface"
                   :class="isExpanded ? 'rotate-90' : 'rotate-0'"
                   @click.stop="toggleExpand(item.value.id)"
@@ -380,10 +395,12 @@ function updateDropTarget(ev: PointerEvent) {
                 ]"
                 :style="{ paddingLeft: `${8 + (item.level - 1) * 16}px` }"
                 @pointerdown.prevent="onPointerDown($event, item.value.id)"
+                @click.stop="onLayerClick($event, item.value.id)"
                 @dblclick="rename.start(item.value.id, item.value.name, '[data-layer-edit]')"
               >
                 <span
                   v-if="item.hasChildren"
+                  data-layer-toggle
                   class="flex w-4 shrink-0 cursor-pointer items-center justify-center text-muted transition-transform hover:text-surface"
                   :class="isExpanded ? 'rotate-90' : 'rotate-0'"
                   @click.stop="toggleExpand(item.value.id)"
