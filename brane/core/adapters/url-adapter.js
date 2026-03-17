@@ -13,7 +13,14 @@ export class UrlAdapter extends BaseAdapter {
   }
 
   async scrape(url, options = {}) {
-    const response = await fetch(url);
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 10000);
+    let response;
+    try {
+      response = await fetch(url, { signal: controller.signal });
+    } finally {
+      clearTimeout(timeout);
+    }
     if (!response.ok) throw new Error(`Failed to fetch ${url}: ${response.status}`);
 
     const html = await response.text();

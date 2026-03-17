@@ -3,6 +3,7 @@ import { ExternalLink, Image, CheckSquare, Square, FileText, Copy, Check, Chevro
 import { CategoryBadge } from "../feed/CategoryBadge";
 import { SourceIcon } from "../feed/SourceIcon";
 import { useData } from "../../contexts/DataContext";
+import { AgentActivityView } from "./AgentActivityView";
 
 export function ResultDetailPanel({ instruction, job }) {
   const { loadInstruction, instructionCache } = useData();
@@ -12,7 +13,7 @@ export function ResultDetailPanel({ instruction, job }) {
   const [threadOpen, setThreadOpen] = useState(false);
 
   useEffect(() => {
-    if (!instruction) return;
+    if (!instruction) { setDetail(null); return; }
     const cached = instructionCache[instruction.id];
     if (cached) {
       setDetail(cached);
@@ -27,7 +28,6 @@ export function ResultDetailPanel({ instruction, job }) {
     setCheckedItems((prev) => ({ ...prev, [idx]: !prev[idx] }));
   };
 
-  // Copy markdown to clipboard
   const copyMarkdown = () => {
     if (!detail) return;
     const lines = [];
@@ -55,7 +55,7 @@ export function ResultDetailPanel({ instruction, job }) {
     setTimeout(() => setCopied(false), 2000);
   };
 
-  // Empty state — no selection
+  // ═══ Empty state — no selection ═══
   if (!instruction && !job) {
     return (
       <div className="h-full flex items-center justify-center text-center px-8">
@@ -70,22 +70,16 @@ export function ResultDetailPanel({ instruction, job }) {
     );
   }
 
-  // Job selected but no instruction result yet
-  if (job && !instruction) {
-    return (
-      <div className="h-full flex items-center justify-center text-center px-8">
-        <div>
-          <div className="w-12 h-12 rounded-xl bg-amber-50 flex items-center justify-center mx-auto mb-3">
-            <div className="w-5 h-5 border-2 border-amber-400 border-t-transparent rounded-full animate-spin" />
-          </div>
-          <p className="text-sm font-medium text-stone-600">Processing…</p>
-          <p className="text-xs text-stone-400 mt-1 font-mono truncate max-w-[240px]">{job.url}</p>
-        </div>
-      </div>
-    );
+  // ═══ Active job — show the live agent activity view ═══
+  if (job && (job.status === "pending" || job.status === "processing" || (job.status === "error" && !instruction))) {
+    return <AgentActivityView job={job} />;
   }
 
-  // Loading detail
+  // ═══ Job just completed but we can show both: activity + result ═══
+  // If job is complete and we have an instruction, show the result detail
+  // But also show the activity log if there's recent activity
+
+  // ═══ Loading detail ═══
   if (!detail) {
     return (
       <div className="p-6 space-y-4">
@@ -106,6 +100,11 @@ export function ResultDetailPanel({ instruction, job }) {
 
   return (
     <div className="h-full overflow-y-auto animate-in">
+      {/* Completed job activity — collapsible at top */}
+      {job && job.status === "complete" && job.activity?.length > 0 && (
+        <CompletedActivitySummary job={job} />
+      )}
+
       {/* Sticky header */}
       <div className="sticky top-0 z-10 bg-white/90 backdrop-blur-sm border-b border-stone-200 px-5 py-3">
         <div className="flex items-center gap-3">
@@ -179,8 +178,6 @@ export function ResultDetailPanel({ instruction, job }) {
                 {Object.values(checkedItems).filter(Boolean).length}/{actionItems.length}
               </span>
             </div>
-
-            {/* Progress bar */}
             <div className="h-1 bg-stone-100 rounded-full mb-3 overflow-hidden">
               <div
                 className="h-full bg-accent rounded-full transition-all duration-300 ease-out"
@@ -189,7 +186,6 @@ export function ResultDetailPanel({ instruction, job }) {
                 }}
               />
             </div>
-
             <div className="space-y-1.5">
               {actionItems.map((item, idx) => (
                 <div
@@ -233,7 +229,7 @@ export function ResultDetailPanel({ instruction, job }) {
           </div>
         )}
 
-        {/* Full Thread — collapsible */}
+        {/* Full Thread */}
         {detail.allEntries?.length > 0 && (
           <div className="border-t border-stone-100 pt-4">
             <button
@@ -274,6 +270,46 @@ export function ResultDetailPanel({ instruction, job }) {
           </div>
         )}
       </div>
+    </div>
+  );
+}
+
+/** Compact completed activity summary bar */
+function CompletedActivitySummary({ job }) {
+  const [expanded, setExpanded] = useState(false);
+  const duration = job.completedAt
+    ? ((new Date(job.completedAt) - new Date(job.createdAt)) / 1000).toFixed(1)
+    : "—";
+
+  return (
+    <div className="border-b border-stone-200">
+      <button
+        onClick={() => setExpanded(!expanded)}
+        className="w-full px-5 py-2 flex items-center gap-2 text-xs bg-emerald-50/50 hover:bg-emerald-50 transition-colors"
+      >
+        <span className="text-emerald-600">✓</span>
+        <span className="text-emerald-700 font-medium">Pipeline completed in {duration}s</span>
+        <span className="text-stone-400 ml-1">• {job.activity?.length || 0} steps</span>
+        <ChevronDown className={`w-3 h-3 text-stone-400 ml-auto transition-transform ${expanded ? "" : "-rotate-90"}`} />
+      </button>
+      {expanded && (
+        <div className="bg-stone-950 px-5 py-3 font-mono text-[11px] max-h-48 overflow-y-auto">
+          {(job.activity || []).map((entry, i) => (
+            <div key={i} className="flex gap-2 py-0.5 text-stone-400">
+              <span className="text-stone-600 w-14 text-right flex-shrink-0">
+                +{((entry.timestamp - new Date(job.createdAt).getTime()) / 1000).toFixed(1)}s
+              </span>
+              <span className={entry.stage === "done" ? "text-emerald-400" : "text-stone-500"}>
+                {entry.stage === "done" ? "✓" : "▸"}
+              </span>
+              <span>
+                <span className="text-stone-300">{entry.label}</span>
+                {" — "}{entry.message}
+              </span>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

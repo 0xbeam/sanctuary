@@ -160,15 +160,28 @@ export function DataProvider({ children }) {
     return [...set].sort();
   }, [index]);
 
-  // Check API health
+  // Check API health — retry on failure, refresh periodically
   const [apiStatus, setApiStatus] = useState(null);
-  useEffect(() => {
+  const checkHealth = useCallback(async () => {
     if (!USE_API) return;
-    fetch(`${API_BASE}/api/health`)
-      .then((r) => r.json())
-      .then(setApiStatus)
-      .catch(() => setApiStatus({ status: "offline" }));
+    try {
+      const res = await fetch(`${API_BASE}/api/health`);
+      if (res.ok) {
+        setApiStatus(await res.json());
+      } else {
+        setApiStatus({ status: "offline" });
+      }
+    } catch {
+      setApiStatus({ status: "offline" });
+    }
   }, []);
+
+  useEffect(() => {
+    checkHealth();
+    // Re-check every 10s
+    const interval = setInterval(checkHealth, 10000);
+    return () => clearInterval(interval);
+  }, [checkHealth]);
 
   return (
     <DataContext.Provider
@@ -180,6 +193,7 @@ export function DataProvider({ children }) {
         sources,
         jobs,
         apiStatus,
+        checkHealth,
         loadIndex,
         loadInstruction,
         instructionCache,

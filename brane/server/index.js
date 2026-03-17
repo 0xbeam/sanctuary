@@ -53,11 +53,9 @@ app.post("/api/scrape", async (req, res) => {
   const { url, project } = req.body;
   if (!url) return res.status(400).json({ error: "url is required" });
 
-  // Return the job immediately, process in background
   const jobStub = dispatcher.createPendingJob(url, project || "");
   res.json({ job: jobStub });
 
-  // Process asynchronously
   dispatcher.dispatch(url, project || "").catch((err) => {
     console.error(`Scrape failed for ${url}:`, err.message);
   });
@@ -70,17 +68,15 @@ app.post("/api/dispatch", async (req, res) => {
     return res.status(400).json({ error: "urls array is required" });
   }
 
-  // Create stubs for all jobs immediately
   const stubs = urls.map((url) => dispatcher.createPendingJob(url, project || ""));
   res.json({ jobs: stubs });
 
-  // Process all in parallel
   dispatcher.dispatchBatch(urls, project || "").catch((err) => {
     console.error("Batch dispatch error:", err.message);
   });
 });
 
-// GET /api/jobs — list all dispatch jobs
+// GET /api/jobs — list all dispatch jobs with activity logs
 app.get("/api/jobs", (req, res) => {
   res.json({ jobs: dispatcher.getJobs() });
 });
@@ -92,7 +88,7 @@ app.get("/api/jobs/:id", (req, res) => {
   res.json({ job });
 });
 
-// Serve output files statically (for images, etc.)
+// Serve output files statically
 app.use("/output", express.static(OUTPUT_DIR));
 
 // Health check
@@ -100,10 +96,18 @@ app.get("/api/health", (req, res) => {
   res.json({
     status: "ok",
     name: "brane",
+    version: "1.0.0",
+    uptime: process.uptime(),
     env: {
       slack: !!process.env.SLACK_BOT_TOKEN,
       figma: !!process.env.FIGMA_TOKEN,
       output: OUTPUT_DIR,
+    },
+    jobs: {
+      total: dispatcher.getJobs().length,
+      active: dispatcher.getJobs().filter((j) => j.status === "processing" || j.status === "pending").length,
+      complete: dispatcher.getJobs().filter((j) => j.status === "complete").length,
+      errors: dispatcher.getJobs().filter((j) => j.status === "error").length,
     },
   });
 });

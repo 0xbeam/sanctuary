@@ -1,4 +1,5 @@
-import { Settings, CircleCheck, CircleX, Loader2 } from "lucide-react";
+import { useState } from "react";
+import { Settings, CircleCheck, CircleX, Loader2, RefreshCw } from "lucide-react";
 import { Card } from "../ui/Card";
 import { useData } from "../../contexts/DataContext";
 
@@ -11,7 +12,13 @@ function StatusDot({ connected }) {
 }
 
 export function SettingsView() {
-  const { apiStatus } = useData();
+  const { apiStatus, checkHealth } = useData();
+  const [refreshing, setRefreshing] = useState(false);
+  const handleRefresh = async () => {
+    setRefreshing(true);
+    await checkHealth();
+    setTimeout(() => setRefreshing(false), 500);
+  };
 
   return (
     <div className="view-enter max-w-2xl">
@@ -21,7 +28,16 @@ export function SettingsView() {
 
       {/* API Status */}
       <Card className="p-5 mb-4">
-        <h3 className="text-sm font-semibold text-stone-900 mb-3">API Server</h3>
+        <div className="flex items-center justify-between mb-3">
+          <h3 className="text-sm font-semibold text-stone-900">API Server</h3>
+          <button
+            onClick={handleRefresh}
+            className="p-1 rounded hover:bg-stone-100 text-stone-400 hover:text-stone-600 transition-colors"
+            title="Refresh status"
+          >
+            <RefreshCw className={`w-3.5 h-3.5 ${refreshing ? "animate-spin" : ""}`} />
+          </button>
+        </div>
         {apiStatus ? (
           <div className="space-y-2.5">
             <div className="flex items-center gap-2">
