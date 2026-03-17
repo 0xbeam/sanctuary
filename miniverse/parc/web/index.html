@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>parc — Agent-First Architecture Intelligence</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600;700&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+::selection { background: #2A7A5B; color: #fff; }
+
+:root {
+  --bg: #FFFFFF; --card: #F6F5F2; --card-hover: #EFEDE8;
+  --border: #E8E5E0; --text: #111114; --text-muted: #888; --text-faint: #aaa;
+  --accent: #2A7A5B; --accent-dim: #E8F5EE; --accent-light: #3DA87A;
+  --amber: #B8860B; --amber-dim: #FFF3E0;
+  --blue: #2980B9; --blue-dim: #EBF0FF;
+  --red: #C0392B; --red-dim: #FDEDEC;
+  --serif: 'Cormorant Garamond', Georgia, serif;
+  --sans: 'DM Sans', -apple-system, system-ui, sans-serif;
+  --mono: 'DM Mono', monospace;
+}
+
+html { font-size: 15px; scroll-behavior: smooth; }
+body { font-family: var(--sans); background: var(--bg); color: var(--text); line-height: 1.55; -webkit-font-smoothing: antialiased; }
+
+.page { max-width: 900px; margin: 0 auto; padding: 80px 40px 120px; }
+
+/* Header */
+.hero { text-align: center; margin-bottom: 80px; }
+.logo-mark { display: inline-flex; align-items: center; justify-content: center; width: 48px; height: 48px; background: var(--accent); border-radius: 12px; margin-bottom: 20px; }
+.logo-mark span { color: #fff; font-family: var(--mono); font-weight: 500; font-size: 1.1rem; letter-spacing: 0.05em; }
+h1 { font-family: var(--serif); font-size: clamp(2.4rem, 5vw, 3.6rem); font-weight: 700; line-height: 1.1; margin-bottom: 12px; letter-spacing: -0.02em; }
+h1 em { font-style: italic; font-weight: 300; color: var(--accent); }
+.tagline { font-family: var(--mono); font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.14em; color: var(--text-muted); margin-bottom: 32px; }
+
+/* Install */
+.install-block { display: inline-flex; align-items: center; gap: 12px; background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 12px 20px; margin-bottom: 12px; }
+.install-block code { font-family: var(--mono); font-size: 0.82rem; color: var(--text); }
+.install-block .prompt { color: var(--accent); }
+.install-note { font-family: var(--mono); font-size: 0.65rem; color: var(--text-faint); }
+
+/* Commands section */
+.commands { margin-bottom: 64px; }
+.section-label { font-family: var(--mono); font-size: 0.62rem; text-transform: uppercase; letter-spacing: 0.14em; color: var(--text-faint); margin-bottom: 16px; }
+.section-title { font-family: var(--serif); font-size: 1.8rem; font-weight: 600; margin-bottom: 8px; }
+.section-desc { font-size: 0.88rem; color: var(--text-muted); margin-bottom: 28px; max-width: 600px; }
+
+.cmd-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.cmd-card { background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 24px; position: relative; overflow: hidden; transition: border-color 200ms, background 200ms; }
+.cmd-card:hover { border-color: var(--accent); background: #FCFDFB; }
+.cmd-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: var(--bar, var(--border)); }
+.cmd-card.green::before { --bar: var(--accent); }
+.cmd-card.amber::before { --bar: var(--amber); }
+.cmd-card.blue::before { --bar: var(--blue); }
+
+.cmd-name { font-family: var(--mono); font-size: 0.78rem; font-weight: 500; color: var(--accent); margin-bottom: 6px; }
+.cmd-title { font-family: var(--serif); font-size: 1.15rem; font-weight: 600; margin-bottom: 8px; }
+.cmd-desc { font-size: 0.78rem; color: var(--text-muted); line-height: 1.5; }
+
+/* Features */
+.features { margin-bottom: 64px; }
+.feat-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+.feat { padding: 20px 0; }
+.feat-icon { font-family: var(--mono); font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.12em; color: var(--accent); margin-bottom: 8px; }
+.feat-title { font-family: var(--serif); font-size: 1.05rem; font-weight: 600; margin-bottom: 6px; }
+.feat-desc { font-size: 0.78rem; color: var(--text-muted); line-height: 1.5; }
+
+/* Demo */
+.demo { margin-bottom: 64px; }
+.terminal { background: #111114; border-radius: 10px; padding: 24px 28px; font-family: var(--mono); font-size: 0.75rem; line-height: 1.7; color: #ccc; overflow-x: auto; }
+.terminal .prompt { color: var(--accent-light); }
+.terminal .dim { color: #666; }
+.terminal .accent { color: var(--accent-light); }
+.terminal .num { color: #D4A017; }
+
+/* Footer */
+.footer { border-top: 1px solid var(--border); padding-top: 24px; display: flex; justify-content: space-between; align-items: center; }
+.footer-left { font-family: var(--mono); font-size: 0.65rem; color: var(--text-faint); }
+.footer-right { display: flex; gap: 16px; }
+.footer-link { font-family: var(--mono); font-size: 0.65rem; color: var(--text-muted); text-decoration: none; }
+.footer-link:hover { color: var(--accent); }
+
+@media (max-width: 640px) {
+  .page { padding: 40px 20px 80px; }
+  .cmd-grid { grid-template-columns: 1fr; }
+  .feat-grid { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- HERO -->
+  <div class="hero">
+    <div class="logo-mark"><span>P</span></div>
+    <h1>parc</h1>
+    <p class="tagline">Agent-first architecture intelligence</p>
+    <div class="install-block">
+      <code><span class="prompt">$</span> npx parc map ./your-repo</code>
+    </div>
+    <p class="install-note">Drop any git repo. Get an interactive architecture map.</p>
+  </div>
+
+  <!-- COMMANDS -->
+  <div class="commands">
+    <div class="section-label">Commands</div>
+    <div class="cmd-grid">
+      <div class="cmd-card green">
+        <div class="cmd-name">parc map &lt;repo&gt;</div>
+        <div class="cmd-title">Architecture Map</div>
+        <div class="cmd-desc">Scan any git repo and generate an interactive Gravity-styled HTML diagram. Detects routes, APIs, AI agents, components, database tables, and dependencies.</div>
+      </div>
+      <div class="cmd-card amber">
+        <div class="cmd-name">parc serve &lt;repo&gt;</div>
+        <div class="cmd-title">Live Dashboard</div>
+        <div class="cmd-desc">Start a dark-mode live dashboard for your repo. Real-time stats, agent visualization, and a rescan button. Perfect for team standups.</div>
+      </div>
+      <div class="cmd-card blue">
+        <div class="cmd-name">parc agents &lt;repo&gt;</div>
+        <div class="cmd-title">Agent Registry</div>
+        <div class="cmd-desc">List every AI agent in your codebase with model tier detection, tools used, and descriptions. Know exactly what your agents do.</div>
+      </div>
+      <div class="cmd-card green">
+        <div class="cmd-name">parc diff [ref]</div>
+        <div class="cmd-title">Architecture Diff</div>
+        <div class="cmd-desc">See how your architecture changed since any commit. Shows routes affected, API endpoints modified, and agent files touched.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FEATURES -->
+  <div class="features">
+    <div class="section-label">What it detects</div>
+    <div class="feat-grid">
+      <div class="feat">
+        <div class="feat-icon">Frameworks</div>
+        <div class="feat-title">Next.js, Vite, SvelteKit, Express</div>
+        <div class="feat-desc">Auto-detects your framework, version, and features like Tailwind, Supabase, Prisma, Zod.</div>
+      </div>
+      <div class="feat">
+        <div class="feat-icon">Routes & APIs</div>
+        <div class="feat-title">App Router, Pages, REST</div>
+        <div class="feat-desc">Maps every page route and API endpoint with HTTP methods and auth detection.</div>
+      </div>
+      <div class="feat">
+        <div class="feat-icon">AI Agents</div>
+        <div class="feat-title">Model tiers & tools</div>
+        <div class="feat-desc">Finds agents by file pattern, detects reasoning vs extraction tiers, and lists tools each agent uses.</div>
+      </div>
+      <div class="feat">
+        <div class="feat-icon">Components</div>
+        <div class="feat-title">UI & Feature split</div>
+        <div class="feat-desc">Catalogs your component library, separating base UI components from feature-level ones.</div>
+      </div>
+      <div class="feat">
+        <div class="feat-icon">Database</div>
+        <div class="feat-title">Tables & Migrations</div>
+        <div class="feat-desc">Reads Prisma schemas and SQL migrations to map your data model and migration history.</div>
+      </div>
+      <div class="feat">
+        <div class="feat-icon">Git</div>
+        <div class="feat-title">Branch, commits, remote</div>
+        <div class="feat-desc">Shows current branch, last commit, author, commit count, and remote URL at a glance.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- DEMO -->
+  <div class="demo">
+    <div class="section-label">Example output</div>
+    <div class="terminal">
+<span class="prompt">$</span> parc map /Users/pluto/sanctuary-dashboard<br><br>
+<span class="dim">  parc map</span><br>
+<span class="dim">  ────────────────────────────────</span><br>
+<span class="dim">  Repo:</span> /Users/pluto/sanctuary-dashboard<br><br>
+<span class="dim">  [1/3]</span> Scanning repo structure...<br>
+<span class="dim">  [2/3]</span> Detected:<br>
+<span class="dim">        </span> <span class="num">335</span> files, TypeScript<br>
+<span class="dim">        </span> <span class="num">61</span> routes, <span class="num">26</span> API endpoints<br>
+<span class="dim">        </span> <span class="num">49</span> agents, <span class="num">107</span> components<br>
+<span class="dim">  [3/3]</span> Generating diagram...<br>
+<span class="dim">  Output:</span> <span class="accent">architecture.html</span><br><br>
+<span class="dim">  Done.</span>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <div class="footer">
+    <div class="footer-left">parc v0.1.0 &mdash; Sanctuary Parc</div>
+    <div class="footer-right">
+      <a class="footer-link" href="https://github.com/0xbeam/sanctuary-parc/tree/project/parc-cli/miniverse/parc">GitHub</a>
+    </div>
+  </div>
+
+</div>
+</body>
+</html>
