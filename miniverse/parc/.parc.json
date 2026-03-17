@@ -1,0 +1,14 @@
+{
+  "ignore": ["node_modules", ".next", ".git", "dist", "build", ".vercel", "coverage", "__pycache__"],
+  "agentPatterns": ["*-agent.*", "*-bot.*", "agent-*.*"],
+  "port": 4400,
+  "maxDepth": 8,
+  "features": {
+    "detectAgents": true,
+    "detectRoutes": true,
+    "detectAPIs": true,
+    "detectComponents": true,
+    "detectDatabase": true,
+    "countLOC": true
+  }
+}

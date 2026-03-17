@@ -1,6 +1,6 @@
 import { createServer } from "http";
 import { analyzeRepo } from "./analyzers/repo.js";
-import { readFileSync, existsSync, watchFile } from "fs";
+import { readFileSync, existsSync, watch } from "fs";
 import { join } from "path";
 
 // ═══════════════════════════════════════════════════════════════════
@@ -10,41 +10,126 @@ import { join } from "path";
 export async function startServer(repoPath, port) {
   let analysis = await analyzeRepo(repoPath);
   let lastScan = Date.now();
+  let scanning = false;
 
   console.log(`  Scanning complete. Starting server...\n`);
 
+  // ─── File watching with debounce ───────────────────────────────
+  const watchDir = existsSync(join(repoPath, "src")) ? join(repoPath, "src") : repoPath;
+  let debounceTimer = null;
+
+  try {
+    watch(watchDir, { recursive: true }, (eventType, filename) => {
+      // Skip node_modules, .git, and hidden files
+      if (filename && (/node_modules|\.git/.test(filename))) return;
+
+      if (debounceTimer) clearTimeout(debounceTimer);
+      debounceTimer = setTimeout(async () => {
+        if (scanning) return;
+        console.log(`  [auto-rescan] File change detected: ${filename || "unknown"}. Rescanning...`);
+        scanning = true;
+        try {
+          analysis = await analyzeRepo(repoPath);
+          lastScan = Date.now();
+          console.log(`  [auto-rescan] Done. ${analysis.summary.totalFiles} files.`);
+        } catch (err) {
+          console.error(`  [auto-rescan] Error:`, err.message);
+        } finally {
+          scanning = false;
+        }
+      }, 2000);
+    });
+    console.log(`  Watching: ${watchDir}\n`);
+  } catch (err) {
+    console.log(`  Warning: Could not watch ${watchDir} — ${err.message}\n`);
+  }
+
+  // ─── CORS headers helper ───────────────────────────────────────
+  function setCORS(res) {
+    res.setHeader("Access-Control-Allow-Origin", "*");
+    res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
+    res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+  }
+
+  // ─── HTTP server ───────────────────────────────────────────────
   const server = createServer(async (req, res) => {
+    const start = Date.now();
     const url = new URL(req.url, `http://localhost:${port}`);
 
-    // API: raw analysis data
-    if (url.pathname === "/api/analysis") {
-      res.writeHead(200, { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" });
-      res.end(JSON.stringify(analysis));
+    setCORS(res);
+
+    // Preflight CORS
+    if (req.method === "OPTIONS") {
+      res.writeHead(204);
+      res.end();
+      logRequest(req, 204, start);
       return;
     }
 
-    // API: rescan
-    if (url.pathname === "/api/rescan") {
-      console.log(`  Rescanning repo...`);
-      analysis = await analyzeRepo(repoPath);
-      lastScan = Date.now();
-      console.log(`  Done. ${analysis.summary.totalFiles} files.`);
+    // API: status
+    if (url.pathname === "/api/status") {
       res.writeHead(200, { "Content-Type": "application/json" });
-      res.end(JSON.stringify({ ok: true, scannedAt: lastScan }));
+      res.end(JSON.stringify({ ready: !scanning }));
+      logRequest(req, 200, start);
+      return;
+    }
+
+    // API: raw analysis data
+    if (url.pathname === "/api/analysis") {
+      res.writeHead(200, { "Content-Type": "application/json" });
+      res.end(JSON.stringify(analysis));
+      logRequest(req, 200, start);
+      return;
+    }
+
+    // API: rescan (non-blocking)
+    if (url.pathname === "/api/rescan") {
+      if (scanning) {
+        res.writeHead(200, { "Content-Type": "application/json" });
+        res.end(JSON.stringify({ status: "scanning" }));
+        logRequest(req, 200, start);
+        return;
+      }
+
+      scanning = true;
+      res.writeHead(200, { "Content-Type": "application/json" });
+      res.end(JSON.stringify({ status: "scanning" }));
+      logRequest(req, 200, start);
+
+      // Perform rescan in background
+      console.log(`  Rescanning repo...`);
+      try {
+        analysis = await analyzeRepo(repoPath);
+        lastScan = Date.now();
+        console.log(`  Done. ${analysis.summary.totalFiles} files.`);
+      } catch (err) {
+        console.error(`  Rescan error:`, err.message);
+      } finally {
+        scanning = false;
+      }
       return;
     }
 
     // Serve dashboard
     res.writeHead(200, { "Content-Type": "text/html" });
     res.end(buildDashboardHTML(analysis, port));
+    logRequest(req, 200, start);
   });
 
   server.listen(port, () => {
     console.log(`  Dashboard: http://localhost:${port}`);
     console.log(`  API:       http://localhost:${port}/api/analysis`);
+    console.log(`  Status:    http://localhost:${port}/api/status`);
     console.log(`  Rescan:    http://localhost:${port}/api/rescan`);
     console.log(`\n  Press Ctrl+C to stop.\n`);
   });
+}
+
+// ─── Request logging ──────────────────────────────────────────────
+function logRequest(req, statusCode, startTime) {
+  const duration = Date.now() - startTime;
+  const timestamp = new Date().toISOString();
+  console.log(`  ${timestamp}  ${req.method} ${req.url}  ${statusCode}  ${duration}ms`);
 }
 
 function buildDashboardHTML(analysis, port) {
@@ -147,10 +232,24 @@ h1 { font-family: 'Cormorant Garamond', serif; font-size: 2rem; font-weight: 700
 
 <script>
 async function rescan() {
-  const btn = document.querySelector('.rescan-btn');
+  var btn = document.querySelector('.rescan-btn');
   btn.textContent = 'Scanning...';
-  await fetch('/api/rescan');
-  window.location.reload();
+  btn.disabled = true;
+  try {
+    await fetch('/api/rescan');
+    // Poll until ready
+    var ready = false;
+    while (!ready) {
+      await new Promise(function(r) { setTimeout(r, 500); });
+      var resp = await fetch('/api/status');
+      var data = await resp.json();
+      ready = data.ready;
+    }
+    window.location.reload();
+  } catch (e) {
+    btn.textContent = 'Error';
+    setTimeout(function() { btn.textContent = 'Rescan'; btn.disabled = false; }, 2000);
+  }
 }
 </script>
 </body>

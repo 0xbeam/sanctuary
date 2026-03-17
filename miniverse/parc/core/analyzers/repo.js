@@ -54,6 +54,74 @@ export async function analyzeRepo(repoPath) {
   };
 }
 
+// ─── Incremental Diff Analysis ───────────────────────────────────
+
+export async function analyzeRepoDiff(repoPath, baseRef = "main") {
+  // Get list of changed files between baseRef and HEAD
+  let changedPaths;
+  try {
+    const output = execSync(`git diff --name-only ${baseRef}...HEAD`, {
+      cwd: repoPath,
+      encoding: "utf8",
+    }).trim();
+    changedPaths = output ? output.split("\n") : [];
+  } catch {
+    // Fallback: if the ref doesn't exist, return full analysis
+    return analyzeRepo(repoPath);
+  }
+
+  if (changedPaths.length === 0) {
+    return { name: basename(repoPath), path: repoPath, changed: [], summary: { changedFiles: 0 } };
+  }
+
+  // Build file objects only for changed files that exist and are relevant
+  const files = [];
+  for (const rel of changedPaths) {
+    const fullPath = join(repoPath, rel);
+    const ext = extname(rel);
+    if (!CODE_EXTENSIONS.has(ext) && !CONFIG_FILES.includes(basename(rel))) continue;
+    try {
+      const stat = statSync(fullPath);
+      files.push({
+        path: fullPath,
+        relativePath: rel,
+        name: basename(rel),
+        ext,
+        size: stat.size,
+      });
+    } catch {
+      // File was deleted in diff — skip
+    }
+  }
+
+  const configs = detectConfigs(repoPath);
+  const framework = detectFramework(repoPath, configs);
+  const routes = detectRoutes(repoPath, files, framework);
+  const api = detectAPIEndpoints(repoPath, files, framework);
+  const agents = detectAgents(repoPath, files);
+  const components = detectComponents(repoPath, files);
+  const database = detectDatabase(repoPath, files);
+
+  return {
+    name: basename(repoPath),
+    path: repoPath,
+    baseRef,
+    changed: changedPaths,
+    framework,
+    routes,
+    api,
+    agents,
+    components,
+    database,
+    files: files.map(f => ({ path: f.relativePath, ext: f.ext, size: f.size })),
+    summary: {
+      changedFiles: changedPaths.length,
+      analyzedFiles: files.length,
+      framework: framework.name,
+    },
+  };
+}
+
 // ─── File Collection ─────────────────────────────────────────────
 
 function collectFiles(dir, root, depth = 0) {
@@ -155,8 +223,19 @@ function detectFramework(repoPath, configs) {
     if (deps["astro"]) { result.name = "astro"; break; }
     if (deps["vite"] && deps["react"]) { result.name = "vite-react"; break; }
     if (deps["vite"] && deps["vue"]) { result.name = "vite-vue"; break; }
+    if (deps["hono"]) { result.name = "hono"; break; }
     if (deps["express"]) { result.name = "express"; break; }
     if (deps["fastify"]) { result.name = "fastify"; break; }
+  }
+
+  // Python framework detection
+  if (result.name === "unknown") {
+    const reqTxt = readFileSafe(join(repoPath, "requirements.txt"));
+    const pyproject = readFileSafe(join(repoPath, "pyproject.toml"));
+    const pyDeps = reqTxt + "\n" + pyproject;
+    if (/fastapi/i.test(pyDeps)) { result.name = "fastapi"; result.runtime = "python"; }
+    else if (/flask/i.test(pyDeps)) { result.name = "flask"; result.runtime = "python"; }
+    else if (/django/i.test(pyDeps)) { result.name = "django"; result.runtime = "python"; }
   }
 
   // Detect features
@@ -170,12 +249,29 @@ function detectFramework(repoPath, configs) {
     if (deps["openai"]) result.features.push("openai");
     if (deps["@radix-ui/react-dialog"]) result.features.push("radix-ui");
     if (deps["zod"]) result.features.push("zod");
+    if (deps["@trpc/server"] || deps["@trpc/client"]) result.features.push("trpc");
+    if (deps["graphql"] || deps["apollo-server"] || deps["@apollo/server"] || deps["graphql-yoga"]) result.features.push("graphql");
+    if (deps["ws"] || deps["socket.io"] || deps["socket.io-client"]) result.features.push("websocket");
+  }
+
+  // Docker detection
+  if (existsSync(join(repoPath, "Dockerfile")) || existsSync(join(repoPath, "docker-compose.yml")) || existsSync(join(repoPath, "docker-compose.yaml"))) {
+    result.features.push("docker");
+  }
+
+  // Kubernetes detection
+  const k8sDirs = ["k8s", "kubernetes", "manifests", "deploy", ".k8s"];
+  for (const d of k8sDirs) {
+    if (existsSync(join(repoPath, d))) { result.features.push("kubernetes"); break; }
   }
 
   // Detect runtime
   if (existsSync(join(repoPath, "go.mod"))) result.runtime = "go";
   if (existsSync(join(repoPath, "Cargo.toml"))) result.runtime = "rust";
   if (existsSync(join(repoPath, "pyproject.toml"))) result.runtime = "python";
+
+  // Deduplicate features
+  result.features = [...new Set(result.features)];
 
   return result;
 }
@@ -256,13 +352,18 @@ function detectRoutes(repoPath, files, framework) {
 
 function extractNextRoute(filePath) {
   // apps/dashboard/src/app/founder/dashboard/page.tsx → /founder/dashboard
-  const match = filePath.match(/\/app\/(.+?)\/page\.(tsx|jsx|js)$/);
-  if (!match) return "/";
-  return "/" + match[1].replace(/\/\(.*?\)\//g, "/").replace(/\(.*?\)\/?/, "");
+  // Handle monorepo structures — find last occurrence of /app/ in path
+  const appIdx = filePath.lastIndexOf("/app/");
+  if (appIdx === -1) return "/";
+  const afterApp = filePath.slice(appIdx + "/app/".length);
+  const routePart = afterApp.replace(/\/?(page)\.(tsx|jsx|js)$/, "");
+  if (!routePart) return "/";
+  return "/" + routePart.replace(/\/\(.*?\)\//g, "/").replace(/\(.*?\)\/?/, "");
 }
 
 function extractSvelteRoute(filePath) {
-  const match = filePath.match(/\/routes\/(.+?)\//);
+  // /src/routes/users/[id]/+page.svelte → /users/[id]
+  const match = filePath.match(/\/routes\/(.+?)\/\+page\.svelte$/);
   if (!match) return "/";
   return "/" + match[1];
 }
@@ -332,15 +433,17 @@ function detectHTTPMethods(content) {
 function detectAgents(repoPath, files) {
   const agents = [];
 
-  // Look for agent files by name pattern
+  // Look for agent files by name pattern — only actual code files
+  const AGENT_CODE_EXTS = new Set([".ts", ".tsx", ".js", ".jsx", ".py"]);
   const agentFiles = files.filter(f =>
-    f.name.includes("agent") ||
-    f.relativePath.includes("/agents/") ||
-    f.relativePath.includes("/ai/")
+    AGENT_CODE_EXTS.has(f.ext) && (
+      f.name.includes("agent") ||
+      f.relativePath.includes("/agents/") ||
+      f.relativePath.includes("/ai/")
+    )
   );
 
   for (const f of agentFiles) {
-    if (f.ext !== ".ts" && f.ext !== ".js") continue;
     const content = readFileSafe(f.path);
 
     // Detect model tier
@@ -423,7 +526,7 @@ function detectDatabase(repoPath, files) {
   // Check for SQL CREATE TABLE
   for (const f of files.filter(f => f.ext === ".sql")) {
     const content = readFileSafe(f.path);
-    const creates = content.matchAll(/CREATE\s+TABLE\s+(?:IF\s+NOT\s+EXISTS\s+)?["']?(\w+)["']?/gi);
+    const creates = content.matchAll(/CREATE\s+TABLE\s+(?:IF\s+NOT\s+EXISTS\s+)?[`"']?(\w+)[`"']?/gi);
     for (const m of creates) {
       if (!tables.find(t => t.name === m[1])) {
         tables.push({ name: m[1], source: "sql" });
@@ -478,8 +581,15 @@ function detectPackages(repoPath) {
 
 function buildSummary(files, routes, api, agents, components, framework) {
   const extCounts = {};
+  let totalLOC = 0;
   for (const f of files) {
     extCounts[f.ext] = (extCounts[f.ext] || 0) + 1;
+    if (CODE_EXTENSIONS.has(f.ext)) {
+      try {
+        const content = readFileSync(f.path, "utf8");
+        totalLOC += content.split("\n").length;
+      } catch { /* skip unreadable */ }
+    }
   }
 
   const languages = [];
@@ -496,6 +606,7 @@ function buildSummary(files, routes, api, agents, components, framework) {
 
   return {
     totalFiles: files.length,
+    totalLOC,
     languages,
     framework: framework.name,
     features: framework.features,

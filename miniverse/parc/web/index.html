@@ -17,9 +17,25 @@
   --amber: #B8860B; --amber-dim: #FFF3E0;
   --blue: #2980B9; --blue-dim: #EBF0FF;
   --red: #C0392B; --red-dim: #FDEDEC;
+  --terminal-bg: #111114;
   --serif: 'Cormorant Garamond', Georgia, serif;
   --sans: 'DM Sans', -apple-system, system-ui, sans-serif;
   --mono: 'DM Mono', monospace;
+}
+
+/* Dark mode */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0F0F12; --card: #1A1A1F; --card-hover: #222228;
+    --border: #2A2A30; --text: #E8E6E1; --text-muted: #888; --text-faint: #555;
+    --accent: #3DA87A; --accent-dim: #1A2E24; --accent-light: #4FC993;
+    --amber: #D4A017; --amber-dim: #2A2210;
+    --blue: #5DADE2; --blue-dim: #1A2030;
+    --red: #E74C3C; --red-dim: #2A1510;
+    --terminal-bg: #0A0A0D;
+  }
+  .cmd-card:hover { background: var(--card-hover); }
+  .install-block { background: var(--card); border-color: var(--border); }
 }
 
 html { font-size: 15px; scroll-behavior: smooth; }
@@ -29,27 +45,29 @@ body { font-family: var(--sans); background: var(--bg); color: var(--text); line
 
 /* Header */
 .hero { text-align: center; margin-bottom: 80px; }
-.logo-mark { display: inline-flex; align-items: center; justify-content: center; width: 48px; height: 48px; background: var(--accent); border-radius: 12px; margin-bottom: 20px; }
+.logo-mark { display: inline-flex; align-items: center; justify-content: center; width: 48px; height: 48px; background: var(--accent); border-radius: 12px; margin-bottom: 20px; transition: transform 300ms ease; }
+.logo-mark:hover { transform: scale(1.08); }
 .logo-mark span { color: #fff; font-family: var(--mono); font-weight: 500; font-size: 1.1rem; letter-spacing: 0.05em; }
 h1 { font-family: var(--serif); font-size: clamp(2.4rem, 5vw, 3.6rem); font-weight: 700; line-height: 1.1; margin-bottom: 12px; letter-spacing: -0.02em; }
 h1 em { font-style: italic; font-weight: 300; color: var(--accent); }
 .tagline { font-family: var(--mono); font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.14em; color: var(--text-muted); margin-bottom: 32px; }
 
 /* Install */
-.install-block { display: inline-flex; align-items: center; gap: 12px; background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 12px 20px; margin-bottom: 12px; }
+.install-block { display: inline-flex; align-items: center; gap: 12px; background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 12px 20px; margin-bottom: 12px; transition: border-color 300ms ease; }
+.install-block:hover { border-color: var(--accent); }
 .install-block code { font-family: var(--mono); font-size: 0.82rem; color: var(--text); }
 .install-block .prompt { color: var(--accent); }
 .install-note { font-family: var(--mono); font-size: 0.65rem; color: var(--text-faint); }
 
 /* Commands section */
-.commands { margin-bottom: 64px; }
+.commands { margin-bottom: 80px; }
 .section-label { font-family: var(--mono); font-size: 0.62rem; text-transform: uppercase; letter-spacing: 0.14em; color: var(--text-faint); margin-bottom: 16px; }
 .section-title { font-family: var(--serif); font-size: 1.8rem; font-weight: 600; margin-bottom: 8px; }
 .section-desc { font-size: 0.88rem; color: var(--text-muted); margin-bottom: 28px; max-width: 600px; }
 
 .cmd-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-.cmd-card { background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 24px; position: relative; overflow: hidden; transition: border-color 200ms, background 200ms; }
-.cmd-card:hover { border-color: var(--accent); background: #FCFDFB; }
+.cmd-card { background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 24px; position: relative; overflow: hidden; transition: border-color 300ms ease, background 300ms ease, transform 300ms ease, box-shadow 300ms ease; }
+.cmd-card:hover { border-color: var(--accent); background: #FCFDFB; transform: translateY(-2px); box-shadow: 0 4px 16px rgba(0,0,0,0.06); }
 .cmd-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: var(--bar, var(--border)); }
 .cmd-card.green::before { --bar: var(--accent); }
 .cmd-card.amber::before { --bar: var(--amber); }
@@ -59,33 +77,102 @@ h1 em { font-style: italic; font-weight: 300; color: var(--accent); }
 .cmd-title { font-family: var(--serif); font-size: 1.15rem; font-weight: 600; margin-bottom: 8px; }
 .cmd-desc { font-size: 0.78rem; color: var(--text-muted); line-height: 1.5; }
 
+/* How it works */
+.how-it-works { margin-bottom: 80px; }
+.steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 32px; margin-top: 28px; }
+.step { text-align: center; }
+.step-number { display: inline-flex; align-items: center; justify-content: center; width: 44px; height: 44px; border-radius: 50%; background: var(--accent-dim); color: var(--accent); font-family: var(--mono); font-size: 1rem; font-weight: 600; margin-bottom: 16px; transition: background 300ms ease, transform 300ms ease; }
+.step:hover .step-number { background: var(--accent); color: #fff; transform: scale(1.1); }
+.step-title { font-family: var(--serif); font-size: 1.1rem; font-weight: 600; margin-bottom: 6px; }
+.step-desc { font-size: 0.78rem; color: var(--text-muted); line-height: 1.5; }
+.steps-connector { display: none; }
+
 /* Features */
-.features { margin-bottom: 64px; }
+.features { margin-bottom: 80px; }
 .feat-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
-.feat { padding: 20px 0; }
+.feat { padding: 20px 0; transition: transform 300ms ease; }
+.feat:hover { transform: translateY(-2px); }
 .feat-icon { font-family: var(--mono); font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.12em; color: var(--accent); margin-bottom: 8px; }
 .feat-title { font-family: var(--serif); font-size: 1.05rem; font-weight: 600; margin-bottom: 6px; }
 .feat-desc { font-size: 0.78rem; color: var(--text-muted); line-height: 1.5; }
 
+/* Comparison */
+.comparison { margin-bottom: 80px; }
+.compare-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-top: 28px; }
+.compare-card { border: 1px solid var(--border); border-radius: 8px; padding: 28px; position: relative; overflow: hidden; }
+.compare-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; }
+.compare-card.manual::before { background: var(--red); }
+.compare-card.parc-way::before { background: var(--accent); }
+.compare-label { font-family: var(--mono); font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.12em; margin-bottom: 16px; }
+.compare-card.manual .compare-label { color: var(--red); }
+.compare-card.parc-way .compare-label { color: var(--accent); }
+.compare-list { list-style: none; }
+.compare-list li { font-size: 0.82rem; color: var(--text-muted); line-height: 1.6; padding: 4px 0; padding-left: 20px; position: relative; }
+.compare-list li::before { position: absolute; left: 0; }
+.compare-card.manual .compare-list li::before { content: '\2717'; color: var(--red); }
+.compare-card.parc-way .compare-list li::before { content: '\2713'; color: var(--accent); }
+.compare-time { font-family: var(--mono); font-size: 1.4rem; font-weight: 600; margin-top: 16px; }
+.compare-card.manual .compare-time { color: var(--red); }
+.compare-card.parc-way .compare-time { color: var(--accent); }
+
 /* Demo */
-.demo { margin-bottom: 64px; }
-.terminal { background: #111114; border-radius: 10px; padding: 24px 28px; font-family: var(--mono); font-size: 0.75rem; line-height: 1.7; color: #ccc; overflow-x: auto; }
+.demo { margin-bottom: 80px; }
+.terminal { background: var(--terminal-bg); border-radius: 10px; padding: 24px 28px; font-family: var(--mono); font-size: 0.75rem; line-height: 1.7; color: #ccc; overflow-x: auto; }
 .terminal .prompt { color: var(--accent-light); }
 .terminal .dim { color: #666; }
 .terminal .accent { color: var(--accent-light); }
 .terminal .num { color: #D4A017; }
 
+/* Typing animation */
+.terminal .line {
+  opacity: 0;
+  animation: typeLine 0.3s ease forwards;
+}
+.terminal .line:nth-child(1)  { animation-delay: 0.0s; }
+.terminal .line:nth-child(2)  { animation-delay: 0.2s; }
+.terminal .line:nth-child(3)  { animation-delay: 0.4s; }
+.terminal .line:nth-child(4)  { animation-delay: 0.6s; }
+.terminal .line:nth-child(5)  { animation-delay: 1.0s; }
+.terminal .line:nth-child(6)  { animation-delay: 1.4s; }
+.terminal .line:nth-child(7)  { animation-delay: 1.6s; }
+.terminal .line:nth-child(8)  { animation-delay: 1.8s; }
+.terminal .line:nth-child(9)  { animation-delay: 2.0s; }
+.terminal .line:nth-child(10) { animation-delay: 2.6s; }
+.terminal .line:nth-child(11) { animation-delay: 2.8s; }
+.terminal .line:nth-child(12) { animation-delay: 3.2s; }
+
+@keyframes typeLine {
+  0% { opacity: 0; transform: translateY(4px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+/* Cursor blink on last line */
+.terminal .line:last-child::after {
+  content: '\2588';
+  color: var(--accent-light);
+  animation: blink 1s step-end infinite;
+  margin-left: 2px;
+}
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
 /* Footer */
-.footer { border-top: 1px solid var(--border); padding-top: 24px; display: flex; justify-content: space-between; align-items: center; }
-.footer-left { font-family: var(--mono); font-size: 0.65rem; color: var(--text-faint); }
-.footer-right { display: flex; gap: 16px; }
-.footer-link { font-family: var(--mono); font-size: 0.65rem; color: var(--text-muted); text-decoration: none; }
+.footer { border-top: 1px solid var(--border); padding-top: 32px; text-align: center; }
+.footer-main { font-family: var(--sans); font-size: 0.82rem; color: var(--text-muted); margin-bottom: 12px; }
+.footer-main a { color: var(--accent); text-decoration: none; transition: color 200ms; }
+.footer-main a:hover { color: var(--accent-light); }
+.footer-links { display: flex; justify-content: center; gap: 20px; }
+.footer-link { font-family: var(--mono); font-size: 0.65rem; color: var(--text-faint); text-decoration: none; transition: color 200ms; }
 .footer-link:hover { color: var(--accent); }
 
 @media (max-width: 640px) {
   .page { padding: 40px 20px 80px; }
   .cmd-grid { grid-template-columns: 1fr; }
   .feat-grid { grid-template-columns: 1fr; }
+  .steps { grid-template-columns: 1fr; gap: 20px; }
+  .compare-grid { grid-template-columns: 1fr; }
 }
 </style>
 </head>
@@ -101,6 +188,28 @@ h1 em { font-style: italic; font-weight: 300; color: var(--accent); }
       <code><span class="prompt">$</span> npx parc map ./your-repo</code>
     </div>
     <p class="install-note">Drop any git repo. Get an interactive architecture map.</p>
+  </div>
+
+  <!-- HOW IT WORKS -->
+  <div class="how-it-works">
+    <div class="section-label">How it works</div>
+    <div class="steps">
+      <div class="step">
+        <div class="step-number">1</div>
+        <div class="step-title">Drop a repo</div>
+        <div class="step-desc">Point parc at any git repo on your machine. No config files, no setup, no dependencies to install.</div>
+      </div>
+      <div class="step">
+        <div class="step-number">2</div>
+        <div class="step-title">Instant analysis</div>
+        <div class="step-desc">parc scans your codebase in seconds. Routes, APIs, agents, components, database schema — all detected automatically.</div>
+      </div>
+      <div class="step">
+        <div class="step-number">3</div>
+        <div class="step-title">Interactive diagrams</div>
+        <div class="step-desc">Get a single HTML file you can open, share, or host. Searchable, filterable, and always up to date.</div>
+      </div>
+    </div>
   </div>
 
   <!-- COMMANDS -->
@@ -125,7 +234,7 @@ h1 em { font-style: italic; font-weight: 300; color: var(--accent); }
       <div class="cmd-card green">
         <div class="cmd-name">parc diff [ref]</div>
         <div class="cmd-title">Architecture Diff</div>
-        <div class="cmd-desc">See how your architecture changed since any commit. Shows routes affected, API endpoints modified, and agent files touched.</div>
+        <div class="cmd-desc">See how your architecture changed since any commit. Shows added routes, modified agents, new API endpoints, and changed components.</div>
       </div>
     </div>
   </div>
@@ -167,30 +276,61 @@ h1 em { font-style: italic; font-weight: 300; color: var(--accent); }
     </div>
   </div>
 
+  <!-- COMPARISON -->
+  <div class="comparison">
+    <div class="section-label">Why parc</div>
+    <div class="compare-grid">
+      <div class="compare-card manual">
+        <div class="compare-label">Manual documentation</div>
+        <ul class="compare-list">
+          <li>Hand-draw diagrams that go stale in a week</li>
+          <li>Manually track which agents exist and what they do</li>
+          <li>Grep through code to find all API endpoints</li>
+          <li>Ask the team "where does this route live?"</li>
+          <li>Onboarding takes days of code exploration</li>
+        </ul>
+        <div class="compare-time">Hours per update</div>
+      </div>
+      <div class="compare-card parc-way">
+        <div class="compare-label">With parc</div>
+        <ul class="compare-list">
+          <li>Always-current diagrams generated from source</li>
+          <li>Every agent cataloged with tier, model, and tools</li>
+          <li>All routes and endpoints mapped automatically</li>
+          <li>One command to see the full architecture</li>
+          <li>New team members productive in minutes</li>
+        </ul>
+        <div class="compare-time">30 seconds</div>
+      </div>
+    </div>
+  </div>
+
   <!-- DEMO -->
   <div class="demo">
     <div class="section-label">Example output</div>
     <div class="terminal">
-<span class="prompt">$</span> parc map /Users/pluto/sanctuary-dashboard<br><br>
-<span class="dim">  parc map</span><br>
-<span class="dim">  ────────────────────────────────</span><br>
-<span class="dim">  Repo:</span> /Users/pluto/sanctuary-dashboard<br><br>
-<span class="dim">  [1/3]</span> Scanning repo structure...<br>
-<span class="dim">  [2/3]</span> Detected:<br>
-<span class="dim">        </span> <span class="num">335</span> files, TypeScript<br>
-<span class="dim">        </span> <span class="num">61</span> routes, <span class="num">26</span> API endpoints<br>
-<span class="dim">        </span> <span class="num">49</span> agents, <span class="num">107</span> components<br>
-<span class="dim">  [3/3]</span> Generating diagram...<br>
-<span class="dim">  Output:</span> <span class="accent">architecture.html</span><br><br>
-<span class="dim">  Done.</span>
+<div class="line"><span class="prompt">$</span> parc map /Users/pluto/sanctuary-dashboard</div>
+<div class="line">&nbsp;</div>
+<div class="line"><span class="dim">  parc map</span></div>
+<div class="line"><span class="dim">  ────────────────────────────────</span></div>
+<div class="line"><span class="dim">  Repo:</span> /Users/pluto/sanctuary-dashboard</div>
+<div class="line">&nbsp;</div>
+<div class="line"><span class="dim">  [1/3]</span> Scanning repo structure...</div>
+<div class="line"><span class="dim">  [2/3]</span> Detected:</div>
+<div class="line"><span class="dim">        </span> <span class="num">335</span> files, TypeScript</div>
+<div class="line"><span class="dim">        </span> <span class="num">61</span> routes, <span class="num">26</span> API endpoints</div>
+<div class="line"><span class="dim">        </span> <span class="num">49</span> agents, <span class="num">107</span> components</div>
+<div class="line"><span class="dim">  [3/3]</span> Generating diagram...</div>
     </div>
   </div>
 
   <!-- FOOTER -->
   <div class="footer">
-    <div class="footer-left">parc v0.1.0 &mdash; Sanctuary Parc</div>
-    <div class="footer-right">
+    <div class="footer-main">Built by <a href="https://github.com/0xbeam">Sanctuary</a> &middot; Open source</div>
+    <div class="footer-links">
       <a class="footer-link" href="https://github.com/0xbeam/sanctuary-parc/tree/project/parc-cli/miniverse/parc">GitHub</a>
+      <a class="footer-link" href="https://github.com/0xbeam/sanctuary-parc/issues">Issues</a>
+      <a class="footer-link" href="#commands">Docs</a>
     </div>
   </div>
 
