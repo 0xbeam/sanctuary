@@ -19,7 +19,7 @@ export function Sidebar() {
   const pendingJobs = jobs.filter((j) => j.status === "pending" || j.status === "processing").length;
 
   return (
-    <aside className="w-56 h-screen bg-surface border-r border-border flex flex-col flex-shrink-0">
+    <aside className="hidden md:flex w-56 h-screen bg-surface border-r border-border flex-col flex-shrink-0">
       {/* Brand */}
       <div className="p-5 pb-4">
         <h1 className="font-serif text-xl font-semibold tracking-tight-editorial text-stone-900">

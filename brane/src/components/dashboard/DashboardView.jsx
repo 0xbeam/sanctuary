@@ -45,7 +45,7 @@ export function DashboardView() {
       </h2>
 
       {/* Row 1 — Stats */}
-      <div className="grid grid-cols-4 gap-3 mb-5">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-5">
         <StatCard
           label="Active Agents"
           value={activeAgents}
@@ -71,7 +71,7 @@ export function DashboardView() {
       </div>
 
       {/* Row 2 — Two columns */}
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* Recent Activity */}
         <Card className="p-5">
           <div className="flex items-center gap-2 mb-3">
