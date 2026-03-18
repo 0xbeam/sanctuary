@@ -126,6 +126,7 @@ export async function addKnowledge(data) {
     type: frontmatter.type,
     title: frontmatter.title,
     source: frontmatter.source,
+    sourceTaskId: frontmatter.sourceTaskId,
     tags: frontmatter.tags,
     project: frontmatter.project,
     createdAt: now,

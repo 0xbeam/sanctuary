@@ -394,6 +394,18 @@ app.get("/api/git/:agentId/status", async (req, res) => {
   }
 });
 
+// GET /api/git/:agentId/branches — list branches for an agent's repo
+app.get("/api/git/:agentId/branches", async (req, res) => {
+  try {
+    const agent = await getAgent(req.params.agentId);
+    if (!agent) return res.status(404).json({ error: "Agent not found" });
+    const branches = await listBranches(agent.cwd);
+    res.json({ agentId: agent.id, cwd: agent.cwd, branches });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // POST /api/git/:agentId/checkout — switch branch for an agent
 app.post("/api/git/:agentId/checkout", async (req, res) => {
   try {
