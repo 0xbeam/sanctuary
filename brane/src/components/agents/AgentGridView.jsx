@@ -29,7 +29,8 @@ export function AgentGridView() {
   const [search, setSearch] = useState("");
 
   const filtered = useMemo(() => {
-    let list = agents;
+    // Filter out stale agents with no real working directory
+    let list = agents.filter((a) => a.cwd && a.cwd !== "/" && a.cwd.length > 1);
     if (statusFilter !== "all") {
       list = list.filter((a) => a.status === statusFilter);
     }
@@ -53,7 +54,7 @@ export function AgentGridView() {
             Agents
           </h2>
           <p className="text-xs text-stone-500 mt-0.5">
-            {agents.length} registered agent{agents.length !== 1 ? "s" : ""}
+            {filtered.length} registered agent{filtered.length !== 1 ? "s" : ""}
           </p>
         </div>
 

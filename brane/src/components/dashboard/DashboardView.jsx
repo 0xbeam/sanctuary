@@ -28,10 +28,12 @@ export function DashboardView() {
   const { instructions } = useData();
   const { messages } = useMessages();
 
-  const activeAgents = agents.filter((a) => a.status === "active").length;
+  // Filter out stale agents with no real working directory
+  const realAgents = agents.filter((a) => a.cwd && a.cwd !== "/" && a.cwd.length > 1);
+  const activeAgents = realAgents.filter((a) => a.status === "active").length;
   const runningTasks = tasks.filter((t) => t.status === "running" || t.status === "in-progress" || t.status === "processing").length;
   const knowledgeCount = instructions.length;
-  const branches = new Set(agents.map((a) => a.branch).filter(Boolean));
+  const branches = new Set(realAgents.map((a) => a.branch).filter((b) => b && b !== "HEAD" && b !== "unknown"));
 
   // Get last 10 messages for recent activity
   const recentMessages = messages.slice(-10).reverse();
@@ -47,7 +49,7 @@ export function DashboardView() {
         <StatCard
           label="Active Agents"
           value={activeAgents}
-          sub={`of ${agents.length} total`}
+          sub={`of ${realAgents.length} total`}
           valueColor="text-emerald-700"
         />
         <StatCard
@@ -103,9 +105,9 @@ export function DashboardView() {
             <Users className="w-4 h-4 text-stone-400" />
             <h3 className="text-sm font-semibold text-stone-900">Agent Overview</h3>
           </div>
-          {agents.length > 0 ? (
+          {realAgents.length > 0 ? (
             <div className="space-y-2">
-              {agents.map((agent) => (
+              {realAgents.map((agent) => (
                 <div key={agent.id} className="flex items-center gap-2 text-xs">
                   <StatusDot status={agent.status} />
                   <span className="text-stone-800 font-medium truncate">
