@@ -105,7 +105,11 @@ app.use("/output", express.static(OUTPUT_DIR));
 // POST /api/agents/spawn — spawn a new Claude agent (BEFORE /:id)
 app.post("/api/agents/spawn", async (req, res) => {
   try {
-    const result = await spawnAgent(req.body);
+    const { prompt, cwd, name, branch } = req.body || {};
+    if (!prompt) {
+      return res.status(400).json({ error: "Missing required field: prompt" });
+    }
+    const result = await spawnAgent({ prompt, cwd, name, branch });
     res.json(result);
   } catch (err) {
     res.status(500).json({ error: err.message });
