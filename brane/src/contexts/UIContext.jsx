@@ -2,7 +2,7 @@ import { createContext, useContext, useState, useCallback } from "react";
 
 const UIContext = createContext();
 
-const TABS = ["dashboard", "agents", "tasks", "feed", "knowledge", "messages", "settings"];
+const TABS = ["dashboard", "orchestrator", "agents", "tasks", "feed", "knowledge", "messages", "settings"];
 
 export function UIProvider({ children }) {
   const [activeTab, setActiveTab] = useState("dashboard");

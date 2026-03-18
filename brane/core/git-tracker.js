@@ -140,3 +140,87 @@ export function diffSummary(cwd, base, head) {
     return err.message;
   }
 }
+
+/**
+ * Fetch from remote.
+ * @param {string} cwd
+ * @param {string} [remote="origin"]
+ */
+export function fetchRemote(cwd, remote = "origin") {
+  try {
+    execSync(`git fetch ${remote}`, { cwd, encoding: "utf-8", timeout: 30000 });
+    return { success: true, remote };
+  } catch (err) {
+    return { success: false, error: err.message };
+  }
+}
+
+/**
+ * Pull branch from remote. Refuses if working tree is dirty.
+ */
+export function pullBranch(cwd, branch, remote = "origin") {
+  const info = getBranchInfo(cwd);
+  if (info.dirty) {
+    return { success: false, error: "Working tree is dirty. Commit or stash changes first." };
+  }
+  try {
+    const output = execSync(`git pull ${remote} ${branch || ""}`.trim(), { cwd, encoding: "utf-8", timeout: 60000 });
+    return { success: true, output: output.trim() };
+  } catch (err) {
+    return { success: false, error: err.message };
+  }
+}
+
+/**
+ * Push branch to remote.
+ */
+export function pushBranch(cwd, branch, remote = "origin") {
+  try {
+    const branchArg = branch || "";
+    const output = execSync(`git push ${remote} ${branchArg}`.trim(), { cwd, encoding: "utf-8", timeout: 60000 });
+    return { success: true, output: output.trim() };
+  } catch (err) {
+    return { success: false, error: err.message };
+  }
+}
+
+/**
+ * List remotes.
+ */
+export function getRemotes(cwd) {
+  try {
+    const output = execSync("git remote -v", { cwd, encoding: "utf-8", timeout: 5000 });
+    const remotes = [];
+    for (const line of output.trim().split("\n")) {
+      const [name, url, type] = line.split(/\s+/);
+      if (name && url) remotes.push({ name, url, type: type?.replace(/[()]/g, "") });
+    }
+    return remotes;
+  } catch {
+    return [];
+  }
+}
+
+/**
+ * Stash changes.
+ */
+export function stashChanges(cwd, message = "brane-auto-stash") {
+  try {
+    const output = execSync(`git stash push -m "${message}"`, { cwd, encoding: "utf-8", timeout: 10000 });
+    return { success: true, output: output.trim() };
+  } catch (err) {
+    return { success: false, error: err.message };
+  }
+}
+
+/**
+ * Pop stash.
+ */
+export function popStash(cwd) {
+  try {
+    const output = execSync("git stash pop", { cwd, encoding: "utf-8", timeout: 10000 });
+    return { success: true, output: output.trim() };
+  } catch (err) {
+    return { success: false, error: err.message };
+  }
+}

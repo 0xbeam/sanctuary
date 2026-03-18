@@ -459,6 +459,206 @@ server.tool(
   })
 );
 
+// ── Git Write Tools ─────────────────────────────────────────────────────────────
+
+server.tool(
+  "brane_git_fetch",
+  "Fetch from a git remote. Defaults to 'origin'.",
+  {
+    cwd: z.string().describe("Directory of the git repository"),
+    remote: z.string().optional().describe("Remote name (default: origin)"),
+  },
+  safe((params) => {
+    const { cwd, remote } = params;
+    const fn = coreModules.gitTracker?.fetchRemote;
+    if (fn) return ok(fn(cwd, remote));
+    // Inline fallback
+    try {
+      execSync(`git fetch ${remote || "origin"}`, { cwd, encoding: "utf-8", timeout: 30000 });
+      return ok({ success: true, remote: remote || "origin" });
+    } catch (e) {
+      return ok({ success: false, error: e.message });
+    }
+  })
+);
+
+server.tool(
+  "brane_git_pull",
+  "Pull a branch from a remote. Refuses if the working tree is dirty.",
+  {
+    cwd: z.string().describe("Directory of the git repository"),
+    branch: z.string().optional().describe("Branch to pull (default: current)"),
+    remote: z.string().optional().describe("Remote name (default: origin)"),
+  },
+  safe((params) => {
+    const { cwd, branch, remote } = params;
+    const fn = coreModules.gitTracker?.pullBranch;
+    if (fn) return ok(fn(cwd, branch, remote));
+    // Inline fallback
+    const statusFn = coreModules.gitTracker?.getBranchInfo || inlineGitStatus;
+    const info = statusFn({ cwd });
+    if (info.dirty) {
+      return ok({ success: false, error: "Working tree is dirty. Commit or stash changes first." });
+    }
+    try {
+      const output = execSync(`git pull ${remote || "origin"} ${branch || ""}`.trim(), { cwd, encoding: "utf-8", timeout: 60000 });
+      return ok({ success: true, output: output.trim() });
+    } catch (e) {
+      return ok({ success: false, error: e.message });
+    }
+  })
+);
+
+server.tool(
+  "brane_git_push",
+  "Push a branch to a remote.",
+  {
+    cwd: z.string().describe("Directory of the git repository"),
+    branch: z.string().optional().describe("Branch to push (default: current)"),
+    remote: z.string().optional().describe("Remote name (default: origin)"),
+  },
+  safe((params) => {
+    const { cwd, branch, remote } = params;
+    const fn = coreModules.gitTracker?.pushBranch;
+    if (fn) return ok(fn(cwd, branch, remote));
+    // Inline fallback
+    try {
+      const output = execSync(`git push ${remote || "origin"} ${branch || ""}`.trim(), { cwd, encoding: "utf-8", timeout: 60000 });
+      return ok({ success: true, output: output.trim() });
+    } catch (e) {
+      return ok({ success: false, error: e.message });
+    }
+  })
+);
+
+// ── Task Execution Tools ────────────────────────────────────────────────────────
+
+server.tool(
+  "brane_claim_task",
+  "Claim and start a task: assigns it to the given agent and transitions it to running.",
+  {
+    taskId: z.string().describe("The task ID to claim"),
+    agentId: z.string().describe("The agent ID claiming the task"),
+  },
+  safe(async (params) => {
+    const { taskId, agentId } = params;
+    const filepath = path.join(DIRS.tasks, `${taskId}.json`);
+    if (!fs.existsSync(filepath)) throw new Error(`Task not found: ${taskId}`);
+
+    // Assign
+    const task = readJSON(filepath);
+    task.agentId = agentId;
+    task.status = "running";
+    task.activity = [
+      ...(task.activity || []),
+      {
+        stage: "assigned",
+        label: "Task Assigned",
+        message: `Assigned to agent ${agentId}`,
+        timestamp: Date.now(),
+      },
+      {
+        stage: "started",
+        label: "Task Started",
+        message: "Agent began working on this task",
+        timestamp: Date.now(),
+      },
+    ];
+    writeJSON(filepath, task);
+    return ok({ taskId, agentId, status: "running" });
+  })
+);
+
+server.tool(
+  "brane_complete_task",
+  "Mark a task as successfully completed with optional output.",
+  {
+    taskId: z.string().describe("The task ID to complete"),
+    output: z.any().optional().describe("Task output/result data"),
+  },
+  safe(async (params) => {
+    const { taskId, output } = params;
+    const filepath = path.join(DIRS.tasks, `${taskId}.json`);
+    if (!fs.existsSync(filepath)) throw new Error(`Task not found: ${taskId}`);
+
+    const task = readJSON(filepath);
+    task.status = "complete";
+    task.output = output || {};
+    task.completedAt = new Date().toISOString();
+    task.activity = [
+      ...(task.activity || []),
+      {
+        stage: "complete",
+        label: "Complete",
+        message: "Task completed successfully",
+        timestamp: Date.now(),
+      },
+    ];
+    writeJSON(filepath, task);
+    return ok({ taskId, status: "complete" });
+  })
+);
+
+server.tool(
+  "brane_fail_task",
+  "Mark a task as failed with an error message.",
+  {
+    taskId: z.string().describe("The task ID to fail"),
+    error: z.string().describe("Error message describing what went wrong"),
+  },
+  safe(async (params) => {
+    const { taskId, error: errorMsg } = params;
+    const filepath = path.join(DIRS.tasks, `${taskId}.json`);
+    if (!fs.existsSync(filepath)) throw new Error(`Task not found: ${taskId}`);
+
+    const task = readJSON(filepath);
+    task.status = "failed";
+    task.output = { error: errorMsg };
+    task.completedAt = new Date().toISOString();
+    task.activity = [
+      ...(task.activity || []),
+      {
+        stage: "failed",
+        label: "Failed",
+        message: errorMsg,
+        timestamp: Date.now(),
+      },
+    ];
+    writeJSON(filepath, task);
+    return ok({ taskId, status: "failed" });
+  })
+);
+
+server.tool(
+  "brane_report_progress",
+  "Report progress on a task by appending an activity entry with optional percentage.",
+  {
+    taskId: z.string().describe("The task ID to report progress on"),
+    stage: z.string().describe("Current stage name (e.g. 'analyzing', 'implementing')"),
+    message: z.string().describe("Progress message"),
+    percentage: z.number().optional().describe("Completion percentage (0-100)"),
+  },
+  safe(async (params) => {
+    const { taskId, stage, message, percentage } = params;
+    const filepath = path.join(DIRS.tasks, `${taskId}.json`);
+    if (!fs.existsSync(filepath)) throw new Error(`Task not found: ${taskId}`);
+
+    const task = readJSON(filepath);
+    const activityEntry = {
+      stage,
+      label: stage,
+      message,
+      timestamp: Date.now(),
+    };
+    if (percentage !== undefined) activityEntry.percentage = percentage;
+
+    task.activity = [...(task.activity || []), activityEntry];
+    task.currentStage = stage;
+    writeJSON(filepath, task);
+    return ok({ taskId, stage, message, percentage });
+  })
+);
+
 // ── Start ──────────────────────────────────────────────────────────────────────
 
 async function main() {

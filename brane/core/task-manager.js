@@ -196,3 +196,82 @@ export async function getTasksByAgent(agentId) {
 export async function getTasksByBranch(branch) {
   return getTasks({ gitBranch: branch });
 }
+
+/**
+ * Start a task (transition from assigned/queued to running).
+ */
+export async function startTask(id) {
+  return updateTask(id, {
+    status: "running",
+    activity: [{
+      stage: "started",
+      label: "Task Started",
+      message: "Agent began working on this task",
+      timestamp: Date.now(),
+    }],
+  });
+}
+
+/**
+ * Complete a task with output.
+ */
+export async function completeTask(id, output = {}) {
+  return updateTask(id, {
+    status: "complete",
+    output,
+    completedAt: new Date().toISOString(),
+    activity: [{
+      stage: "complete",
+      label: "Complete",
+      message: "Task completed successfully",
+      timestamp: Date.now(),
+    }],
+  });
+}
+
+/**
+ * Fail a task with error details.
+ */
+export async function failTask(id, error) {
+  return updateTask(id, {
+    status: "failed",
+    output: { error: typeof error === "string" ? error : error.message },
+    completedAt: new Date().toISOString(),
+    activity: [{
+      stage: "failed",
+      label: "Failed",
+      message: typeof error === "string" ? error : error.message,
+      timestamp: Date.now(),
+    }],
+  });
+}
+
+/**
+ * Retry a failed task (reset to queued).
+ */
+export async function retryTask(id) {
+  const task = await getTask(id);
+  if (!task) return null;
+  const retryCount = (task.retryCount || 0) + 1;
+  return updateTask(id, {
+    status: "queued",
+    retryCount,
+    output: null,
+    completedAt: null,
+    activity: [{
+      stage: "retry",
+      label: "Retrying",
+      message: `Retry attempt ${retryCount}`,
+      timestamp: Date.now(),
+    }],
+  });
+}
+
+/**
+ * Get queued tasks sorted by priority.
+ */
+export async function getTaskQueue() {
+  const tasks = await getTasks({ status: "queued" });
+  const priorityOrder = { p0: 0, p1: 1, p2: 2, p3: 3 };
+  return tasks.sort((a, b) => (priorityOrder[a.priority] || 2) - (priorityOrder[b.priority] || 2));
+}

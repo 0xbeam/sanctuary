@@ -293,3 +293,15 @@ export async function heartbeat(id, patch = {}) {
     lastSeen: new Date().toISOString(),
   });
 }
+
+export async function pauseAgent(id) {
+  return updateAgent(id, { status: "paused" });
+}
+
+export async function resumeAgent(id) {
+  return updateAgent(id, { status: "active" });
+}
+
+export async function decommissionAgent(id) {
+  return updateAgent(id, { status: "decommissioned" });
+}

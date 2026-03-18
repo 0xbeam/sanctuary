@@ -1,4 +1,7 @@
 import { spawn, execSync } from "child_process";
+import { createWriteStream, mkdirSync } from "fs";
+import { join } from "path";
+import { homedir } from "os";
 import { generateId } from "./types.js";
 
 /**
@@ -68,22 +71,35 @@ export function spawnAgent({ cwd, branch, prompt, name }) {
   }
 
   try {
-    const args = ["--background", "-p", prompt];
+    const args = ["-p", prompt, "--output-format", "json"];
+
+    // Log file for capturing output
+    const agentsLogDir = join(homedir(), ".brane", "agents");
+    mkdirSync(agentsLogDir, { recursive: true });
+    const logPath = join(agentsLogDir, `${agentId}.log`);
+    const logStream = createWriteStream(logPath, { flags: "a" });
 
     const child = spawn(claudePath, args, {
       cwd,
       detached: true,
-      stdio: "ignore",
+      stdio: ["ignore", logStream, logStream],
     });
 
     // Allow the parent to exit independently
     child.unref();
+
+    // Track exit
+    child.on("exit", (code) => {
+      logStream.write(`\n[brane] Process exited with code ${code}\n`);
+      logStream.end();
+    });
 
     return {
       id: agentId,
       pid: child.pid || null,
       name: agentName,
       cwd,
+      logPath,
     };
   } catch (err) {
     return {

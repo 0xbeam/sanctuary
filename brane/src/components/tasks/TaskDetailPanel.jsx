@@ -1,5 +1,5 @@
-import { useMemo } from "react";
-import { GitCommit, User, Clock, Tag, AlertCircle, CheckCircle2, Layers } from "lucide-react";
+import { useMemo, useState } from "react";
+import { GitCommit, User, Clock, Tag, AlertCircle, CheckCircle2, Layers, XCircle, RotateCcw } from "lucide-react";
 import { Card } from "../ui/Card";
 import { useAgents } from "../../contexts/AgentContext";
 import { useTasks } from "../../contexts/TaskContext";
@@ -33,9 +33,28 @@ function relativeTime(ts) {
   return `${Math.floor(diff / 86400)}d ago`;
 }
 
+const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:3210";
+
 export function TaskDetailPanel({ task }) {
   const { agents } = useAgents();
   const { tasks } = useTasks();
+  const [actionLoading, setActionLoading] = useState(null);
+
+  const cancelTask = async () => {
+    setActionLoading("cancel");
+    try {
+      await fetch(`${API_BASE}/api/tasks/${task.id}/cancel`, { method: "POST" });
+    } catch { /* skip */ }
+    setActionLoading(null);
+  };
+
+  const retryTask = async () => {
+    setActionLoading("retry");
+    try {
+      await fetch(`${API_BASE}/api/tasks/${task.id}/retry`, { method: "POST" });
+    } catch { /* skip */ }
+    setActionLoading(null);
+  };
 
   const agent = useMemo(() => {
     if (!task.agentId) return null;
@@ -68,6 +87,48 @@ export function TaskDetailPanel({ task }) {
             </span>
           )}
         </div>
+
+        {/* Action buttons */}
+        <div className="flex gap-2 mt-3">
+          {(task.status === "running" || task.status === "in-progress" || task.status === "pending" || task.status === "queued" || task.status === "processing") && (
+            <button
+              onClick={cancelTask}
+              disabled={actionLoading === "cancel"}
+              className="flex items-center gap-1 px-2 py-1 text-xs bg-red-100 text-red-700 rounded hover:bg-red-200 disabled:opacity-50"
+            >
+              <XCircle className="w-3 h-3" /> Cancel
+            </button>
+          )}
+          {(task.status === "error" || task.status === "failed") && (
+            <button
+              onClick={retryTask}
+              disabled={actionLoading === "retry"}
+              className="flex items-center gap-1 px-2 py-1 text-xs bg-amber-100 text-amber-700 rounded hover:bg-amber-200 disabled:opacity-50"
+            >
+              <RotateCcw className="w-3 h-3" /> Retry
+            </button>
+          )}
+        </div>
+
+        {/* Progress indicator */}
+        {task.stage && (
+          <div className="mt-3">
+            <div className="flex items-center justify-between text-xs text-stone-500 mb-1">
+              <span className="font-medium text-stone-700">{task.stage}</span>
+              {task.totalStages > 0 && (
+                <span>{task.stageIndex || 0} / {task.totalStages}</span>
+              )}
+            </div>
+            {task.totalStages > 0 && (
+              <div className="w-full h-1.5 bg-stone-100 rounded-full overflow-hidden">
+                <div
+                  className="h-full bg-accent rounded-full transition-all duration-300"
+                  style={{ width: `${Math.min(100, ((task.stageIndex || 0) / task.totalStages) * 100)}%` }}
+                />
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
       <div className="p-6 space-y-4">

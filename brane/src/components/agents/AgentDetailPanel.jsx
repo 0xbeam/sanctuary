@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { GitBranch, GitCommit, FolderOpen, Hash, Clock, Cpu, CheckCircle2, AlertCircle } from "lucide-react";
+import { GitBranch, GitCommit, FolderOpen, Hash, Clock, Cpu, CheckCircle2, AlertCircle, Pause, Play, Trash2, ArrowDownToLine, ArrowUpFromLine, RefreshCw } from "lucide-react";
 import { Card } from "../ui/Card";
 import { useTasks } from "../../contexts/TaskContext";
 
@@ -32,8 +32,77 @@ export function AgentDetailPanel({ agent }) {
   const [gitStatus, setGitStatus] = useState(null);
   const [branches, setBranches] = useState([]);
   const [switching, setSwitching] = useState(false);
+  const [actionLoading, setActionLoading] = useState(null);
+  const [agentTaskList, setAgentTaskList] = useState([]);
 
   const agentTasks = tasks.filter((t) => t.agentId === agent.id);
+
+  // Fetch tasks assigned to this agent
+  useEffect(() => {
+    const fetchAgentTasks = async () => {
+      try {
+        const res = await fetch(`${API_BASE}/api/agents/${agent.id}/tasks`);
+        if (res.ok) {
+          const data = await res.json();
+          setAgentTaskList(Array.isArray(data) ? data : data.tasks || []);
+        }
+      } catch { /* skip */ }
+    };
+    fetchAgentTasks();
+  }, [agent.id]);
+
+  // Lifecycle actions
+  const pauseAgent = async (id) => {
+    setActionLoading("pause");
+    try {
+      await fetch(`${API_BASE}/api/agents/${id}/pause`, { method: "POST" });
+    } catch { /* skip */ }
+    setActionLoading(null);
+  };
+
+  const resumeAgent = async (id) => {
+    setActionLoading("resume");
+    try {
+      await fetch(`${API_BASE}/api/agents/${id}/resume`, { method: "POST" });
+    } catch { /* skip */ }
+    setActionLoading(null);
+  };
+
+  const decommissionAgent = async (id) => {
+    setActionLoading("decommission");
+    try {
+      await fetch(`${API_BASE}/api/agents/${id}/decommission`, { method: "POST" });
+    } catch { /* skip */ }
+    setActionLoading(null);
+  };
+
+  // Git operations
+  const gitFetch = async (id) => {
+    setActionLoading("git-fetch");
+    try {
+      await fetch(`${API_BASE}/api/git/${id}/fetch`, { method: "POST" });
+      await fetchGitStatus();
+    } catch { /* skip */ }
+    setActionLoading(null);
+  };
+
+  const gitPull = async (id) => {
+    setActionLoading("git-pull");
+    try {
+      await fetch(`${API_BASE}/api/git/${id}/pull`, { method: "POST" });
+      await fetchGitStatus();
+    } catch { /* skip */ }
+    setActionLoading(null);
+  };
+
+  const gitPush = async (id) => {
+    setActionLoading("git-push");
+    try {
+      await fetch(`${API_BASE}/api/git/${id}/push`, { method: "POST" });
+      await fetchGitStatus();
+    } catch { /* skip */ }
+    setActionLoading(null);
+  };
 
   // Fetch git status
   const fetchGitStatus = useCallback(async () => {
@@ -92,6 +161,34 @@ export function AgentDetailPanel({ agent }) {
             </span>
           )}
         </div>
+        {/* Lifecycle controls */}
+        <div className="flex gap-2 mt-3">
+          {agent.status === "active" && (
+            <button
+              onClick={() => pauseAgent(agent.id)}
+              disabled={actionLoading === "pause"}
+              className="flex items-center gap-1 px-2 py-1 text-xs bg-amber-100 text-amber-700 rounded hover:bg-amber-200 disabled:opacity-50"
+            >
+              <Pause className="w-3 h-3" /> Pause
+            </button>
+          )}
+          {agent.status === "paused" && (
+            <button
+              onClick={() => resumeAgent(agent.id)}
+              disabled={actionLoading === "resume"}
+              className="flex items-center gap-1 px-2 py-1 text-xs bg-emerald-100 text-emerald-700 rounded hover:bg-emerald-200 disabled:opacity-50"
+            >
+              <Play className="w-3 h-3" /> Resume
+            </button>
+          )}
+          <button
+            onClick={() => decommissionAgent(agent.id)}
+            disabled={actionLoading === "decommission"}
+            className="flex items-center gap-1 px-2 py-1 text-xs bg-red-100 text-red-700 rounded hover:bg-red-200 disabled:opacity-50"
+          >
+            <Trash2 className="w-3 h-3" /> Decommission
+          </button>
+        </div>
       </div>
 
       <div className="p-6 space-y-4">
@@ -134,6 +231,31 @@ export function AgentDetailPanel({ agent }) {
               </div>
             )}
 
+            {/* Git operations */}
+            <div className="flex gap-2 mt-2">
+              <button
+                onClick={() => gitFetch(agent.id)}
+                disabled={actionLoading === "git-fetch"}
+                className="flex items-center gap-1 px-2 py-1 text-xs bg-stone-100 text-stone-700 rounded hover:bg-stone-200 disabled:opacity-50"
+              >
+                <RefreshCw className={`w-3 h-3 ${actionLoading === "git-fetch" ? "animate-spin" : ""}`} /> Fetch
+              </button>
+              <button
+                onClick={() => gitPull(agent.id)}
+                disabled={actionLoading === "git-pull"}
+                className="flex items-center gap-1 px-2 py-1 text-xs bg-stone-100 text-stone-700 rounded hover:bg-stone-200 disabled:opacity-50"
+              >
+                <ArrowDownToLine className="w-3 h-3" /> Pull
+              </button>
+              <button
+                onClick={() => gitPush(agent.id)}
+                disabled={actionLoading === "git-push"}
+                className="flex items-center gap-1 px-2 py-1 text-xs bg-stone-100 text-stone-700 rounded hover:bg-stone-200 disabled:opacity-50"
+              >
+                <ArrowUpFromLine className="w-3 h-3" /> Push
+              </button>
+            </div>
+
             {/* Recent commits */}
             {gitStatus?.commits && gitStatus.commits.length > 0 && (
               <div className="pt-2 border-t border-stone-100">
@@ -173,6 +295,27 @@ export function AgentDetailPanel({ agent }) {
             <p className="text-xs text-stone-400">No tasks assigned</p>
           )}
         </Card>
+
+        {/* Server-side Agent Tasks */}
+        {agentTaskList.length > 0 && agentTaskList.length !== agentTasks.length && (
+          <Card className="p-4">
+            <h4 className="text-sm font-semibold text-stone-900 mb-3">All Tasks ({agentTaskList.length})</h4>
+            <div className="space-y-1.5">
+              {agentTaskList.map((task) => (
+                <div key={task.id} className="flex items-center gap-2 text-xs px-2 py-1.5 bg-surface rounded-lg">
+                  <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${
+                    task.status === "running" || task.status === "in-progress" ? "bg-amber-400"
+                    : task.status === "complete" || task.status === "done" ? "bg-emerald-400"
+                    : task.status === "error" || task.status === "failed" ? "bg-red-400"
+                    : "bg-stone-300"
+                  }`} />
+                  <span className="text-stone-700 truncate">{task.title || task.type || task.id}</span>
+                  <span className="text-stone-400 ml-auto">{task.status}</span>
+                </div>
+              ))}
+            </div>
+          </Card>
+        )}
 
         {/* Info */}
         <Card className="p-4">

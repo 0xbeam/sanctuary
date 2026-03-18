@@ -14,12 +14,14 @@ import { TaskListView } from "./components/tasks/TaskListView";
 import { KnowledgeView } from "./components/knowledge/KnowledgeView";
 import { MessageStreamView } from "./components/messages/MessageStreamView";
 import { SettingsView } from "./components/settings/SettingsView";
+import { OrchestratorView } from "./components/orchestrator/OrchestratorView";
 
 function TabRouter() {
   const { activeTab } = useUI();
 
   switch (activeTab) {
     case "dashboard": return <DashboardView />;
+    case "orchestrator": return <OrchestratorView />;
     case "agents": return <AgentGridView />;
     case "tasks": return <TaskListView />;
     case "feed": return <FeedView />;

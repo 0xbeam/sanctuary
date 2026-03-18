@@ -7,12 +7,15 @@ import { homedir } from "os";
 import { Dispatcher } from "../core/dispatch.js";
 import { loadIndex, loadInstruction } from "../core/store.js";
 import { getBrowserManager } from "../core/browser/index.js";
-import { scanClaudeSessions, getAgents, getAgent, registerAgent, updateAgent, heartbeat, removeAgent } from "../core/agent-registry.js";
-import { createTask, getTasks, getTask, updateTask, assignTask, cancelTask } from "../core/task-manager.js";
+import { scanClaudeSessions, getAgents, getAgent, registerAgent, updateAgent, heartbeat, removeAgent, pauseAgent, resumeAgent, decommissionAgent } from "../core/agent-registry.js";
+import { createTask, getTasks, getTask, updateTask, assignTask, cancelTask, startTask, completeTask, failTask, retryTask, getTaskQueue } from "../core/task-manager.js";
 import { publish, getMessages, getChannels, bus } from "../core/message-bus.js";
 import { addKnowledge, getKnowledge, getKnowledgeById, searchKnowledge, promoteToSkill, promoteToInstruction, syncFromScraped } from "../core/knowledge-store.js";
-import { getBranchInfo, getRecentCommits, switchBranch, listBranches } from "../core/git-tracker.js";
+import { getBranchInfo, getRecentCommits, switchBranch, listBranches, fetchRemote, pullBranch, pushBranch, getRemotes, stashChanges, popStash } from "../core/git-tracker.js";
 import { spawnAgent, listClaudeProcesses } from "../core/claude-bridge.js";
+import { spawnOrchestrator, stopOrchestrator, getOrchestratorStatus } from "../core/orchestrator.js";
+import { fullSync as obsidianSync } from "../core/obsidian-bridge.js";
+import { processNewKnowledge } from "../core/knowledge-pipeline.js";
 
 config();
 
@@ -62,7 +65,7 @@ app.post("/api/scrape", async (req, res) => {
   const { url, project } = req.body;
   if (!url) return res.status(400).json({ error: "url is required" });
 
-  const jobStub = dispatcher.createPendingJob(url, project || "");
+  const jobStub = await dispatcher.createPendingJob(url, project || "");
   res.json({ job: jobStub });
 
   dispatcher.dispatch(url, project || "").catch((err) => {
@@ -77,7 +80,7 @@ app.post("/api/dispatch", async (req, res) => {
     return res.status(400).json({ error: "urls array is required" });
   }
 
-  const stubs = urls.map((url) => dispatcher.createPendingJob(url, project || ""));
+  const stubs = await Promise.all(urls.map((url) => dispatcher.createPendingJob(url, project || "")));
   res.json({ jobs: stubs });
 
   dispatcher.dispatchBatch(urls, project || "").catch((err) => {
@@ -86,13 +89,14 @@ app.post("/api/dispatch", async (req, res) => {
 });
 
 // GET /api/jobs — list all dispatch jobs with activity logs
-app.get("/api/jobs", (req, res) => {
-  res.json({ jobs: dispatcher.getJobs() });
+app.get("/api/jobs", async (req, res) => {
+  const jobs = await dispatcher.getJobs();
+  res.json({ jobs });
 });
 
 // GET /api/jobs/:id — get single job status
-app.get("/api/jobs/:id", (req, res) => {
-  const job = dispatcher.getJob(req.params.id);
+app.get("/api/jobs/:id", async (req, res) => {
+  const job = await dispatcher.getJob(req.params.id);
   if (!job) return res.status(404).json({ error: "Job not found" });
   res.json({ job });
 });
@@ -238,6 +242,106 @@ app.post("/api/tasks/:id/assign", async (req, res) => {
   try {
     const task = await assignTask(req.params.id, req.body.agentId);
     res.json(task);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// POST /api/tasks/:id/start — start a task
+app.post("/api/tasks/:id/start", async (req, res) => {
+  try {
+    const task = await startTask(req.params.id);
+    if (!task) return res.status(404).json({ error: "Task not found" });
+    res.json(task);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// POST /api/tasks/:id/complete — complete a task
+app.post("/api/tasks/:id/complete", async (req, res) => {
+  try {
+    const task = await completeTask(req.params.id, req.body.output);
+    if (!task) return res.status(404).json({ error: "Task not found" });
+    res.json(task);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// POST /api/tasks/:id/fail — fail a task
+app.post("/api/tasks/:id/fail", async (req, res) => {
+  try {
+    const task = await failTask(req.params.id, req.body.error || "Unknown error");
+    if (!task) return res.status(404).json({ error: "Task not found" });
+    res.json(task);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// POST /api/tasks/:id/retry — retry a failed task
+app.post("/api/tasks/:id/retry", async (req, res) => {
+  try {
+    const task = await retryTask(req.params.id);
+    if (!task) return res.status(404).json({ error: "Task not found" });
+    res.json(task);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// POST /api/tasks/:id/cancel — cancel a task
+app.post("/api/tasks/:id/cancel", async (req, res) => {
+  try {
+    const task = await cancelTask(req.params.id);
+    if (!task) return res.status(404).json({ error: "Task not found" });
+    res.json(task);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ─── Agent Lifecycle Routes ───
+
+// POST /api/agents/:id/pause — pause an agent
+app.post("/api/agents/:id/pause", async (req, res) => {
+  try {
+    const agent = await pauseAgent(req.params.id);
+    if (!agent) return res.status(404).json({ error: "Agent not found" });
+    res.json(agent);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// POST /api/agents/:id/resume — resume a paused agent
+app.post("/api/agents/:id/resume", async (req, res) => {
+  try {
+    const agent = await resumeAgent(req.params.id);
+    if (!agent) return res.status(404).json({ error: "Agent not found" });
+    res.json(agent);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// POST /api/agents/:id/decommission — decommission an agent
+app.post("/api/agents/:id/decommission", async (req, res) => {
+  try {
+    const agent = await decommissionAgent(req.params.id);
+    if (!agent) return res.status(404).json({ error: "Agent not found" });
+    res.json(agent);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// GET /api/agents/:id/tasks — get tasks for a specific agent
+app.get("/api/agents/:id/tasks", async (req, res) => {
+  try {
+    const tasks = await getTasks({ agentId: req.params.id });
+    res.json(tasks);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -422,6 +526,121 @@ app.post("/api/git/:agentId/checkout", async (req, res) => {
   }
 });
 
+// Git write operations
+app.post("/api/git/:agentId/fetch", async (req, res) => {
+  try {
+    const agent = await getAgent(req.params.agentId);
+    if (!agent) return res.status(404).json({ error: "Agent not found" });
+    const result = fetchRemote(agent.cwd, req.body.remote);
+    res.json(result);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.post("/api/git/:agentId/pull", async (req, res) => {
+  try {
+    const agent = await getAgent(req.params.agentId);
+    if (!agent) return res.status(404).json({ error: "Agent not found" });
+    const result = pullBranch(agent.cwd, req.body.branch, req.body.remote);
+    res.json(result);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.post("/api/git/:agentId/push", async (req, res) => {
+  try {
+    const agent = await getAgent(req.params.agentId);
+    if (!agent) return res.status(404).json({ error: "Agent not found" });
+    const result = pushBranch(agent.cwd, req.body.branch, req.body.remote);
+    res.json(result);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.get("/api/git/:agentId/remotes", async (req, res) => {
+  try {
+    const agent = await getAgent(req.params.agentId);
+    if (!agent) return res.status(404).json({ error: "Agent not found" });
+    const remotes = getRemotes(agent.cwd);
+    res.json({ agentId: agent.id, cwd: agent.cwd, remotes });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.post("/api/git/:agentId/stash", async (req, res) => {
+  try {
+    const agent = await getAgent(req.params.agentId);
+    if (!agent) return res.status(404).json({ error: "Agent not found" });
+    const result = req.body.pop ? popStash(agent.cwd) : stashChanges(agent.cwd, req.body.message);
+    res.json(result);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ─── Orchestrator Routes ───
+
+// POST /api/orchestrator/start — start the master orchestrator
+app.post("/api/orchestrator/start", async (req, res) => {
+  const result = await spawnOrchestrator();
+  res.json(result);
+});
+
+// POST /api/orchestrator/stop — stop the master orchestrator
+app.post("/api/orchestrator/stop", async (req, res) => {
+  const result = await stopOrchestrator();
+  res.json(result);
+});
+
+// GET /api/orchestrator/status — get orchestrator status
+app.get("/api/orchestrator/status", async (req, res) => {
+  const result = await getOrchestratorStatus();
+  res.json(result);
+});
+
+// POST /api/orchestrator/chat — send a message to the orchestrator channel
+app.post("/api/orchestrator/chat", async (req, res) => {
+  const { message } = req.body;
+  if (!message) return res.status(400).json({ error: "Message required" });
+  const msg = await publish("orchestrator", {
+    from: "human",
+    type: "command",
+    payload: { message },
+  });
+  res.json(msg);
+});
+
+// ─── Obsidian Sync Routes ───
+
+// POST /api/obsidian/sync — full sync to Obsidian vault
+app.post("/api/obsidian/sync", async (req, res) => {
+  try {
+    const agents = await getAgents();
+    const tasks = await getTasks();
+    const knowledge = await getKnowledge();
+    const result = await obsidianSync(agents, tasks, knowledge);
+    res.json(result);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ─── Knowledge Pipeline Routes ───
+
+// POST /api/knowledge/analyze — queue analysis for unprocessed knowledge
+app.post("/api/knowledge/analyze", async (req, res) => {
+  try {
+    const result = await processNewKnowledge();
+    res.json(result);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // ─── Health & Status ───
 
 // Health check — includes browser engine status + agent/task/knowledge stats
@@ -447,12 +666,15 @@ app.get("/api/health", async (req, res) => {
         output: OUTPUT_DIR,
       },
       browser: browserManager.getStatus(),
-      jobs: {
-        total: dispatcher.getJobs().length,
-        active: dispatcher.getJobs().filter((j) => j.status === "processing" || j.status === "pending").length,
-        complete: dispatcher.getJobs().filter((j) => j.status === "complete").length,
-        errors: dispatcher.getJobs().filter((j) => j.status === "error").length,
-      },
+      jobs: await (async () => {
+        const jobs = await dispatcher.getJobs();
+        return {
+          total: jobs.length,
+          active: jobs.filter((j) => j.status === "processing" || j.status === "pending").length,
+          complete: jobs.filter((j) => j.status === "complete").length,
+          errors: jobs.filter((j) => j.status === "error").length,
+        };
+      })(),
       agents: {
         total: allAgents.length,
         active: allAgents.filter((a) => a.status === "active").length,
@@ -498,6 +720,38 @@ async function start() {
   await syncFromScraped(OUTPUT_DIR).catch((err) => {
     console.warn(`  ⚠ Knowledge sync from scraped failed: ${err.message}`);
   });
+
+  // Initial Obsidian vault sync
+  try {
+    const agents = await getAgents();
+    const tasks = await getTasks();
+    const knowledge = await getKnowledge();
+    await obsidianSync(agents, tasks, knowledge);
+    console.log("  ✓ Obsidian vault synced");
+  } catch (err) {
+    console.warn(`  ⚠ Initial Obsidian sync failed: ${err.message}`);
+  }
+
+  // Periodic Obsidian sync every 60 seconds
+  setInterval(async () => {
+    try {
+      const agents = await getAgents();
+      const tasks = await getTasks();
+      const knowledge = await getKnowledge();
+      await obsidianSync(agents, tasks, knowledge);
+    } catch (err) {
+      console.warn(`Obsidian sync error: ${err.message}`);
+    }
+  }, 60000);
+
+  // Periodic knowledge pipeline processing every 30 seconds
+  setInterval(async () => {
+    try {
+      await processNewKnowledge();
+    } catch (err) {
+      console.warn(`Knowledge pipeline error: ${err.message}`);
+    }
+  }, 30000);
 
   app.listen(PORT, () => {
     console.log(`\n  ⚡ Brane API server running on http://localhost:${PORT}`);

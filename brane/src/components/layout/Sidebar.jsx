@@ -1,9 +1,10 @@
 import { useUI } from "../../contexts/UIContext";
 import { useData } from "../../contexts/DataContext";
-import { LayoutDashboard, Bot, ListTodo, Rss, BookOpen, MessageSquare, Settings } from "lucide-react";
+import { LayoutDashboard, Brain, Bot, ListTodo, Rss, BookOpen, MessageSquare, Settings } from "lucide-react";
 
 const TAB_CONFIG = [
   { id: "dashboard", label: "Dashboard", icon: LayoutDashboard },
+  { id: "orchestrator", label: "Orchestrator", icon: Brain },
   { id: "agents", label: "Agents", icon: Bot },
   { id: "tasks", label: "Tasks", icon: ListTodo },
   { id: "feed", label: "Feed", icon: Rss },
